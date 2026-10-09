@@ -33,28 +33,28 @@
   const d = (key, role, x, y) => slot('d_' + key, role, x, y, 'defense');
 
   function slots(mobile = phone.matches) {
-    const lineX = mobile ? [24, 37, 50, 63, 76] : [29, 39.5, 50, 60.5, 71];
-    const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 74), o('rb1', 'HB', 50, 89)];
+    const lineX = mobile ? [20, 35, 50, 65, 80] : [27, 38.5, 50, 61.5, 73];
+    const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 76), o('rb1', 'HB', 50, 92)];
     const eligible = {
-      wr1: o('wr1', 'WR', mobile ? 9 : 10, 59),
-      wr2: o('wr2', 'WR', mobile ? 91 : 92, 59),
-      wr3: o('wr3', 'WR', 17, 74), wr4: o('wr4', 'WR', 83, 74),
-      te1: o('te1', 'TE', mobile ? 85 : 82, mobile ? 70 : 59),
-      te2: o('te2', 'TE', mobile ? 15 : 19, mobile ? 70 : 59),
-      rb2: o('rb2', 'FB', mobile ? 37 : 39, 84)
+      wr1: o('wr1', 'WR', 2, 59),
+      wr2: o('wr2', 'WR', 98, 59),
+      wr3: o('wr3', 'WR', 15, 76), wr4: o('wr4', 'WR', 85, 76),
+      te1: o('te1', 'TE', mobile ? 92 : 85, mobile ? 74 : 59),
+      te2: o('te2', 'TE', mobile ? 8 : 15, mobile ? 74 : 59),
+      rb2: o('rb2', 'FB', mobile ? 28 : 39, 88)
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
     offense.push(...extras[state.offense].map(key => eligible[key]));
-    const defense = [d('fs', 'FS', 35, 9), d('ss', 'SS', 65, 9), d('cb1', 'CB', 10, 25), d('cb2', 'CB', 90, 25)];
-    const fourLine = [d('de1', 'DE', 25, 39), d('dt1', 'DT', 42, 39), d('dt2', 'DT', 58, 39), d('de2', 'DE', 75, 39)];
+    const defense = [d('fs', 'FS', 35, 9), d('ss', 'SS', 65, 9), d('cb1', 'CB', 2, 28), d('cb2', 'CB', 98, 28)];
+    const fourLine = [d('de1', 'DE', 20, 43), d('dt1', 'DT', 40, 43), d('dt2', 'DT', 60, 43), d('de2', 'DE', 80, 43)];
     const fronts = {
-      '3-4': [d('de1', 'DE', 35, 39), d('dt1', 'NT', 50, 39), d('de2', 'DE', 65, 39), d('lb1', 'ILB', 41, 24), d('lb2', 'ILB', 59, 24), d('lb3', 'OLB', 24, 23), d('lb4', 'OLB', 76, 23)],
-      '4-3': [...fourLine, d('lb1', 'MLB', 50, 24), d('lb2', 'WLB', 30, 24), d('lb3', 'SLB', 70, 24)],
-      nickel: [...fourLine, d('lb1', 'LB', 41, 24), d('lb2', 'LB', 59, 24), d('nb', 'NB', 77, 23)],
-      dime: [...fourLine, d('lb1', 'MLB', 50, 24), d('nb', 'NB', 29, 23), d('db6', 'DB', 71, 23)]
+      '3-4': [d('de1', 'DE', 30, 43), d('dt1', 'NT', 50, 43), d('de2', 'DE', 70, 43), d('lb1', 'ILB', 40, 26), d('lb2', 'ILB', 60, 26), d('lb3', 'OLB', 22, 26), d('lb4', 'OLB', 78, 26)],
+      '4-3': [...fourLine, d('lb1', 'MLB', 50, 26), d('lb2', 'WLB', 30, 26), d('lb3', 'SLB', 70, 26)],
+      nickel: [...fourLine, d('lb1', 'LB', 35, 26), d('lb2', 'LB', 57, 26), d('nb', 'NB', 79, 26)],
+      dime: [...fourLine, d('lb1', 'MLB', 50, 26), d('nb', 'NB', 28, 26), d('db6', 'DB', 72, 26)]
     };
     defense.push(...fronts[state.defense]);
-    return [...defense, ...offense];
+    return [...defense, ...offense].map(s => ({ ...s, ...window.DraftField.project(s.x, s.y), scale: .9 + .12 * s.y / 100 }));
   }
 
   function defaultBoard(mode) {
@@ -178,6 +178,7 @@
       button.className = `position ${s.side}${p ? '' : ' empty'}${state.selected === s.key ? ' selected' : ''}`;
       button.style.setProperty('--x', s.x + '%');
       button.style.setProperty('--y', s.y + '%');
+      button.style.setProperty('--depth', s.scale);
       button.dataset.slot = s.key;
       button.setAttribute('aria-label', `${s.side}: ${s.name}${p ? ', ' + p.name : ', empty'}. Select Pokémon.`);
       button.setAttribute('aria-pressed', String(state.selected === s.key));
@@ -613,6 +614,7 @@
   narrow.addEventListener('change', () => closePicker(false));
   phone.addEventListener('change', renderBoard);
 
+  window.DraftField.mount($('field-surface'));
   initializePersonnelMenus();
   loadDraft();
   renderBoard();

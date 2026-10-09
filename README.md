@@ -12,6 +12,8 @@ Open the published site in Safari on iPhone. Tap a position, then a Pokémon. Pi
 
 Use the hamburger menu for generation, offense/defense personnel, export, link sharing, sample/clear, stats guide, and Safari screen-space guidance. The menu starts closed on each load; the compact header summarizes the active formation and pick count. Retro art has been removed; existing saves and links use modern artwork while preserving their lineups.
 
+The board uses a textured grass field with gently converging sidelines. Pokémon and labels stay upright, selection rings stay inside each tile, and narrow screens stagger tight ends to keep dense personnel groups readable. The live board and PNG export use the same perspective geometry.
+
 Each generation mode remembers its own personnel and lineup in browser storage. Gen 2 starts with an empty board; Sample lineup fills it with a Johto example. Legendary and mythical Pokémon are included.
 
 Export image prepares a 1600×1550 PNG of all 22 active positions, names, scouting stats, personnel, and generation. Share image opens native file sharing where supported; Save image is the fallback. Share link includes the exact lineup. Shared boards are saved separately until you explicitly choose Keep lineup, so opening a friend's link preserves your own draft. My lineup returns to your original board. Storage failures do not prevent gameplay; keep a share link if the browser cannot save.
@@ -25,3 +27,5 @@ More room explains Safari's Hide Toolbar option and adding the game to the Home 
 The 251 Pokémon records and transparent 475×475 artwork are bundled locally; the game does not call an external API. Barlow fonts are also bundled locally with system fallbacks and their open font license.
 
 Artwork and data sources are recorded in `artwork-sources.json` and `gen2-artwork-sources.json`; the new asset checks are in `gen2-asset-verification.json`. Pokémon artwork belongs to The Pokémon Company; this is a fan project.
+
+Field texture: [ambientCG Grass005](https://ambientcg.com/view?id=Grass005), used under [CC0 1.0](https://docs.ambientcg.com/license/). The local `dist/assets/turf.jpg` is the original 1024×1024 color texture.

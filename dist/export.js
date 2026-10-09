@@ -15,8 +15,9 @@
 
   window.renderDraftImage = async board => {
     const sources = board.positions.map(s => s.pokemon ? s.pokemon.image : null);
-    const [images] = await Promise.all([
+    const [images, turf] = await Promise.all([
       Promise.all(sources.map(src => src ? loadImage(src) : null)),
+      loadImage('assets/turf.jpg'),
       Promise.race([document.fonts?.ready || Promise.resolve(), new Promise(resolve => setTimeout(resolve, 1500))])
     ]);
     const canvas = document.createElement('canvas');
@@ -33,39 +34,12 @@
     ctx.fillStyle = yellow; ctx.fillText('OFFENSE  ' + board.offense, 1552, 65);
     ctx.fillStyle = blue; ctx.fillText('DEFENSE  ' + board.defense, 1552, 101);
     ctx.save(); ctx.translate(0, top);
-    ctx.fillStyle = '#3b6b32'; ctx.fillRect(0, 0, 1600, fieldHeight);
-    for (let row = 0; row < 6; row++) {
-      ctx.fillStyle = row % 2 ? '#0000000d' : '#ffffff03';
-      ctx.fillRect(0, row * fieldHeight / 6, 1600, fieldHeight / 6);
-    }
-    const shadow = ctx.createRadialGradient(800, 590, 300, 800, 590, 1000);
-    shadow.addColorStop(0, '#12291e00'); shadow.addColorStop(1, '#12291e55');
-    ctx.fillStyle = shadow; ctx.fillRect(0, 0, 1600, fieldHeight);
-    ctx.strokeStyle = '#e1edd66b'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(64, 0); ctx.lineTo(64, fieldHeight); ctx.moveTo(1536, 0); ctx.lineTo(1536, fieldHeight); ctx.stroke();
-    for (let row = 0; row <= 6; row++) {
-      const y = row * fieldHeight / 6;
-      ctx.beginPath(); ctx.moveTo(64, y); ctx.lineTo(1536, y); ctx.stroke();
-      if (row === 6) continue;
-      for (let tick = 1; tick < 6; tick++) {
-        const ty = y + tick * fieldHeight / 36;
-        ctx.beginPath();
-        [64, 688, 894, 1512].forEach(x => { ctx.moveTo(x, ty); ctx.lineTo(x + 24, ty); });
-        ctx.stroke();
-      }
-    }
-    ctx.strokeStyle = '#eff4d570'; ctx.lineWidth = 2; ctx.setLineDash([9, 10]);
-    ctx.beginPath(); ctx.moveTo(64, fieldHeight * .465); ctx.lineTo(1536, fieldHeight * .465); ctx.stroke(); ctx.setLineDash([]);
-    ctx.textAlign = 'center'; ctx.fillStyle = '#e1edd645'; ctx.font = '700 47px "Barlow Condensed", sans-serif';
-    [30, 40, 50, 40, 30].forEach((number, i) => {
-      const y = (i + 1) * fieldHeight / 6 + 30;
-      ctx.fillText(number, 147, y); ctx.fillText(number, 1453, y);
-    });
+    window.DraftField.draw(ctx, 1600, fieldHeight, turf);
     board.positions.forEach((s, index) => {
-      const x = 1600 * s.x / 100, y = fieldHeight * (s.key === 'o_rb1' ? 89.5 : s.y) / 100;
+      const x = 1600 * s.x / 100, y = fieldHeight * s.y / 100;
       const image = images[index];
       if (image) {
-        const size = 138;
+        const size = 132 * s.scale;
         const scale = Math.min(size / image.width, size / image.height);
         const w = image.width * scale, h = image.height * scale;
         ctx.imageSmoothingEnabled = true;
@@ -77,7 +51,7 @@
         ctx.beginPath(); ctx.arc(x, y - 25, 35, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
         ctx.fillStyle = '#e4eccaaa'; ctx.font = '400 40px sans-serif'; ctx.fillText('+', x, y - 12);
       }
-      const plateY = y + 43, plateWidth = 140;
+      const plateY = y + 43, plateWidth = 136 * s.scale;
       ctx.fillStyle = '#0d1f17ef'; ctx.strokeStyle = '#cddfc799'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.roundRect(x - plateWidth / 2, plateY, plateWidth, image ? 65 : 31, 5); ctx.fill(); ctx.stroke();
       if (image) {

@@ -12,10 +12,11 @@
   <link rel="apple-touch-icon" href="assets/app-icon.png">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
-  <link rel="stylesheet" href="styles.css?v=5">
-  <script src="assets/pokemon.js?v=5" defer></script>
-  <script src="export.js?v=5" defer></script>
-  <script src="app.js?v=5" defer></script>
+  <link rel="stylesheet" href="styles.css?v=6">
+  <script src="assets/pokemon.js?v=6" defer></script>
+  <script src="field.js?v=6" defer></script>
+  <script src="export.js?v=6" defer></script>
+  <script src="app.js?v=6" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -42,16 +43,7 @@
   <main class="game">
     <section class="board-panel" aria-label="Football draft board">
       <div class="field" id="field">
-        <div class="field-texture" aria-hidden="true"></div>
-        <svg class="field-markings" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true">
-          <defs><pattern id="yards" width="1000" height="126" patternUnits="userSpaceOnUse"><path d="M40 0H960"/><path d="M40 21h15m-15 21h15m-15 21h15m-15 21h15m-15 21h15M945 21h15m-15 21h15m-15 21h15m-15 21h15m-15 21h15M430 21h12m-12 21h12m-12 21h12m-12 21h12m-12 21h12M558 21h12m-12 21h12m-12 21h12m-12 21h12m-12 21h12"/></pattern></defs>
-          <rect x="40" y="1" width="920" height="758" fill="url(#yards)" stroke="none"/>
-          <path d="M40 0V760M960 0V760"/>
-          <g class="yard-numbers" fill="currentColor" stroke="none" text-anchor="middle"><text x="92" y="145">30</text><text x="908" y="145">30</text><text x="92" y="270">40</text><text x="908" y="270">40</text><text x="92" y="397">50</text><text x="908" y="397">50</text><text x="92" y="523">40</text><text x="908" y="523">40</text><text x="92" y="649">30</text><text x="908" y="649">30</text></g>
-        </svg>
-        <div class="side-label defense-side">DEFENSE</div>
-        <div class="side-label offense-side">OFFENSE</div>
-        <div class="scrimmage-line" aria-hidden="true"></div>
+        <svg id="field-surface" class="field-surface" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
         <div id="positions"></div>
         <div class="field-footer" id="field-footer" aria-hidden="true">KANTO DRAFT LEAGUE</div>
       </div>

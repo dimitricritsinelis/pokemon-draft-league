@@ -1,0 +1,12 @@
+{
+  "asset": "dist/assets/turf.jpg",
+  "source": "https://ambientcg.com/view?id=Grass005",
+  "download": "https://ambientcg.com/get?file=Grass005_1K-JPG.zip",
+  "file_used": "Grass005_1K-JPG_Color.jpg",
+  "license": "CC0 1.0 Universal",
+  "license_url": "https://docs.ambientcg.com/license/",
+  "resolution": [
+    1024,
+    1024
+  ]
+}
