@@ -21,10 +21,10 @@
       Promise.race([document.fonts?.ready || Promise.resolve(), new Promise(resolve => setTimeout(resolve, 1500))])
     ]);
     const canvas = document.createElement('canvas');
-    canvas.width = 1600; canvas.height = 1370;
+    canvas.width = 1600; canvas.height = 1550;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas unavailable');
-    const top = 142, fieldHeight = 1180;
+    const top = 142, fieldHeight = 1360;
     ctx.fillStyle = ink; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = yellow; ctx.font = '700 21px Barlow, sans-serif';
     ctx.fillText(board.generation.toUpperCase() + (retro ? ' · RETRO ART' : ''), 48, 35);
@@ -63,7 +63,7 @@
       ctx.fillText(number, 147, y); ctx.fillText(number, 1453, y);
     });
     board.positions.forEach((s, index) => {
-      const x = 1600 * s.x / 100, y = fieldHeight * s.y / 100;
+      const x = 1600 * s.x / 100, y = fieldHeight * (s.key === 'o_rb1' ? 89.5 : s.y) / 100;
       const image = images[index];
       if (image) {
         const size = retro ? 128 : 138;
@@ -80,7 +80,7 @@
       }
       const plateY = y + 43, plateWidth = 140;
       ctx.fillStyle = '#0d1f17ef'; ctx.strokeStyle = '#cddfc799'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(x - plateWidth / 2, plateY, plateWidth, image ? 49 : 31, 5); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(x - plateWidth / 2, plateY, plateWidth, image ? 65 : 31, 5); ctx.fill(); ctx.stroke();
       if (image) {
         let fontSize = 22;
         const name = s.pokemon.name.toUpperCase();
@@ -90,10 +90,14 @@
       ctx.font = '700 22px "Barlow Condensed", sans-serif';
       ctx.fillStyle = s.side === 'offense' ? yellow : blue;
       ctx.fillText(s.role, x, plateY + (image ? 43 : 23));
+      if (image && s.stats) {
+        ctx.font = '500 14px "Barlow Condensed", sans-serif'; ctx.fillStyle = '#c1d0bb';
+        ctx.fillText(`${s.stats.height} · ${s.stats.weight}lb · ${s.stats.forty}s`, x, plateY + 59, plateWidth - 8);
+      }
     });
     ctx.restore(); ctx.textAlign = 'left'; ctx.fillStyle = '#bacab9'; ctx.font = '500 17px Barlow, sans-serif';
-    ctx.fillText('Your Pokémon. Your playbook.', 48, 1353);
-    ctx.textAlign = 'right'; ctx.fillText('Pokémon Draft League · Fan-made', 1552, 1353);
+    ctx.fillText('HT · LB · ESTIMATED 40-YARD DASH (s)', 48, 1533);
+    ctx.textAlign = 'right'; ctx.fillText('Height / weight: Bulbapedia · Fan-made', 1552, 1533);
     return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('PNG unavailable')), 'image/png'));
   };
 })();

@@ -233,6 +233,17 @@
 
   function normalize(value) { return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9♀♂]/g, ''); }
 
+  function scoutingStats(p) {
+    const inches = Math.round(p.heightMeters / 0.0254);
+    const feet = Math.floor(inches / 12), remainder = inches % 12;
+    const pounds = Math.round(p.weightKg * 2.2046226218 * 10) / 10;
+    return {
+      height: `${feet}′${remainder}″`, weight: String(pounds),
+      forty: Number.isFinite(p.fortySeconds) ? p.fortySeconds.toFixed(2) : '—',
+      description: `height ${feet} feet ${remainder} inches, weight ${pounds} pounds, estimated 40-yard dash ${p.fortySeconds ?? 'unavailable'} seconds`
+    };
+  }
+
   function renderCatalog() {
     const query = normalize($('pokemon-search').value);
     if (!catalogCards) {
@@ -240,12 +251,21 @@
       const button = document.createElement('button');
       button.className = 'pokemon-card';
       button.dataset.pokemon = p.id;
-      button.setAttribute('aria-label', `Draft ${p.name}, Pokédex ${p.id}`);
+      const stats = scoutingStats(p);
+      button.setAttribute('aria-label', `Draft ${p.name}, Pokédex ${p.id}, ${stats.description}`);
+      button.title = `${p.name} · ${p.heightMeters} m · ${p.weightKg} kg · ${stats.forty}s estimated 40-yard dash`;
       const dex = document.createElement('span'); dex.className = 'dex-number'; dex.textContent = '#' + String(p.id).padStart(3, '0');
       const img = document.createElement('img'); img.src = imagePath(p); img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.draggable = false;
       const name = document.createElement('span'); name.className = 'card-name'; name.textContent = p.name;
       const type = document.createElement('span'); type.className = 'card-type'; type.textContent = p.types.join(' / ');
-      button.append(dex, img, name, type);
+      const metrics = document.createElement('span'); metrics.className = 'card-stats'; metrics.setAttribute('aria-hidden', 'true');
+      [['HT', stats.height], ['LB', stats.weight], ['EST 40', stats.forty + (stats.forty === '—' ? '' : 's')]].forEach(([label, value]) => {
+        const metric = document.createElement('span');
+        const heading = document.createElement('span'); heading.className = 'stat-label'; heading.textContent = label;
+        const number = document.createElement('strong'); number.className = 'stat-value'; number.textContent = value;
+        metric.append(heading, number); metrics.append(metric);
+      });
+      button.append(dex, img, name, type, metrics);
       button.addEventListener('click', () => draftPokemon(p.id));
       return button;
       });
@@ -439,7 +459,7 @@
       generation: modeLabels[state.mode], art: state.art,
       offense: offenseLabels[state.offense] + ' · ' + offenseDetails[state.offense],
       defense: defenseLabels[state.defense] + ' · ' + defenseDetails[state.defense],
-      positions: slots(false).map(s => ({ ...s, pokemon: byId.get(state.picks[s.key]) || null }))
+      positions: slots(false).map(s => { const p = byId.get(state.picks[s.key]); return { ...s, pokemon: p || null, stats: p ? scoutingStats(p) : null }; })
     };
     try {
       const blob = await window.renderDraftImage(board);
@@ -492,6 +512,7 @@
     closePicker(false); closePersonnelMenus(); importLink(); saveDraft(); renderBoard(); renderCatalog();
   });
   $('export-button').addEventListener('click', prepareExport);
+  $('stats-help').addEventListener('click', () => $('stats-dialog').showModal());
   $('export-dialog').addEventListener('close', () => { exportRun++; });
   $('share-image').addEventListener('click', () => {
     if (!exportFile || !navigator.share) return;
@@ -558,7 +579,7 @@
   });
   $('sample-button').addEventListener('click', () => { sampleLineup(); message('Example lineup loaded'); });
   document.addEventListener('keydown', e => {
-    if (!$('picker').classList.contains('open')) return;
+    if (!$('picker').classList.contains('open') || document.querySelector('dialog[open]')) return;
     if (e.key === 'Escape') { e.preventDefault(); closePicker(); }
     if (e.key === 'Tab') {
       const focusable = [...$('picker').querySelectorAll('button:not([hidden]), input, a')].filter(el => el.getClientRects().length);

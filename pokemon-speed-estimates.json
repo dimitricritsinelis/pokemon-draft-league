@@ -1,0 +1,1368 @@
+{
+  "policy": {
+    "label": "Estimated 40-yard dash",
+    "unit": "seconds",
+    "status": "Fantasy scouting estimates authored for the game; not factual or measured results.",
+    "distanceYards": 40,
+    "start": "Standing start, no run-up; reaction time excluded.",
+    "surface": "Level, dry, ordinary soft football turf in still air.",
+    "movement": "Fastest ordinary unaided physical locomotion in the displayed base form. Powered flight and continuous ordinary hovering are allowed. Burrowing through ordinary soft turf is allowed for habitual burrowers.",
+    "excluded": [
+      "teleportation",
+      "instant relocation",
+      "time travel",
+      "body transformation",
+      "digital transmission",
+      "explosion-assisted launches",
+      "outside assistance",
+      "water-assisted launches",
+      "elevated starting perches",
+      "altitude-assisted dives",
+      "external wind assistance"
+    ],
+    "equipmentAndAnatomy": "Normal anatomy and inherent carried loads remain, including shells, mushrooms, bone, eggs, pouch young, and normal sack load. An evolved form may be slower when anatomy warrants it.",
+    "aquaticRule": "Swimmers are judged on turf using plausible unaided flops, tentacle pulls, and grounded shuffles. Water swimming speed is not substituted.",
+    "method": "Manually assigned from movement anatomy, launch mechanics, agility, and familiar movement lore. No battle Speed stat was read or numerically remapped.",
+    "display": "Show two decimals with an s suffix; label them estimates and keep that qualification on exported boards.",
+    "rangeSeconds": [
+      2.65,
+      26.4
+    ],
+    "anchors": {
+      "Rapidash": 2.65,
+      "Arcanine": 2.75,
+      "Raikou": 2.7,
+      "Jolteon": 3.0,
+      "Scyther": 3.1,
+      "Dodrio": 3.25,
+      "Tauros": 4.1,
+      "Hitmonlee": 4.6,
+      "Machamp": 5.55,
+      "Blastoise": 7.2,
+      "Snorlax": 9.9,
+      "MagikarpOnTurf": 22.4
+    },
+    "reviewEdges": [
+      {
+        "pokemon": [
+          "Metapod",
+          "Kakuna",
+          "Pineco",
+          "Sunkern"
+        ],
+        "assumption": "Tiny unaided wriggles, rolls, or hops are permitted for a finite game estimate; these are not claims that a canon dash has been demonstrated."
+      },
+      {
+        "pokemon": [
+          "Diglett",
+          "Dugtrio"
+        ],
+        "assumption": "A football turf dash may be burrowed without magic. Artificial turf or a requirement to remain above ground would change their estimates substantially."
+      },
+      {
+        "pokemon": [
+          "Gastly",
+          "Haunter",
+          "Misdreavus",
+          "Magnemite",
+          "Magneton",
+          "Dragonair",
+          "Mewtwo",
+          "Mew",
+          "Unown",
+          "Porygon",
+          "Porygon2"
+        ],
+        "assumption": "Continuous ordinary hovering counts as movement, while instant relocation does not. A feet-only combine would need a different policy."
+      },
+      {
+        "pokemon": [
+          "Gyarados",
+          "Mantine",
+          "Gligar",
+          "Scizor"
+        ],
+        "assumption": "A Flying typing or wings alone does not guarantee powered flight from level turf. Gyarados is grounded; Mantine has no water launch; Gligar gets no high perch; Scizor runs."
+      },
+      {
+        "pokemon": [
+          "Pupitar"
+        ],
+        "assumption": "Self-produced gas venting is ordinary physical propulsion, not an externally boosted or explosive launch."
+      },
+      {
+        "pokemon": [
+          "Hoppip",
+          "Skiploom",
+          "Jumpluff"
+        ],
+        "assumption": "Still air prevents a free wind-assisted dash; low-strength self-directed hops and lift provide conservative finite estimates."
+      },
+      {
+        "pokemon": [
+          "Abra",
+          "Ditto",
+          "Celebi"
+        ],
+        "assumption": "Their signature shortcut abilities are deliberately excluded to preserve a comparable physical dash."
+      }
+    ]
+  },
+  "estimates": [
+    {
+      "id": 1,
+      "fortySeconds": 7.15,
+      "reason": "Compact quadruped with short strides and a back-mounted bulb."
+    },
+    {
+      "id": 2,
+      "fortySeconds": 7.65,
+      "reason": "A larger flower adds bulk without extending the low running gait."
+    },
+    {
+      "id": 3,
+      "fortySeconds": 9.2,
+      "reason": "Heavy flower canopy and a broad, low body limit acceleration."
+    },
+    {
+      "id": 4,
+      "fortySeconds": 6.25,
+      "reason": "Light biped with short legs; a brisk run rather than a long stride."
+    },
+    {
+      "id": 5,
+      "fortySeconds": 5.55,
+      "reason": "Longer legs and a leaner upright running build."
+    },
+    {
+      "id": 6,
+      "fortySeconds": 4.1,
+      "reason": "Powered flight is quick once its large wings establish lift."
+    },
+    {
+      "id": 7,
+      "fortySeconds": 7.1,
+      "reason": "Short-legged, shell-bearing biped running on turf."
+    },
+    {
+      "id": 8,
+      "fortySeconds": 6.65,
+      "reason": "Longer legs and stronger push-off partly offset the shell."
+    },
+    {
+      "id": 9,
+      "fortySeconds": 7.2,
+      "reason": "Very heavy shell and upper body slow a standing-start run."
+    },
+    {
+      "id": 10,
+      "fortySeconds": 14.2,
+      "reason": "Self-propelled caterpillar crawl; no carried or thrown shortcut."
+    },
+    {
+      "id": 11,
+      "fortySeconds": 19.6,
+      "reason": "Minimal cocoon movement; a slow, unaided wriggle-and-roll effort."
+    },
+    {
+      "id": 12,
+      "fortySeconds": 5.8,
+      "reason": "Powered fluttering flight with modest initial acceleration."
+    },
+    {
+      "id": 13,
+      "fortySeconds": 13.8,
+      "reason": "Short caterpillar body advances through repeated tiny crawling steps."
+    },
+    {
+      "id": 14,
+      "fortySeconds": 20.4,
+      "reason": "Rigid cocoon makes unaided forward progress extremely slow."
+    },
+    {
+      "id": 15,
+      "fortySeconds": 3.75,
+      "reason": "Light wasp body and fast wingbeats give a strong airborne launch."
+    },
+    {
+      "id": 16,
+      "fortySeconds": 5.2,
+      "reason": "Small bird can launch quickly but has limited stride and wing reach."
+    },
+    {
+      "id": 17,
+      "fortySeconds": 4.1,
+      "reason": "Stronger wings and a larger flight stroke improve the short launch."
+    },
+    {
+      "id": 18,
+      "fortySeconds": 3.25,
+      "reason": "Powerful bird flight; no high-altitude dive or running start assumed."
+    },
+    {
+      "id": 19,
+      "fortySeconds": 4.75,
+      "reason": "Light, alert quadruped with a sharp sprinting burst."
+    },
+    {
+      "id": 20,
+      "fortySeconds": 4.6,
+      "reason": "Stronger hind legs support a fast rodent sprint despite added mass."
+    },
+    {
+      "id": 21,
+      "fortySeconds": 4.9,
+      "reason": "Small, aggressive bird with a brisk powered takeoff."
+    },
+    {
+      "id": 22,
+      "fortySeconds": 3.6,
+      "reason": "Long wings and a streamlined body sustain rapid powered flight."
+    },
+    {
+      "id": 23,
+      "fortySeconds": 8.1,
+      "reason": "Ground slither lacks the acceleration of running feet."
+    },
+    {
+      "id": 24,
+      "fortySeconds": 6.55,
+      "reason": "Longer, stronger coils propel a quicker ground slither."
+    },
+    {
+      "id": 25,
+      "fortySeconds": 4.95,
+      "reason": "Light, agile quadruped; electricity is not used as instant propulsion."
+    },
+    {
+      "id": 26,
+      "fortySeconds": 4.75,
+      "reason": "Stronger legs and longer strides narrowly improve the sprint."
+    },
+    {
+      "id": 27,
+      "fortySeconds": 6.35,
+      "reason": "Short, sturdy legs move a compact digging animal across turf."
+    },
+    {
+      "id": 28,
+      "fortySeconds": 5.7,
+      "reason": "A stronger quadrupedal run offsets heavier armor and claws."
+    },
+    {
+      "id": 29,
+      "fortySeconds": 7.1,
+      "reason": "Small quadruped with short legs and a cautious, compact gait."
+    },
+    {
+      "id": 30,
+      "fortySeconds": 6.25,
+      "reason": "A longer body and stronger legs provide a more effective run."
+    },
+    {
+      "id": 31,
+      "fortySeconds": 6.3,
+      "reason": "Heavy upright build trades sprint acceleration for strength."
+    },
+    {
+      "id": 32,
+      "fortySeconds": 6.95,
+      "reason": "Small quadruped capable of a determined short charge."
+    },
+    {
+      "id": 33,
+      "fortySeconds": 5.9,
+      "reason": "Strong four-legged charging gait with better stride length."
+    },
+    {
+      "id": 34,
+      "fortySeconds": 6.1,
+      "reason": "Powerful but heavy biped; bulky torso slows the first steps."
+    },
+    {
+      "id": 35,
+      "fortySeconds": 8.6,
+      "reason": "Short legs and a gentle hopping gait limit straight-line pace."
+    },
+    {
+      "id": 36,
+      "fortySeconds": 8.2,
+      "reason": "Longer legs improve its hops; small wings are not treated as fast flight."
+    },
+    {
+      "id": 37,
+      "fortySeconds": 5.0,
+      "reason": "Light fox-like quadruped with short but quick running strides."
+    },
+    {
+      "id": 38,
+      "fortySeconds": 3.8,
+      "reason": "Long-legged, graceful fox build supports a fast ordinary sprint."
+    },
+    {
+      "id": 39,
+      "fortySeconds": 10.4,
+      "reason": "Round body and tiny feet produce a slow waddling run."
+    },
+    {
+      "id": 40,
+      "fortySeconds": 9.2,
+      "reason": "Longer legs help, though a broad, soft body remains cumbersome."
+    },
+    {
+      "id": 41,
+      "fortySeconds": 4.9,
+      "reason": "Light bat with rapid wingbeats and a quick powered launch."
+    },
+    {
+      "id": 42,
+      "fortySeconds": 4.1,
+      "reason": "Larger wings provide more thrust over the short airborne dash."
+    },
+    {
+      "id": 43,
+      "fortySeconds": 11.7,
+      "reason": "Tiny feet must move a top-heavy plant body."
+    },
+    {
+      "id": 44,
+      "fortySeconds": 12.1,
+      "reason": "Heavy flower head and short legs slow its shuffling run."
+    },
+    {
+      "id": 45,
+      "fortySeconds": 12.6,
+      "reason": "Oversized flower canopy makes an already short-legged gait slower."
+    },
+    {
+      "id": 46,
+      "fortySeconds": 10.4,
+      "reason": "Small arthropod scuttles on very short legs under growing mushrooms."
+    },
+    {
+      "id": 47,
+      "fortySeconds": 11.8,
+      "reason": "Large mushroom cap restricts a heavier, low scuttling body."
+    },
+    {
+      "id": 48,
+      "fortySeconds": 7.4,
+      "reason": "Light, springy insect body moves through short bounding steps."
+    },
+    {
+      "id": 49,
+      "fortySeconds": 4.65,
+      "reason": "Powered moth flight; larger wings give a useful standing-start burst."
+    },
+    {
+      "id": 50,
+      "fortySeconds": 5.1,
+      "reason": "Unaided burrowing through ordinary soft turf; no teleporting."
+    },
+    {
+      "id": 51,
+      "fortySeconds": 4.75,
+      "reason": "Stronger coordinated burrowing moves the cluster through soft turf."
+    },
+    {
+      "id": 52,
+      "fortySeconds": 4.9,
+      "reason": "Light feline body and quick quadrupedal acceleration."
+    },
+    {
+      "id": 53,
+      "fortySeconds": 3.8,
+      "reason": "Long-legged feline sprinter with a strong first-step burst."
+    },
+    {
+      "id": 54,
+      "fortySeconds": 8.7,
+      "reason": "Webbed feet and an awkward upright waddle limit ground speed."
+    },
+    {
+      "id": 55,
+      "fortySeconds": 5.7,
+      "reason": "Athletic humanoid legs run well even without water assistance."
+    },
+    {
+      "id": 56,
+      "fortySeconds": 5.15,
+      "reason": "Agile small primate accelerates through short, rapid bounds."
+    },
+    {
+      "id": 57,
+      "fortySeconds": 4.55,
+      "reason": "Strong, explosive primate legs support an aggressive sprint."
+    },
+    {
+      "id": 58,
+      "fortySeconds": 4.35,
+      "reason": "Athletic canine quadruped with a clean standing-start burst."
+    },
+    {
+      "id": 59,
+      "fortySeconds": 2.75,
+      "reason": "Exceptional canine sprinting lore, limited by the short standing start."
+    },
+    {
+      "id": 60,
+      "fortySeconds": 10.5,
+      "reason": "Small legs and a rounded tadpole body make land movement awkward."
+    },
+    {
+      "id": 61,
+      "fortySeconds": 6.9,
+      "reason": "Developed legs allow a useful bipedal run despite the round torso."
+    },
+    {
+      "id": 62,
+      "fortySeconds": 5.7,
+      "reason": "Powerful legs and an athletic build offset a heavy upper body."
+    },
+    {
+      "id": 63,
+      "fortySeconds": 10.6,
+      "reason": "Drowsy, short-legged movement; teleportation is excluded."
+    },
+    {
+      "id": 64,
+      "fortySeconds": 6.6,
+      "reason": "Longer legs permit a deliberate upright run without teleportation."
+    },
+    {
+      "id": 65,
+      "fortySeconds": 5.35,
+      "reason": "Lean humanoid with long legs; psychic relocation is excluded."
+    },
+    {
+      "id": 66,
+      "fortySeconds": 5.75,
+      "reason": "Compact muscular biped has strong push-off but short strides."
+    },
+    {
+      "id": 67,
+      "fortySeconds": 5.35,
+      "reason": "Longer, muscular legs give a better sprint than the smaller form."
+    },
+    {
+      "id": 68,
+      "fortySeconds": 5.55,
+      "reason": "Powerful legs are slightly offset by a very heavy four-armed torso."
+    },
+    {
+      "id": 69,
+      "fortySeconds": 9.5,
+      "reason": "Flexible stalk and root-like feet permit springy but limited strides."
+    },
+    {
+      "id": 70,
+      "fortySeconds": 15.5,
+      "reason": "Footless plant relies on slow, unaided body shuffling."
+    },
+    {
+      "id": 71,
+      "fortySeconds": 12.8,
+      "reason": "Larger vine-assisted scoots help, but it lacks a normal running gait."
+    },
+    {
+      "id": 72,
+      "fortySeconds": 14.2,
+      "reason": "Grounded tentacle pulls; swimming speed does not apply on turf."
+    },
+    {
+      "id": 73,
+      "fortySeconds": 12.6,
+      "reason": "Stronger tentacles improve dragging progress despite a heavier body."
+    },
+    {
+      "id": 74,
+      "fortySeconds": 8.2,
+      "reason": "Arm-assisted hopping and controlled rolling move a compact rock body."
+    },
+    {
+      "id": 75,
+      "fortySeconds": 6.8,
+      "reason": "Four arms and a rounded body support a stronger controlled roll."
+    },
+    {
+      "id": 76,
+      "fortySeconds": 6.45,
+      "reason": "Strong leg push-off followed by an unaided, controlled ground roll."
+    },
+    {
+      "id": 77,
+      "fortySeconds": 3.55,
+      "reason": "Light equine sprinter with a fast first-step launch."
+    },
+    {
+      "id": 78,
+      "fortySeconds": 2.65,
+      "reason": "Exceptional equine sprinting lore; no flying start is allowed."
+    },
+    {
+      "id": 79,
+      "fortySeconds": 9.3,
+      "reason": "Low, slow quadrupedal gait with weak initial acceleration."
+    },
+    {
+      "id": 80,
+      "fortySeconds": 9.75,
+      "reason": "Heavy upright body and tail attachment make the run more cumbersome."
+    },
+    {
+      "id": 81,
+      "fortySeconds": 6.55,
+      "reason": "Ordinary hovering is allowed, but its short launch is not instantaneous."
+    },
+    {
+      "id": 82,
+      "fortySeconds": 6.9,
+      "reason": "A heavier three-unit hovering cluster accelerates slightly more slowly."
+    },
+    {
+      "id": 83,
+      "fortySeconds": 5.9,
+      "reason": "Powered bird flight is available but less explosive than a fast raptor's."
+    },
+    {
+      "id": 84,
+      "fortySeconds": 3.7,
+      "reason": "Long, powerful running legs provide a fast ground sprint."
+    },
+    {
+      "id": 85,
+      "fortySeconds": 3.25,
+      "reason": "Stronger legs and exceptional running endurance support a quick dash."
+    },
+    {
+      "id": 86,
+      "fortySeconds": 12.5,
+      "reason": "Grounded flipper pulls move a dragging aquatic body."
+    },
+    {
+      "id": 87,
+      "fortySeconds": 12.1,
+      "reason": "Stronger flippers slightly improve ground progress despite added bulk."
+    },
+    {
+      "id": 88,
+      "fortySeconds": 15.2,
+      "reason": "Amorphous sludge crawls slowly; no instant reshaping shortcut."
+    },
+    {
+      "id": 89,
+      "fortySeconds": 16.4,
+      "reason": "A larger sludge mass takes longer to pull itself across turf."
+    },
+    {
+      "id": 90,
+      "fortySeconds": 18.8,
+      "reason": "A grounded shellfish must make small, unaided hops and shuffles."
+    },
+    {
+      "id": 91,
+      "fortySeconds": 17.4,
+      "reason": "Stronger shell movements help, though its heavy shell remains awkward."
+    },
+    {
+      "id": 92,
+      "fortySeconds": 4.6,
+      "reason": "Continuous ordinary hovering; vanishing and instant relocation excluded."
+    },
+    {
+      "id": 93,
+      "fortySeconds": 4.2,
+      "reason": "A larger floating ghost sustains a quicker controlled airborne dash."
+    },
+    {
+      "id": 94,
+      "fortySeconds": 4.55,
+      "reason": "Nimble short-legged run or ordinary hover, without phasing shortcuts."
+    },
+    {
+      "id": 95,
+      "fortySeconds": 5.9,
+      "reason": "Powerful ground slither; long rock body slows the standing launch."
+    },
+    {
+      "id": 96,
+      "fortySeconds": 7.35,
+      "reason": "Stocky humanoid with short legs and a shuffling running gait."
+    },
+    {
+      "id": 97,
+      "fortySeconds": 6.35,
+      "reason": "Longer legs improve its upright stride without psychic shortcuts."
+    },
+    {
+      "id": 98,
+      "fortySeconds": 8.2,
+      "reason": "Small crab scuttles sideways on short legs over turf."
+    },
+    {
+      "id": 99,
+      "fortySeconds": 7.7,
+      "reason": "Stronger legs narrowly offset a large, uneven claw load."
+    },
+    {
+      "id": 100,
+      "fortySeconds": 5.4,
+      "reason": "Unaided controlled rolling; no explosion-assisted launch."
+    },
+    {
+      "id": 101,
+      "fortySeconds": 4.2,
+      "reason": "More vigorous self-propelled rolling, without using an explosion."
+    },
+    {
+      "id": 102,
+      "fortySeconds": 16.3,
+      "reason": "All six bodies advance through coordinated tiny hops and shuffles."
+    },
+    {
+      "id": 103,
+      "fortySeconds": 8.3,
+      "reason": "Long legs help a top-heavy trunk make a lumbering run."
+    },
+    {
+      "id": 104,
+      "fortySeconds": 7.5,
+      "reason": "Small biped with short legs and a carried bone."
+    },
+    {
+      "id": 105,
+      "fortySeconds": 6.6,
+      "reason": "Stronger legs and longer strides improve the compact running gait."
+    },
+    {
+      "id": 106,
+      "fortySeconds": 4.6,
+      "reason": "Long, springy legs make an effective athletic sprint."
+    },
+    {
+      "id": 107,
+      "fortySeconds": 5.05,
+      "reason": "Quick footwork and athletic legs, with a shorter stride than Hitmonlee."
+    },
+    {
+      "id": 108,
+      "fortySeconds": 8.5,
+      "reason": "Broad torso, short legs, and a heavy tongue hamper acceleration."
+    },
+    {
+      "id": 109,
+      "fortySeconds": 9.3,
+      "reason": "Slow gas-body hovering; no explosive or wind-assisted launch."
+    },
+    {
+      "id": 110,
+      "fortySeconds": 10.3,
+      "reason": "A larger linked gas-body cluster accelerates slowly under its own power."
+    },
+    {
+      "id": 111,
+      "fortySeconds": 5.7,
+      "reason": "Strong four-legged charge, with heavy armor slowing the first steps."
+    },
+    {
+      "id": 112,
+      "fortySeconds": 6.75,
+      "reason": "Heavy upright armored body is slower off the line than a quadrupedal charge."
+    },
+    {
+      "id": 113,
+      "fortySeconds": 7.1,
+      "reason": "Short-legged, rounded biped runs while carrying its egg normally."
+    },
+    {
+      "id": 114,
+      "fortySeconds": 8.2,
+      "reason": "Small feet and a tangled vine load produce a shuffling run."
+    },
+    {
+      "id": 115,
+      "fortySeconds": 4.95,
+      "reason": "Strong kangaroo-like legs support fast bounds with its normal pouch load."
+    },
+    {
+      "id": 116,
+      "fortySeconds": 23.3,
+      "reason": "Grounded fish must progress through tiny, unaided tail-and-body flops."
+    },
+    {
+      "id": 117,
+      "fortySeconds": 20.6,
+      "reason": "A stronger body improves grounded hopping, but there are no running feet."
+    },
+    {
+      "id": 118,
+      "fortySeconds": 20.9,
+      "reason": "Grounded fish advances through unaided fin and tail flops."
+    },
+    {
+      "id": 119,
+      "fortySeconds": 19.6,
+      "reason": "Stronger tail movements help, though the large fish is still grounded."
+    },
+    {
+      "id": 120,
+      "fortySeconds": 11.1,
+      "reason": "Self-propelled star-shaped hops and arm pushes on turf."
+    },
+    {
+      "id": 121,
+      "fortySeconds": 8.15,
+      "reason": "More powerful spinning hops and arm-assisted ground movement."
+    },
+    {
+      "id": 122,
+      "fortySeconds": 6.7,
+      "reason": "Flexible humanoid footwork supports a moderate straight-line run."
+    },
+    {
+      "id": 123,
+      "fortySeconds": 3.1,
+      "reason": "Light, agile hunter combines explosive leg drive with powered flight."
+    },
+    {
+      "id": 124,
+      "fortySeconds": 7.5,
+      "reason": "Broad lower body and a shuffling dancing gait limit a straight sprint."
+    },
+    {
+      "id": 125,
+      "fortySeconds": 4.5,
+      "reason": "Athletic biped with quick, strong leg drive; no electrical teleporting."
+    },
+    {
+      "id": 126,
+      "fortySeconds": 5.6,
+      "reason": "Strong but relatively heavy biped with broad feet."
+    },
+    {
+      "id": 127,
+      "fortySeconds": 5.4,
+      "reason": "Powerful ground-running insect; base form is not granted flight."
+    },
+    {
+      "id": 128,
+      "fortySeconds": 4.1,
+      "reason": "Muscular bull-like quadruped with a strong charging burst."
+    },
+    {
+      "id": 129,
+      "fortySeconds": 22.4,
+      "reason": "A grounded fish's unaided flopping effort; swimming is unavailable."
+    },
+    {
+      "id": 130,
+      "fortySeconds": 7.2,
+      "reason": "Large serpent uses grounded body thrusts; no aquatic run-up or dive."
+    },
+    {
+      "id": 131,
+      "fortySeconds": 13.0,
+      "reason": "Heavy aquatic body progresses through grounded flipper pulls."
+    },
+    {
+      "id": 132,
+      "fortySeconds": 11.3,
+      "reason": "Base-form blob crawls and wobbles; copying another body is excluded."
+    },
+    {
+      "id": 133,
+      "fortySeconds": 4.9,
+      "reason": "Light fox-like quadruped with a quick short sprint."
+    },
+    {
+      "id": 134,
+      "fortySeconds": 5.6,
+      "reason": "Functional legs allow a run, but the body is better suited to swimming."
+    },
+    {
+      "id": 135,
+      "fortySeconds": 3.0,
+      "reason": "Exceptionally rapid, light quadruped; pure running rather than lightning relocation."
+    },
+    {
+      "id": 136,
+      "fortySeconds": 4.65,
+      "reason": "Strong fox-like running legs offset a dense coat and stockier body."
+    },
+    {
+      "id": 137,
+      "fortySeconds": 6.3,
+      "reason": "Continuous physical hovering; digital transmission does not count."
+    },
+    {
+      "id": 138,
+      "fortySeconds": 17.1,
+      "reason": "Short tentacles slowly drag a heavy spiral shell over turf."
+    },
+    {
+      "id": 139,
+      "fortySeconds": 15.9,
+      "reason": "Larger tentacles improve shell-dragging progress on dry ground."
+    },
+    {
+      "id": 140,
+      "fortySeconds": 13.8,
+      "reason": "Small armored creature scuttles on very short underside legs."
+    },
+    {
+      "id": 141,
+      "fortySeconds": 5.3,
+      "reason": "Long jointed legs support an athletic upright ground run."
+    },
+    {
+      "id": 142,
+      "fortySeconds": 2.9,
+      "reason": "Strong wingbeats and a light flight build make an explosive aerial launch."
+    },
+    {
+      "id": 143,
+      "fortySeconds": 9.9,
+      "reason": "Very heavy upright body and short legs limit standing-start acceleration."
+    },
+    {
+      "id": 144,
+      "fortySeconds": 3.9,
+      "reason": "Large powered wings, with a modest launch penalty for its long body."
+    },
+    {
+      "id": 145,
+      "fortySeconds": 3.25,
+      "reason": "Powerful rapid wingbeats give a quick aerial dash; lightning jumps excluded."
+    },
+    {
+      "id": 146,
+      "fortySeconds": 3.75,
+      "reason": "Strong powered bird flight, without an altitude-assisted dive."
+    },
+    {
+      "id": 147,
+      "fortySeconds": 8.2,
+      "reason": "Small serpent moves by ordinary ground slither."
+    },
+    {
+      "id": 148,
+      "fortySeconds": 5.1,
+      "reason": "Ordinary sustained floating and a long body improve travel; no instant magic."
+    },
+    {
+      "id": 149,
+      "fortySeconds": 3.75,
+      "reason": "Very powerful flight offsets a heavy body during the short takeoff."
+    },
+    {
+      "id": 150,
+      "fortySeconds": 3.85,
+      "reason": "Long-legged run or continuous ordinary flight; teleportation is excluded."
+    },
+    {
+      "id": 151,
+      "fortySeconds": 3.55,
+      "reason": "Light, agile sustained flight; no teleporting, transformation, or time shortcut."
+    },
+    {
+      "id": 152,
+      "fortySeconds": 7.1,
+      "reason": "Small quadruped with short legs and a light leaf load."
+    },
+    {
+      "id": 153,
+      "fortySeconds": 6.3,
+      "reason": "Longer legs and a sturdy quadrupedal gait improve stride length."
+    },
+    {
+      "id": 154,
+      "fortySeconds": 6.05,
+      "reason": "Long, strong four-legged strides offset a broad plant-covered body."
+    },
+    {
+      "id": 155,
+      "fortySeconds": 6.2,
+      "reason": "Light but short-legged mammal running under its own power."
+    },
+    {
+      "id": 156,
+      "fortySeconds": 4.85,
+      "reason": "Long, flexible quadrupedal body makes a quick mammalian sprint."
+    },
+    {
+      "id": 157,
+      "fortySeconds": 4.65,
+      "reason": "Powerful mammalian leg drive; flames do not provide jet propulsion."
+    },
+    {
+      "id": 158,
+      "fortySeconds": 6.4,
+      "reason": "Small crocodilian biped with short but forceful strides."
+    },
+    {
+      "id": 159,
+      "fortySeconds": 5.95,
+      "reason": "Stronger legs and greater stride length offset a broader torso."
+    },
+    {
+      "id": 160,
+      "fortySeconds": 5.3,
+      "reason": "Powerful hind legs produce a strong run despite a heavy reptilian body."
+    },
+    {
+      "id": 161,
+      "fortySeconds": 7.05,
+      "reason": "Small, round-bodied mammal drops to its ordinary ground gait."
+    },
+    {
+      "id": 162,
+      "fortySeconds": 5.25,
+      "reason": "Long, flexible body and rapid short-legged bounding gait."
+    },
+    {
+      "id": 163,
+      "fortySeconds": 6.1,
+      "reason": "Small owl uses powered flight instead of relying on one-legged hops."
+    },
+    {
+      "id": 164,
+      "fortySeconds": 4.75,
+      "reason": "Larger wings provide a more effective airborne dash."
+    },
+    {
+      "id": 165,
+      "fortySeconds": 6.9,
+      "reason": "Gentle, relatively slow powered insect flight."
+    },
+    {
+      "id": 166,
+      "fortySeconds": 5.4,
+      "reason": "Stronger wings provide better launch and forward flight than Ledyba."
+    },
+    {
+      "id": 167,
+      "fortySeconds": 9.0,
+      "reason": "Small spider scuttles across turf on short legs."
+    },
+    {
+      "id": 168,
+      "fortySeconds": 7.6,
+      "reason": "Longer, stronger legs improve its low ground scuttle."
+    },
+    {
+      "id": 169,
+      "fortySeconds": 2.7,
+      "reason": "Four strong wings provide exceptional powered-flight acceleration."
+    },
+    {
+      "id": 170,
+      "fortySeconds": 20.7,
+      "reason": "Grounded fish uses unaided body and fin shuffles rather than swimming."
+    },
+    {
+      "id": 171,
+      "fortySeconds": 21.9,
+      "reason": "A heavier grounded fish has no normal running gait."
+    },
+    {
+      "id": 172,
+      "fortySeconds": 6.3,
+      "reason": "Tiny legs give quick steps but very little stride length."
+    },
+    {
+      "id": 173,
+      "fortySeconds": 10.2,
+      "reason": "Very small feet and a round body limit unaided hopping speed."
+    },
+    {
+      "id": 174,
+      "fortySeconds": 11.8,
+      "reason": "Tiny feet move an almost ball-shaped body slowly."
+    },
+    {
+      "id": 175,
+      "fortySeconds": 9.9,
+      "reason": "Tiny legs must run while carrying the normal eggshell body."
+    },
+    {
+      "id": 176,
+      "fortySeconds": 5.7,
+      "reason": "Ordinary powered flight helps, though small wings limit the launch."
+    },
+    {
+      "id": 177,
+      "fortySeconds": 6.3,
+      "reason": "Tiny powered wings and short hops produce modest travel speed."
+    },
+    {
+      "id": 178,
+      "fortySeconds": 5.5,
+      "reason": "Larger powered wings help, but its tall body is not built for a sharp launch."
+    },
+    {
+      "id": 179,
+      "fortySeconds": 7.2,
+      "reason": "Small sheep-like quadruped with short legs and a heavy fleece."
+    },
+    {
+      "id": 180,
+      "fortySeconds": 7.05,
+      "reason": "Some fleece is lost, but its short upright gait limits acceleration."
+    },
+    {
+      "id": 181,
+      "fortySeconds": 6.8,
+      "reason": "Longer legs improve stride despite a large, upright torso."
+    },
+    {
+      "id": 182,
+      "fortySeconds": 10.6,
+      "reason": "Small root-like legs move a plant body through quick but tiny steps."
+    },
+    {
+      "id": 183,
+      "fortySeconds": 8.2,
+      "reason": "Short legs and a rounded body produce a hopping ground run."
+    },
+    {
+      "id": 184,
+      "fortySeconds": 7.3,
+      "reason": "Stronger legs improve bounding progress; swimming is not used."
+    },
+    {
+      "id": 185,
+      "fortySeconds": 8.5,
+      "reason": "Stiff, heavy body runs on relatively short legs."
+    },
+    {
+      "id": 186,
+      "fortySeconds": 6.4,
+      "reason": "Strong frog-like legs support repeated forward bounds on turf."
+    },
+    {
+      "id": 187,
+      "fortySeconds": 15.8,
+      "reason": "Weak self-directed hopping; wind-carried drifting does not count."
+    },
+    {
+      "id": 188,
+      "fortySeconds": 13.1,
+      "reason": "Better hopping and limited self-directed lift; outside wind assistance excluded."
+    },
+    {
+      "id": 189,
+      "fortySeconds": 10.9,
+      "reason": "More effective controlled hopping and lift, without a wind-assisted launch."
+    },
+    {
+      "id": 190,
+      "fortySeconds": 4.8,
+      "reason": "Agile primate uses quick ground bounds and its normal tail support."
+    },
+    {
+      "id": 191,
+      "fortySeconds": 26.4,
+      "reason": "Tiny seed body makes very small unaided hops."
+    },
+    {
+      "id": 192,
+      "fortySeconds": 14.1,
+      "reason": "Short root-like legs move a tall flower through a slow shuffle."
+    },
+    {
+      "id": 193,
+      "fortySeconds": 3.35,
+      "reason": "Fast powered dragonfly flight and strong directional control."
+    },
+    {
+      "id": 194,
+      "fortySeconds": 9.4,
+      "reason": "Very short legs move a rounded amphibian body across turf."
+    },
+    {
+      "id": 195,
+      "fortySeconds": 8.6,
+      "reason": "Longer legs help, but a broad, soft body makes its run lumbering."
+    },
+    {
+      "id": 196,
+      "fortySeconds": 4.0,
+      "reason": "Light, long-legged feline build supports quick physical acceleration."
+    },
+    {
+      "id": 197,
+      "fortySeconds": 4.5,
+      "reason": "Athletic quadrupedal hunter with a slightly stockier running build."
+    },
+    {
+      "id": 198,
+      "fortySeconds": 4.95,
+      "reason": "Small crow-like bird makes a brisk powered takeoff."
+    },
+    {
+      "id": 199,
+      "fortySeconds": 9.4,
+      "reason": "Slow upright gait; a head shell is less obstructive than a dragging tail load."
+    },
+    {
+      "id": 200,
+      "fortySeconds": 4.3,
+      "reason": "Light floating ghost moves continuously; instant disappearance excluded."
+    },
+    {
+      "id": 201,
+      "fortySeconds": 7.4,
+      "reason": "Ordinary sustained hovering with limited forward acceleration."
+    },
+    {
+      "id": 202,
+      "fortySeconds": 10.3,
+      "reason": "Tall, soft body and small feet produce a slow wobbling run."
+    },
+    {
+      "id": 203,
+      "fortySeconds": 4.75,
+      "reason": "Long-legged quadruped has an effective stride despite a second head's load."
+    },
+    {
+      "id": 204,
+      "fortySeconds": 22.6,
+      "reason": "Very limited self-propelled cone movement; explosions do not provide launch."
+    },
+    {
+      "id": 205,
+      "fortySeconds": 17.8,
+      "reason": "An armored shell makes slow, unaided rolling and shuffling progress."
+    },
+    {
+      "id": 206,
+      "fortySeconds": 12.2,
+      "reason": "Short ground crawl; small wings are not treated as powered fast flight."
+    },
+    {
+      "id": 207,
+      "fortySeconds": 6.7,
+      "reason": "Ground running and a low jump-assisted glide; no elevated starting perch."
+    },
+    {
+      "id": 208,
+      "fortySeconds": 7.3,
+      "reason": "Powerful slither is slowed by a very heavy steel body."
+    },
+    {
+      "id": 209,
+      "fortySeconds": 7.2,
+      "reason": "Small bulldog-like body has short legs and a stocky upright gait."
+    },
+    {
+      "id": 210,
+      "fortySeconds": 6.3,
+      "reason": "Stronger legs help, but the large torso limits short-dash acceleration."
+    },
+    {
+      "id": 211,
+      "fortySeconds": 22.0,
+      "reason": "Grounded fish wiggles and rolls without a water-assisted launch."
+    },
+    {
+      "id": 212,
+      "fortySeconds": 4.8,
+      "reason": "Strong running legs; heavy armor slows it and wings do not grant full flight."
+    },
+    {
+      "id": 213,
+      "fortySeconds": 25.2,
+      "reason": "Tiny limbs slowly pull a heavy shell across turf."
+    },
+    {
+      "id": 214,
+      "fortySeconds": 4.6,
+      "reason": "Powerful leg drive and ordinary powered insect flight aid the short dash."
+    },
+    {
+      "id": 215,
+      "fortySeconds": 4.2,
+      "reason": "Light, agile predator with a fast, low running gait."
+    },
+    {
+      "id": 216,
+      "fortySeconds": 7.05,
+      "reason": "Small bear has short strides despite useful quadrupedal strength."
+    },
+    {
+      "id": 217,
+      "fortySeconds": 5.25,
+      "reason": "Adult bear-like quadrupedal sprint has strong push-off and longer strides."
+    },
+    {
+      "id": 218,
+      "fortySeconds": 19.4,
+      "reason": "Slow, unaided slug crawl; hot material is not used for instant relocation."
+    },
+    {
+      "id": 219,
+      "fortySeconds": 23.2,
+      "reason": "Heavy rock shell further slows a ground-crawling slug body."
+    },
+    {
+      "id": 220,
+      "fortySeconds": 7.9,
+      "reason": "Small, low quadruped has short legs and a bulky coat."
+    },
+    {
+      "id": 221,
+      "fortySeconds": 6.7,
+      "reason": "Stronger legs and longer strides offset a thick coat and tusks."
+    },
+    {
+      "id": 222,
+      "fortySeconds": 18.9,
+      "reason": "Rigid coral body makes slow progress through tiny grounded hops."
+    },
+    {
+      "id": 223,
+      "fortySeconds": 24.2,
+      "reason": "Small grounded fish advances through unaided fin and tail flops."
+    },
+    {
+      "id": 224,
+      "fortySeconds": 13.2,
+      "reason": "Strong tentacles drag an aquatic body forward on dry turf."
+    },
+    {
+      "id": 225,
+      "fortySeconds": 6.1,
+      "reason": "Ordinary powered bird flight or hopping; normal sack load is retained."
+    },
+    {
+      "id": 226,
+      "fortySeconds": 18.0,
+      "reason": "Grounded fin-and-body shuffles; no water launch or elevated gliding start."
+    },
+    {
+      "id": 227,
+      "fortySeconds": 4.0,
+      "reason": "Powered wingbeats overcome metal armor, with a standing-start launch penalty."
+    },
+    {
+      "id": 228,
+      "fortySeconds": 4.45,
+      "reason": "Lean canine quadruped with a quick short running burst."
+    },
+    {
+      "id": 229,
+      "fortySeconds": 3.65,
+      "reason": "Long-legged, light canine hunter supports rapid ordinary sprinting."
+    },
+    {
+      "id": 230,
+      "fortySeconds": 17.2,
+      "reason": "Strong grounded tail-and-body movement; swimming speed is excluded."
+    },
+    {
+      "id": 231,
+      "fortySeconds": 6.45,
+      "reason": "Small elephant-like quadruped has strong legs but short strides."
+    },
+    {
+      "id": 232,
+      "fortySeconds": 5.65,
+      "reason": "Powerful leg push-off and controlled self-propelled rolling aid the dash."
+    },
+    {
+      "id": 233,
+      "fortySeconds": 5.85,
+      "reason": "Streamlined continuous physical hovering; digital travel is excluded."
+    },
+    {
+      "id": 234,
+      "fortySeconds": 4.2,
+      "reason": "Long-legged deer-like sprinter with effective ground acceleration."
+    },
+    {
+      "id": 235,
+      "fortySeconds": 6.45,
+      "reason": "Light canine-like biped, slowed by a carried brush-tail gait."
+    },
+    {
+      "id": 236,
+      "fortySeconds": 6.1,
+      "reason": "Athletic small biped with quick steps but short legs."
+    },
+    {
+      "id": 237,
+      "fortySeconds": 4.95,
+      "reason": "Controlled spinning bounds provide strong forward progress without teleporting."
+    },
+    {
+      "id": 238,
+      "fortySeconds": 9.5,
+      "reason": "Very short legs and an awkward upright shuffle."
+    },
+    {
+      "id": 239,
+      "fortySeconds": 5.9,
+      "reason": "Small athletic biped has quick steps but limited stride length."
+    },
+    {
+      "id": 240,
+      "fortySeconds": 6.55,
+      "reason": "Short legs and a stocky infant body limit the running burst."
+    },
+    {
+      "id": 241,
+      "fortySeconds": 5.65,
+      "reason": "Strong bovine legs; a heavy upright body limits initial acceleration."
+    },
+    {
+      "id": 242,
+      "fortySeconds": 7.55,
+      "reason": "Larger, rounded egg-carrying body is less efficient over a short dash."
+    },
+    {
+      "id": 243,
+      "fortySeconds": 2.7,
+      "reason": "Exceptional legendary feline-like sprinting; no lightning relocation."
+    },
+    {
+      "id": 244,
+      "fortySeconds": 3.15,
+      "reason": "Powerful legendary quadruped, with a heavier build than the other beasts."
+    },
+    {
+      "id": 245,
+      "fortySeconds": 2.85,
+      "reason": "Light, graceful legendary quadruped with exceptional physical running pace."
+    },
+    {
+      "id": 246,
+      "fortySeconds": 7.15,
+      "reason": "Small armored biped with short, deliberate running strides."
+    },
+    {
+      "id": 247,
+      "fortySeconds": 6.4,
+      "reason": "Ordinary gas-vent propulsion is allowed; no thrown or explosion-assisted start."
+    },
+    {
+      "id": 248,
+      "fortySeconds": 7.1,
+      "reason": "Very heavy upright armored body has a powerful but slow initial launch."
+    },
+    {
+      "id": 249,
+      "fortySeconds": 4.25,
+      "reason": "Huge powered wings can move quickly after a slower heavy-body takeoff."
+    },
+    {
+      "id": 250,
+      "fortySeconds": 3.9,
+      "reason": "Powerful bird flight with a short standing-start launch penalty."
+    },
+    {
+      "id": 251,
+      "fortySeconds": 4.6,
+      "reason": "Small powered flight; time travel and instant relocation are excluded."
+    }
+  ]
+}

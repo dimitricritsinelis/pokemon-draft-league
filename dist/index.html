@@ -12,10 +12,10 @@
   <link rel="apple-touch-icon" href="assets/app-icon.png">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
-  <link rel="stylesheet" href="styles.css?v=3">
-  <script src="assets/pokemon.js?v=3" defer></script>
-  <script src="export.js?v=3" defer></script>
-  <script src="app.js?v=3" defer></script>
+  <link rel="stylesheet" href="styles.css?v=4">
+  <script src="assets/pokemon.js?v=4" defer></script>
+  <script src="export.js?v=4" defer></script>
+  <script src="app.js?v=4" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -67,7 +67,7 @@
       <div class="picker-heading-row"><div><span class="eyebrow" id="picker-generation">THE ORIGINAL 151</span><h2 id="picker-heading">Make your pick</h2></div><button id="close-picker" class="icon-button mobile-only" aria-label="Close Pokémon picker">×</button></div>
       <div id="selection-info" class="selection-info"><span class="selection-badge" id="selection-badge">＋</span><div><strong id="selection-title">Select a position</strong><span id="selection-description">Tap a player on the field to draft.</span></div><button id="remove-pick" class="remove-button" aria-label="Remove Pokémon from selected position" hidden>Remove</button></div>
       <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="pokemon-search" type="search" placeholder="Find a Pokémon…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="Find a Pokémon by name or Pokédex number"></label>
-      <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><span id="catalog-generation">GENERATION I</span></div>
+      <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><div class="catalog-tools"><span id="catalog-generation">GENERATION I</span><button type="button" id="stats-help" class="stats-help">Stats guide</button></div></div>
       <div id="pokemon-list" class="pokemon-list"></div>
       <div class="picker-bottom"><span>Artwork: <a href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a></span><span>Fan-made draft board</span></div>
     </aside>
@@ -95,6 +95,13 @@
     <p id="standalone-help" hidden>You’re already in the Home Screen app view. Safari’s toolbar is hidden.</p>
     <button type="button" id="fullscreen-button" class="primary-button fullscreen-button" hidden>Enter fullscreen</button>
     <div class="dialog-actions"><button type="button" class="secondary-button" data-close="room-dialog">Got it</button></div>
+  </dialog>
+  <dialog id="stats-dialog" aria-labelledby="stats-title">
+    <div class="dialog-heading"><div><span class="eyebrow">THE SCOUTING REPORT</span><h2 id="stats-title">Know your prospects</h2></div><button type="button" class="icon-button" data-close="stats-dialog" aria-label="Close stats guide">×</button></div>
+    <p><strong>HT</strong> is height in feet and inches. <strong>LB</strong> is weight in pounds. Both use Bulbapedia’s standard Pokémon forms. For long-bodied Pokémon, Pokédex height may represent length.</p>
+    <p class="room-followup"><strong>EST 40</strong> is our estimated 40-yard dash time in seconds. Lower is faster. These game estimates assume a standing start on turf, allow ordinary flight, hovering, or burrowing, and exclude teleportation and special boosts.</p>
+    <p class="stats-sources">Sources: <a href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_height" target="_blank" rel="noreferrer">Bulbapedia heights</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_weight" target="_blank" rel="noreferrer">weights</a></p>
+    <div class="dialog-actions"><button type="button" class="secondary-button" data-close="stats-dialog">Back to the draft</button></div>
   </dialog>
 </body>
 </html>
