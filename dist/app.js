@@ -22,6 +22,7 @@
   let catalogCards;
   let emptyResult;
   let viewportFrame;
+  let menuScrollY = 0;
   const offenseDetails = { '10': '0 TE · 1 RB · 4 WR', '11': '1 TE · 1 RB · 3 WR', '12': '2 TE · 1 RB · 2 WR', '21': '1 TE · 2 RB · 2 WR', '22': '2 TE · 2 RB · 1 WR' };
   const defenseDetails = { '3-4': '3 DL · 4 LB · 4 DB', '4-3': '4 DL · 3 LB · 4 DB', nickel: '4 DL · 2 LB · 5 DB', dime: '4 DL · 1 LB · 6 DB' };
   const offenseLabels = { '10': '10 personnel', '11': '11 personnel', '12': '12 personnel', '21': '21 personnel', '22': '22 personnel' };
@@ -33,14 +34,14 @@
 
   function slots(mobile = phone.matches) {
     const lineX = mobile ? [24, 37, 50, 63, 76] : [29, 39.5, 50, 60.5, 71];
-    const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 74), o('rb1', 'HB', 50, 91)];
+    const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 74), o('rb1', 'HB', 50, 89)];
     const eligible = {
       wr1: o('wr1', 'WR', mobile ? 9 : 10, 59),
       wr2: o('wr2', 'WR', mobile ? 91 : 92, 59),
       wr3: o('wr3', 'WR', 17, 74), wr4: o('wr4', 'WR', 83, 74),
       te1: o('te1', 'TE', mobile ? 85 : 82, mobile ? 70 : 59),
       te2: o('te2', 'TE', mobile ? 15 : 19, mobile ? 70 : 59),
-      rb2: o('rb2', 'FB', 39, 84)
+      rb2: o('rb2', 'FB', mobile ? 37 : 39, 84)
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
     offense.push(...extras[state.offense].map(key => eligible[key]));
@@ -98,11 +99,10 @@
       if (saved?.v === 1) {
         Object.keys(modeLabels).forEach(mode => { const board = validateBoard(saved.boards?.[mode], mode); if (board) boards[mode] = board; });
         if (Object.hasOwn(modeLabels, saved.mode)) state.mode = saved.mode;
-        if (['artwork', 'retro'].includes(saved.art)) state.art = saved.art;
         const sharedBoard = saved.shared && Object.hasOwn(modeLabels, saved.shared.mode) && validateBoard(saved.shared, saved.shared.mode);
         if (sharedBoard) {
-          sharedCopy = { mode: saved.shared.mode, art: ['artwork', 'retro'].includes(saved.shared.art) ? saved.shared.art : state.art, ...sharedBoard };
-          if (saved.viewShared !== false) { shared = true; state.mode = sharedCopy.mode; state.art = sharedCopy.art; applyBoard(sharedBoard); }
+          sharedCopy = { mode: saved.shared.mode, art: 'artwork', ...sharedBoard };
+          if (saved.viewShared !== false) { shared = true; state.mode = sharedCopy.mode; applyBoard(sharedBoard); }
         }
       }
     } catch (_) { /* A blocked or damaged save must never prevent playing. */ }
@@ -122,7 +122,7 @@
         slotKeys.forEach((key, index) => { const id = data[index + 5]; if (id !== 0) picks[key] = id; });
         const board = validateBoard({ offense: data[2], defense: data[3], picks }, data[1]);
         if (!board) throw new Error('Invalid link');
-        shared = true; state.mode = data[1]; state.art = data[4]; applyBoard(board);
+        shared = true; state.mode = data[1]; applyBoard(board);
         message('Shared lineup opened. Your draft is kept safe.');
       } catch (_) { message('That lineup link is incomplete. Your saved draft is ready.'); }
       // Edits to an imported lineup survive reload instead of reimporting the original.
@@ -146,13 +146,11 @@
     message(`${modeLabels[mode]} lineup ready`);
   }
 
-  function imagePath(p) { return state.art === 'retro' ? p.retroImage : p.image; }
+  function imagePath(p) { return p.image; }
 
   function renderPreferences() {
-    document.body.classList.toggle('retro-art', state.art === 'retro');
     document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode)));
-    $('art-style').setAttribute('aria-pressed', String(state.art === 'retro'));
-    $('region-label').textContent = { gen1: 'KANTO · ORIGINAL 151', gen2: 'JOHTO · THE NEXT 100', both: 'KANTO + JOHTO · ALL 251' }[state.mode];
+    $('formation-summary').textContent = `${{ gen1: 'Gen 1', gen2: 'Gen 2', both: 'Both' }[state.mode]} · ${state.offense} OFF · ${{ '3-4': '3–4', '4-3': '4–3', nickel: 'Nickel', dime: 'Dime' }[state.defense]} DEF`;
     $('picker-generation').textContent = { gen1: 'THE ORIGINAL 151', gen2: 'THE JOHTO 100', both: 'ALL 251 POKÉMON' }[state.mode];
     $('catalog-generation').textContent = { gen1: 'GENERATION I', gen2: 'GENERATION II', both: 'GENERATIONS I + II' }[state.mode];
     $('field-footer').textContent = { gen1: 'KANTO', gen2: 'JOHTO', both: 'KANTO + JOHTO' }[state.mode] + ' DRAFT LEAGUE';
@@ -160,6 +158,7 @@
     $('shared-label').textContent = shared ? 'Shared lineup · your draft is kept safe.' : 'Shared lineup saved separately';
     $('my-lineup').hidden = !shared;
     $('keep-shared').textContent = shared ? 'Keep lineup' : 'Open shared lineup';
+    $('menu-toggle').classList.toggle('has-shared', !!sharedCopy);
   }
 
   function message(text) {
@@ -299,6 +298,7 @@
 
   function selectPosition(key) {
     if (!slots().some(s => s.key === key)) throw new Error('Unknown position.');
+    setMenuOpen(false);
     state.selected = key;
     $('pokemon-search').value = '';
     renderBoard();
@@ -358,6 +358,22 @@
       $(side + '-options').hidden = true;
       $(side).setAttribute('aria-expanded', 'false');
     });
+  }
+
+  function setMenuOpen(open, restoreFocus = false) {
+    const menu = $('draft-menu');
+    if (open === !menu.hidden) return;
+    if (open) menuScrollY = window.scrollY;
+    closePersonnelMenus();
+    menu.hidden = !open;
+    $('menu-toggle').setAttribute('aria-expanded', String(open));
+    $('menu-toggle').setAttribute('aria-label', open ? 'Close draft options' : 'Open draft options');
+    if (open) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else {
+      if (restoreFocus || menu.contains(document.activeElement)) $('menu-toggle').focus({ preventScroll: true });
+      window.scrollTo({ top: menuScrollY, behavior: 'instant' });
+    }
   }
 
   function openPersonnelMenu(side) {
@@ -444,7 +460,7 @@
   }
 
   async function prepareExport() {
-    closePersonnelMenus();
+    setMenuOpen(false, true);
     const run = ++exportRun;
     if (exportUrl) URL.revokeObjectURL(exportUrl);
     exportUrl = null; exportFile = null;
@@ -484,7 +500,7 @@
   }
 
   function openLinkDialog() {
-    closePersonnelMenus();
+    setMenuOpen(false, true);
     $('lineup-url').value = shareUrl();
     $('link-status').textContent = '';
     $('send-link').hidden = !navigator.share;
@@ -492,15 +508,21 @@
   }
 
   document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => changeMode(button.dataset.mode)));
-  $('art-style').addEventListener('click', () => {
-    state.art = state.art === 'artwork' ? 'retro' : 'artwork';
-    saveDraft(); renderBoard(); renderCatalog();
+  $('menu-toggle').addEventListener('click', () => setMenuOpen($('draft-menu').hidden, true));
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#draft-menu, #menu-toggle, dialog')) setMenuOpen(false);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || event.defaultPrevented || $('draft-menu').hidden || document.querySelector('dialog[open]')) return;
+    if (['offense', 'defense'].some(side => !$(side + '-options').hidden)) closePersonnelMenus(true);
+    else setMenuOpen(false, true);
+    event.preventDefault();
   });
   $('keep-shared').addEventListener('click', () => {
     if (shared) {
       shared = false; sharedCopy = null; saveDraft(); renderPreferences(); message('This is now your saved lineup');
     } else if (sharedCopy) {
-      saveDraft(); state.mode = sharedCopy.mode; state.art = sharedCopy.art; applyBoard(sharedCopy); shared = true;
+      saveDraft(); state.mode = sharedCopy.mode; applyBoard(sharedCopy); shared = true;
       saveDraft(); renderBoard(); renderCatalog();
     }
   });
@@ -512,7 +534,7 @@
     closePicker(false); closePersonnelMenus(); importLink(); saveDraft(); renderBoard(); renderCatalog();
   });
   $('export-button').addEventListener('click', prepareExport);
-  $('stats-help').addEventListener('click', () => $('stats-dialog').showModal());
+  $('stats-help').addEventListener('click', () => { setMenuOpen(false, true); $('stats-dialog').showModal(); });
   $('export-dialog').addEventListener('close', () => { exportRun++; });
   $('share-image').addEventListener('click', () => {
     if (!exportFile || !navigator.share) return;
@@ -541,7 +563,7 @@
   });
   document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
   $('room-button').addEventListener('click', () => {
-    closePersonnelMenus();
+    setMenuOpen(false, true);
     const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
     $('safari-help').hidden = !!standalone;
     $('standalone-help').hidden = !standalone;
@@ -573,11 +595,11 @@
     if (narrow.matches) closePicker();
     message(`${selected.role} is ready for a new pick`);
   });
-  $('clear-button').addEventListener('click', () => $('clear-dialog').showModal());
+  $('clear-button').addEventListener('click', () => { setMenuOpen(false, true); $('clear-dialog').returnValue = ''; $('clear-dialog').showModal(); });
   $('clear-dialog').addEventListener('close', () => {
     if ($('clear-dialog').returnValue === 'clear') { state.picks = {}; state.selected = null; saveDraft(); renderBoard(); message('Board cleared. Make your first pick.'); }
   });
-  $('sample-button').addEventListener('click', () => { sampleLineup(); message('Example lineup loaded'); });
+  $('sample-button').addEventListener('click', () => { setMenuOpen(false, true); sampleLineup(); message('Example lineup loaded'); });
   document.addEventListener('keydown', e => {
     if (!$('picker').classList.contains('open') || document.querySelector('dialog[open]')) return;
     if (e.key === 'Escape') { e.preventDefault(); closePicker(); }

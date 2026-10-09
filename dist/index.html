@@ -12,40 +12,35 @@
   <link rel="apple-touch-icon" href="assets/app-icon.png">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
-  <link rel="stylesheet" href="styles.css?v=4">
-  <script src="assets/pokemon.js?v=4" defer></script>
-  <script src="export.js?v=4" defer></script>
-  <script src="app.js?v=4" defer></script>
+  <link rel="stylesheet" href="styles.css?v=5">
+  <script src="assets/pokemon.js?v=5" defer></script>
+  <script src="export.js?v=5" defer></script>
+  <script src="app.js?v=5" defer></script>
 </head>
 <body>
   <header class="masthead">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">P<span>●</span></span><div><span class="eyebrow" id="region-label">KANTO · ORIGINAL 151</span><h1>Pokémon Draft League</h1></div></div>
-    <div class="header-note"><span class="football" aria-hidden="true">◈</span> Your Pokémon. Your playbook.</div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">P</span><div><h1>Pokémon Draft League</h1><span class="draft-summary"><span id="formation-summary">Gen 1 · 21 OFF · 3–4 DEF</span> · <span id="draft-count">22<span>/22</span></span></span></div></div>
+    <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Open draft options" aria-expanded="false" aria-controls="draft-menu"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
   </header>
-  <nav class="draft-tools" aria-label="Draft options">
-    <div class="draft-preferences">
-      <div class="generation-switch" role="group" aria-label="Pokémon generation">
-        <button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button>
-        <button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button>
-        <button type="button" data-mode="both" aria-pressed="false">Both</button>
-      </div>
-      <button type="button" id="art-style" class="tool-button art-toggle" aria-pressed="false">Retro art</button>
+  <nav class="draft-tools" id="draft-menu" aria-label="Draft options" hidden>
+    <div class="menu-heading"><strong>Draft options</strong><span id="save-status" class="save-status" role="status">Autosaved</span></div>
+    <div class="menu-controls">
+      <div class="menu-group"><span class="menu-label">Pokémon pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="both" aria-pressed="false">Both</button></div></div>
+        <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
+        <div class="personnel-control"><span id="defense-label" class="personnel-label"><span class="team-dot defense-dot"></span>Defense</span><button id="defense" class="personnel-trigger" type="button" aria-labelledby="defense-label defense-current defense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="defense-options"><strong id="defense-current">3–4 defense</strong><span id="defense-detail">3 DL · 4 LB · 4 DB</span></button><div id="defense-options" class="personnel-options" role="listbox" aria-labelledby="defense-label" hidden></div></div>
     </div>
-    <div class="share-actions">
-      <span id="save-status" class="save-status" role="status">Autosaved</span>
-      <button type="button" id="export-button" class="tool-button">Export image</button>
-      <button type="button" id="share-link" class="tool-button">Share link</button>
-      <button type="button" id="room-button" class="tool-button">More room</button>
+    <div class="menu-actions">
+      <button type="button" id="export-button" class="menu-action">Export image</button>
+      <button type="button" id="share-link" class="menu-action">Share link</button>
+      <button type="button" id="sample-button" class="menu-action">Sample lineup</button>
+      <button type="button" id="clear-button" class="menu-action danger-action">Clear board</button>
+      <button type="button" id="stats-help" class="menu-action">Stats guide</button>
+      <button type="button" id="room-button" class="menu-action">More room</button>
     </div>
     <div id="shared-notice" class="shared-notice" hidden><span id="shared-label">Shared lineup</span><div class="shared-actions"><button type="button" id="my-lineup" class="text-button">My lineup</button><button type="button" id="keep-shared" class="text-button">Keep lineup</button></div></div>
   </nav>
   <main class="game">
     <section class="board-panel" aria-label="Football draft board">
-      <div class="playbook">
-        <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
-        <div class="personnel-control"><span id="defense-label" class="personnel-label"><span class="team-dot defense-dot"></span>Defense</span><button id="defense" class="personnel-trigger" type="button" aria-labelledby="defense-label defense-current defense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="defense-options"><strong id="defense-current">3–4 defense</strong><span id="defense-detail">3 DL · 4 LB · 4 DB</span></button><div id="defense-options" class="personnel-options" role="listbox" aria-labelledby="defense-label" hidden></div></div>
-        <div class="draft-count"><strong id="draft-count">22<span>/22</span></strong><span>POSITIONS FILLED</span></div>
-      </div>
       <div class="field" id="field">
         <div class="field-texture" aria-hidden="true"></div>
         <svg class="field-markings" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true">
@@ -60,14 +55,13 @@
         <div id="positions"></div>
         <div class="field-footer" id="field-footer" aria-hidden="true">KANTO DRAFT LEAGUE</div>
       </div>
-      <div class="board-footer"><p><span class="tap-icon" aria-hidden="true">＋</span> Tap a position. Pick your Pokémon.</p><div class="board-actions"><button id="sample-button" class="text-button">Sample lineup</button><button id="clear-button" class="text-button">Clear board</button></div></div>
     </section>
     <aside class="picker-panel" id="picker" aria-labelledby="picker-heading">
       <div class="picker-handle" aria-hidden="true"></div>
       <div class="picker-heading-row"><div><span class="eyebrow" id="picker-generation">THE ORIGINAL 151</span><h2 id="picker-heading">Make your pick</h2></div><button id="close-picker" class="icon-button mobile-only" aria-label="Close Pokémon picker">×</button></div>
       <div id="selection-info" class="selection-info"><span class="selection-badge" id="selection-badge">＋</span><div><strong id="selection-title">Select a position</strong><span id="selection-description">Tap a player on the field to draft.</span></div><button id="remove-pick" class="remove-button" aria-label="Remove Pokémon from selected position" hidden>Remove</button></div>
       <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="pokemon-search" type="search" placeholder="Find a Pokémon…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="Find a Pokémon by name or Pokédex number"></label>
-      <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><div class="catalog-tools"><span id="catalog-generation">GENERATION I</span><button type="button" id="stats-help" class="stats-help">Stats guide</button></div></div>
+      <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><div class="catalog-tools"><span id="catalog-generation">GENERATION I</span></div></div>
       <div id="pokemon-list" class="pokemon-list"></div>
       <div class="picker-bottom"><span>Artwork: <a href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a></span><span>Fan-made draft board</span></div>
     </aside>
@@ -84,7 +78,7 @@
   </dialog>
   <dialog id="link-dialog" aria-labelledby="link-title">
     <div class="dialog-heading"><h2 id="link-title">Send your exact lineup</h2><button type="button" class="icon-button" data-close="link-dialog" aria-label="Close share link">×</button></div>
-    <p>Your Pokémon, personnel, generation, and artwork travel with this link.</p>
+    <p>Your Pokémon, personnel, and generation travel with this link.</p>
     <label class="link-label" for="lineup-url">Lineup link</label><input id="lineup-url" class="lineup-url" type="text" readonly>
     <div class="dialog-actions"><button type="button" id="copy-link" class="primary-button">Copy link</button><button type="button" id="send-link" class="secondary-button" hidden>Send link</button></div>
     <p id="link-status" class="dialog-hint" role="status"></p>

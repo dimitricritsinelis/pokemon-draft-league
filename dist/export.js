@@ -14,8 +14,7 @@
   }
 
   window.renderDraftImage = async board => {
-    const retro = board.art === 'retro';
-    const sources = board.positions.map(s => s.pokemon ? (retro ? s.pokemon.retroImage : s.pokemon.image) : null);
+    const sources = board.positions.map(s => s.pokemon ? s.pokemon.image : null);
     const [images] = await Promise.all([
       Promise.all(sources.map(src => src ? loadImage(src) : null)),
       Promise.race([document.fonts?.ready || Promise.resolve(), new Promise(resolve => setTimeout(resolve, 1500))])
@@ -27,7 +26,7 @@
     const top = 142, fieldHeight = 1360;
     ctx.fillStyle = ink; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = yellow; ctx.font = '700 21px Barlow, sans-serif';
-    ctx.fillText(board.generation.toUpperCase() + (retro ? ' · RETRO ART' : ''), 48, 35);
+    ctx.fillText(board.generation.toUpperCase(), 48, 35);
     ctx.fillStyle = '#ffffff'; ctx.font = '700 53px "Barlow Condensed", sans-serif';
     ctx.fillText('POKÉMON DRAFT LEAGUE', 46, 97);
     ctx.textAlign = 'right'; ctx.font = '600 22px Barlow, sans-serif';
@@ -66,10 +65,10 @@
       const x = 1600 * s.x / 100, y = fieldHeight * (s.key === 'o_rb1' ? 89.5 : s.y) / 100;
       const image = images[index];
       if (image) {
-        const size = retro ? 128 : 138;
+        const size = 138;
         const scale = Math.min(size / image.width, size / image.height);
         const w = image.width * scale, h = image.height * scale;
-        ctx.imageSmoothingEnabled = !retro;
+        ctx.imageSmoothingEnabled = true;
         ctx.save(); ctx.shadowColor = '#112a2270'; ctx.shadowBlur = 7; ctx.shadowOffsetY = 6;
         ctx.drawImage(image, Math.round(x - w / 2), Math.round(y - 94 + (138 - h) / 2), w, h);
         ctx.restore();
