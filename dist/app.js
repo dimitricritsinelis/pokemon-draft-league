@@ -3,9 +3,20 @@
   const pokemon = window.POKEMON || [];
   const byId = new Map(pokemon.map(p => [p.id, p]));
   const $ = id => document.getElementById(id);
-  const narrow = window.matchMedia('(max-width: 800px), (pointer: coarse) and (max-width: 1000px)');
+  const narrow = window.matchMedia('(max-width: 1000px)');
   const phone = window.matchMedia('(max-width: 560px)');
-  const state = { offense: '21', defense: '3-4', selected: null, picks: {} };
+  const state = { mode: 'gen1', art: 'artwork', offense: '21', defense: '3-4', selected: null, picks: {} };
+  const storageKey = 'pokemon-draft-league-v1';
+  const modeLabels = { gen1: 'Gen 1', gen2: 'Gen 2', both: 'Gen 1 + Gen 2' };
+  const slotKeys = ['d_fs', 'd_ss', 'd_cb1', 'd_cb2', 'd_de1', 'd_dt1', 'd_dt2', 'd_de2', 'd_lb1', 'd_lb2', 'd_lb3', 'd_lb4', 'd_nb', 'd_db6', 'o_lt', 'o_lg', 'o_c', 'o_rg', 'o_rt', 'o_qb', 'o_rb1', 'o_wr1', 'o_wr2', 'o_wr3', 'o_wr4', 'o_te1', 'o_te2', 'o_rb2'];
+  const samplePicks = { d_fs: 82, d_ss: 105, d_cb1: 123, d_cb2: 141, d_de1: 68, d_dt1: 143, d_de2: 67, d_lb1: 24, d_lb2: 62, d_lb3: 57, d_lb4: 28, o_lt: 9, o_lg: 76, o_c: 3, o_rg: 89, o_rt: 115, o_qb: 94, o_rb1: 112, o_wr1: 135, o_wr2: 85, o_te1: 34, o_rb2: 128 };
+  const johtoSample = { d_fs: 200, d_ss: 196, d_cb1: 212, d_cb2: 227, d_de1: 214, d_dt1: 205, d_de2: 237, d_lb1: 166, d_lb2: 195, d_lb3: 207, d_lb4: 221, o_lt: 160, o_lg: 208, o_c: 154, o_rg: 242, o_rt: 217, o_qb: 199, o_rb1: 232, o_wr1: 181, o_wr2: 169, o_te1: 248, o_rb2: 241 };
+  let boards = { gen1: defaultBoard('gen1'), gen2: defaultBoard('gen2'), both: defaultBoard('both') };
+  let shared = false;
+  let sharedCopy = null;
+  let exportUrl;
+  let exportFile;
+  let exportRun = 0;
   let lastFieldButton = null;
   let toastTimer;
   let catalogCards;
@@ -20,15 +31,15 @@
   const o = (key, role, x, y) => slot('o_' + key, role, x, y, 'offense');
   const d = (key, role, x, y) => slot('d_' + key, role, x, y, 'defense');
 
-  function slots() {
-    const lineX = phone.matches ? [24, 37, 50, 63, 76] : [29, 39.5, 50, 60.5, 71];
+  function slots(mobile = phone.matches) {
+    const lineX = mobile ? [24, 37, 50, 63, 76] : [29, 39.5, 50, 60.5, 71];
     const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 74), o('rb1', 'HB', 50, 91)];
     const eligible = {
-      wr1: o('wr1', 'WR', phone.matches ? 9 : 10, 59),
-      wr2: o('wr2', 'WR', phone.matches ? 91 : 92, 59),
+      wr1: o('wr1', 'WR', mobile ? 9 : 10, 59),
+      wr2: o('wr2', 'WR', mobile ? 91 : 92, 59),
       wr3: o('wr3', 'WR', 17, 74), wr4: o('wr4', 'WR', 83, 74),
-      te1: o('te1', 'TE', phone.matches ? 85 : 82, phone.matches ? 70 : 59),
-      te2: o('te2', 'TE', phone.matches ? 15 : 18, phone.matches ? 70 : 59),
+      te1: o('te1', 'TE', mobile ? 85 : 82, mobile ? 70 : 59),
+      te2: o('te2', 'TE', mobile ? 15 : 19, mobile ? 70 : 59),
       rb2: o('rb2', 'FB', 39, 84)
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
@@ -45,6 +56,112 @@
     return [...defense, ...offense];
   }
 
+  function defaultBoard(mode) {
+    return { offense: '21', defense: '3-4', picks: mode === 'gen2' ? {} : { ...samplePicks } };
+  }
+
+  function allowed(id, mode = state.mode) {
+    return Number.isInteger(id) && byId.has(id) && (mode === 'both' || (mode === 'gen1' ? id <= 151 : id >= 152));
+  }
+
+  function validateBoard(value, mode) {
+    if (!value || !Object.hasOwn(offenseDetails, value.offense) || !Object.hasOwn(defenseDetails, value.defense) || !value.picks || typeof value.picks !== 'object' || Array.isArray(value.picks)) return null;
+    const picks = {}, seen = new Set();
+    for (const [key, id] of Object.entries(value.picks)) {
+      if (!slotKeys.includes(key) || !allowed(id, mode) || seen.has(id)) return null;
+      seen.add(id); picks[key] = id;
+    }
+    return { offense: value.offense, defense: value.defense, picks };
+  }
+
+  function snapshot() { return { offense: state.offense, defense: state.defense, picks: { ...state.picks } }; }
+  function applyBoard(board) { state.offense = board.offense; state.defense = board.defense; state.picks = { ...board.picks }; state.selected = null; }
+
+  function saveDraft() {
+    if (shared) sharedCopy = { mode: state.mode, art: state.art, ...snapshot() };
+    else boards[state.mode] = snapshot();
+    const saved = { v: 1, mode: state.mode, art: state.art, boards, shared: sharedCopy, viewShared: shared };
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(saved));
+      $('save-status').textContent = 'Autosaved';
+      $('save-status').title = 'Saved on this device';
+    } catch (_) {
+      $('save-status').textContent = 'Unsaved';
+      $('save-status').title = 'Browser storage is unavailable. Share a link to keep this lineup.';
+    }
+  }
+
+  function loadDraft() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      const saved = raw && raw.length < 15000 ? JSON.parse(raw) : null;
+      if (saved?.v === 1) {
+        Object.keys(modeLabels).forEach(mode => { const board = validateBoard(saved.boards?.[mode], mode); if (board) boards[mode] = board; });
+        if (Object.hasOwn(modeLabels, saved.mode)) state.mode = saved.mode;
+        if (['artwork', 'retro'].includes(saved.art)) state.art = saved.art;
+        const sharedBoard = saved.shared && Object.hasOwn(modeLabels, saved.shared.mode) && validateBoard(saved.shared, saved.shared.mode);
+        if (sharedBoard) {
+          sharedCopy = { mode: saved.shared.mode, art: ['artwork', 'retro'].includes(saved.shared.art) ? saved.shared.art : state.art, ...sharedBoard };
+          if (saved.viewShared !== false) { shared = true; state.mode = sharedCopy.mode; state.art = sharedCopy.art; applyBoard(sharedBoard); }
+        }
+      }
+    } catch (_) { /* A blocked or damaged save must never prevent playing. */ }
+    if (!shared) applyBoard(boards[state.mode]);
+    importLink();
+    saveDraft();
+  }
+
+  function importLink() {
+    if (location.hash.startsWith('#draft=')) {
+      try {
+        const token = location.hash.slice(7);
+        if (token.length > 2000 || !/^[A-Za-z0-9_-]+$/.test(token)) throw new Error('Invalid link');
+        const data = JSON.parse(atob(token.replace(/-/g, '+').replace(/_/g, '/')));
+        if (!Array.isArray(data) || data.length !== 5 + slotKeys.length || data[0] !== 1 || !Object.hasOwn(modeLabels, data[1]) || !['artwork', 'retro'].includes(data[4])) throw new Error('Invalid link');
+        const picks = {};
+        slotKeys.forEach((key, index) => { const id = data[index + 5]; if (id !== 0) picks[key] = id; });
+        const board = validateBoard({ offense: data[2], defense: data[3], picks }, data[1]);
+        if (!board) throw new Error('Invalid link');
+        shared = true; state.mode = data[1]; state.art = data[4]; applyBoard(board);
+        message('Shared lineup opened. Your draft is kept safe.');
+      } catch (_) { message('That lineup link is incomplete. Your saved draft is ready.'); }
+      // Edits to an imported lineup survive reload instead of reimporting the original.
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+  }
+
+  function shareUrl() {
+    const data = [1, state.mode, state.offense, state.defense, state.art, ...slotKeys.map(key => state.picks[key] || 0)];
+    const token = btoa(JSON.stringify(data)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return location.origin + location.pathname + '#draft=' + token;
+  }
+
+  function changeMode(mode) {
+    if (!Object.hasOwn(modeLabels, mode) || state.mode === mode) return;
+    closePicker(false); closePersonnelMenus();
+    saveDraft();
+    shared = false; state.mode = mode; applyBoard(boards[mode]);
+    $('pokemon-search').value = '';
+    saveDraft(); renderBoard(); renderCatalog();
+    message(`${modeLabels[mode]} lineup ready`);
+  }
+
+  function imagePath(p) { return state.art === 'retro' ? p.retroImage : p.image; }
+
+  function renderPreferences() {
+    document.body.classList.toggle('retro-art', state.art === 'retro');
+    document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode)));
+    $('art-style').setAttribute('aria-pressed', String(state.art === 'retro'));
+    $('region-label').textContent = { gen1: 'KANTO · ORIGINAL 151', gen2: 'JOHTO · THE NEXT 100', both: 'KANTO + JOHTO · ALL 251' }[state.mode];
+    $('picker-generation').textContent = { gen1: 'THE ORIGINAL 151', gen2: 'THE JOHTO 100', both: 'ALL 251 POKÉMON' }[state.mode];
+    $('catalog-generation').textContent = { gen1: 'GENERATION I', gen2: 'GENERATION II', both: 'GENERATIONS I + II' }[state.mode];
+    $('field-footer').textContent = { gen1: 'KANTO', gen2: 'JOHTO', both: 'KANTO + JOHTO' }[state.mode] + ' DRAFT LEAGUE';
+    $('shared-notice').hidden = !sharedCopy;
+    $('shared-label').textContent = shared ? 'Shared lineup · your draft is kept safe.' : 'Shared lineup saved separately';
+    $('my-lineup').hidden = !shared;
+    $('keep-shared').textContent = shared ? 'Keep lineup' : 'Open shared lineup';
+  }
+
   function message(text) {
     $('live-message').textContent = text;
     $('live-message').classList.add('show');
@@ -53,6 +170,7 @@
   }
 
   function renderBoard() {
+    renderPreferences();
     const current = slots();
     if (state.selected && !current.some(s => s.key === state.selected)) { state.selected = null; closePicker(false); }
     $('positions').replaceChildren(...current.map(s => {
@@ -66,7 +184,7 @@
       button.setAttribute('aria-pressed', String(state.selected === s.key));
       if (p) {
         const img = document.createElement('img');
-        img.src = p.image;
+        img.src = imagePath(p);
         img.alt = '';
         img.className = 'pokemon-on-field';
         img.draggable = false;
@@ -124,7 +242,7 @@
       button.dataset.pokemon = p.id;
       button.setAttribute('aria-label', `Draft ${p.name}, Pokédex ${p.id}`);
       const dex = document.createElement('span'); dex.className = 'dex-number'; dex.textContent = '#' + String(p.id).padStart(3, '0');
-      const img = document.createElement('img'); img.src = p.image; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.draggable = false;
+      const img = document.createElement('img'); img.src = imagePath(p); img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.draggable = false;
       const name = document.createElement('span'); name.className = 'card-name'; name.textContent = p.name;
       const type = document.createElement('span'); type.className = 'card-type'; type.textContent = p.types.join(' / ');
       button.append(dex, img, name, type);
@@ -139,8 +257,10 @@
     let found = 0;
     catalogCards.forEach((card, index) => {
       const p = pokemon[index];
-      const matches = normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query);
+      const matches = allowed(p.id) && (normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query));
       card.hidden = !matches;
+      const img = card.querySelector('img');
+      if (img.getAttribute('src') !== imagePath(p)) img.src = imagePath(p);
       if (matches) found++;
     });
     emptyResult.hidden = found > 0;
@@ -150,7 +270,7 @@
   }
 
   function updatePickedMarkers() {
-    const visiblePicks = new Set(slots().map(s => state.picks[s.key]).filter(Boolean));
+    const visiblePicks = new Set(Object.values(state.picks));
     document.querySelectorAll('.pokemon-card').forEach(card => {
       const picked = visiblePicks.has(Number(card.dataset.pokemon));
       card.classList.toggle('picked', picked);
@@ -173,6 +293,7 @@
       document.body.classList.add('picker-open');
       document.querySelector('.board-panel').inert = true;
       document.querySelector('.masthead').inert = true;
+      document.querySelector('.draft-tools').inert = true;
       $('close-picker').focus({ preventScroll: true });
       updatePickerViewport();
     } else $('pokemon-search').focus({ preventScroll: true });
@@ -190,6 +311,7 @@
     $('picker').style.removeProperty('--picker-height');
     document.querySelector('.board-panel').inert = false;
     document.querySelector('.masthead').inert = false;
+    document.querySelector('.draft-tools').inert = false;
     if (restoreFocus && lastFieldButton) {
       const button = document.querySelector(`[data-slot="${lastFieldButton.dataset.slot}"]`);
       button?.focus({ preventScroll: true });
@@ -265,34 +387,154 @@
   }
 
   function draftPokemon(id) {
-    if (!byId.has(id)) throw new Error('Choose an original Gen 1 Pokémon.');
+    if (!allowed(id)) throw new Error('Choose a Pokémon from the selected generation.');
     const selected = slots().find(s => s.key === state.selected);
     if (!selected) { message('Select a position on the field first.'); return { drafted: false }; }
-    // Move an existing draft pick rather than cloning it onto the team.
-    Object.keys(state.picks).forEach(key => { if (state.picks[key] === id && key !== selected.key) delete state.picks[key]; });
+    const origin = Object.keys(state.picks).find(key => state.picks[key] === id && key !== selected.key);
+    const replaced = state.picks[selected.key];
+    if (origin) {
+      if (replaced) state.picks[origin] = replaced;
+      else delete state.picks[origin];
+    }
     state.picks[selected.key] = id;
+    saveDraft();
     renderBoard();
     if (narrow.matches) closePicker();
-    message(`${byId.get(id).name} drafted at ${selected.role}`);
+    message(origin && replaced ? `${byId.get(id).name} and ${byId.get(replaced).name} swapped` : `${byId.get(id).name} drafted at ${selected.role}`);
     return { drafted: true, position: selected.key, pokemon: byId.get(id).name };
   }
 
   function setPersonnel(offense, defense) {
     if (!Object.hasOwn(offenseDetails, offense) || !Object.hasOwn(defenseDetails, defense)) throw new Error('Unknown personnel group.');
     state.offense = offense; state.defense = defense;
+    saveDraft();
     renderBoard();
     return readBoard();
   }
 
   function sampleLineup() {
     state.offense = '21'; state.defense = '3-4'; state.selected = null;
-    state.picks = { d_fs: 82, d_ss: 105, d_cb1: 123, d_cb2: 141, d_de1: 68, d_dt1: 143, d_de2: 67, d_lb1: 24, d_lb2: 62, d_lb3: 57, d_lb4: 28, o_lt: 9, o_lg: 76, o_c: 3, o_rg: 89, o_rt: 115, o_qb: 94, o_rb1: 112, o_wr1: 135, o_wr2: 85, o_te1: 34, o_rb2: 128 };
+    state.picks = { ...(state.mode === 'gen2' ? johtoSample : samplePicks) };
+    saveDraft();
     renderBoard();
   }
 
   function readBoard() {
-    return { offense: state.offense, defense: state.defense, positions: slots().map(s => ({ key: s.key, role: s.role, side: s.side, pokemon: byId.get(state.picks[s.key])?.name || null, pokemonId: state.picks[s.key] || null })) };
+    return { generation: state.mode, art: state.art, offense: state.offense, defense: state.defense, positions: slots().map(s => ({ key: s.key, role: s.role, side: s.side, pokemon: byId.get(state.picks[s.key])?.name || null, pokemonId: state.picks[s.key] || null })) };
   }
+
+  async function prepareExport() {
+    closePersonnelMenus();
+    const run = ++exportRun;
+    if (exportUrl) URL.revokeObjectURL(exportUrl);
+    exportUrl = null; exportFile = null;
+    $('export-preview').hidden = true;
+    $('save-image').hidden = true;
+    $('share-image').hidden = true;
+    $('share-image').disabled = true;
+    $('image-hint').hidden = true;
+    $('export-status').textContent = 'Preparing your image…';
+    $('export-dialog').showModal();
+    const board = {
+      generation: modeLabels[state.mode], art: state.art,
+      offense: offenseLabels[state.offense] + ' · ' + offenseDetails[state.offense],
+      defense: defenseLabels[state.defense] + ' · ' + defenseDetails[state.defense],
+      positions: slots(false).map(s => ({ ...s, pokemon: byId.get(state.picks[s.key]) || null }))
+    };
+    try {
+      const blob = await window.renderDraftImage(board);
+      if (run !== exportRun || !$('export-dialog').open) return;
+      exportFile = new File([blob], 'pokemon-draft-lineup.png', { type: 'image/png' });
+      exportUrl = URL.createObjectURL(blob);
+      $('export-preview').src = exportUrl;
+      $('export-preview').hidden = false;
+      const save = $('save-image');
+      save.href = exportUrl;
+      save.download = exportFile.name;
+      save.hidden = false;
+      let canShare = false;
+      try { canShare = !!navigator.canShare?.({ files: [exportFile] }); } catch (_) {}
+      $('share-image').hidden = !canShare;
+      $('share-image').disabled = !canShare;
+      $('image-hint').hidden = canShare;
+      $('export-status').textContent = 'Full-resolution PNG · ready to share';
+    } catch (_) {
+      if (run === exportRun) $('export-status').textContent = 'The image could not be prepared. Please close this window and try again.';
+    }
+  }
+
+  function openLinkDialog() {
+    closePersonnelMenus();
+    $('lineup-url').value = shareUrl();
+    $('link-status').textContent = '';
+    $('send-link').hidden = !navigator.share;
+    $('link-dialog').showModal();
+  }
+
+  document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => changeMode(button.dataset.mode)));
+  $('art-style').addEventListener('click', () => {
+    state.art = state.art === 'artwork' ? 'retro' : 'artwork';
+    saveDraft(); renderBoard(); renderCatalog();
+  });
+  $('keep-shared').addEventListener('click', () => {
+    if (shared) {
+      shared = false; sharedCopy = null; saveDraft(); renderPreferences(); message('This is now your saved lineup');
+    } else if (sharedCopy) {
+      saveDraft(); state.mode = sharedCopy.mode; state.art = sharedCopy.art; applyBoard(sharedCopy); shared = true;
+      saveDraft(); renderBoard(); renderCatalog();
+    }
+  });
+  $('my-lineup').addEventListener('click', () => {
+    saveDraft(); shared = false; applyBoard(boards[state.mode]); saveDraft(); renderBoard(); renderCatalog(); message('Your original lineup is ready');
+  });
+  window.addEventListener('hashchange', () => {
+    if (!location.hash.startsWith('#draft=')) return;
+    closePicker(false); closePersonnelMenus(); importLink(); saveDraft(); renderBoard(); renderCatalog();
+  });
+  $('export-button').addEventListener('click', prepareExport);
+  $('export-dialog').addEventListener('close', () => { exportRun++; });
+  $('share-image').addEventListener('click', () => {
+    if (!exportFile || !navigator.share) return;
+    // PNG is already prepared: this fresh tap retains Safari's share activation.
+    navigator.share({ files: [exportFile], title: 'My Pokémon Draft League lineup' }).catch(error => {
+      if (error.name !== 'AbortError') {
+        $('export-status').textContent = 'Sharing is unavailable here. Use Save image instead.';
+        $('image-hint').hidden = false;
+      }
+    });
+  });
+  $('share-link').addEventListener('click', openLinkDialog);
+  $('copy-link').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText($('lineup-url').value);
+      $('link-status').textContent = 'Link copied. Paste it into a text message.';
+    } catch (_) {
+      $('lineup-url').focus(); $('lineup-url').select();
+      $('link-status').textContent = 'Touch and hold the selected link to copy it.';
+    }
+  });
+  $('send-link').addEventListener('click', () => {
+    navigator.share({ title: 'My Pokémon Draft League lineup', url: $('lineup-url').value }).catch(error => {
+      if (error.name !== 'AbortError') $('link-status').textContent = 'Use Copy link to send your lineup.';
+    });
+  });
+  document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
+  $('room-button').addEventListener('click', () => {
+    closePersonnelMenus();
+    const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+    $('safari-help').hidden = !!standalone;
+    $('standalone-help').hidden = !standalone;
+    $('fullscreen-button').hidden = !document.fullscreenEnabled || !!standalone;
+    $('fullscreen-button').textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Enter fullscreen';
+    $('room-dialog').showModal();
+  });
+  $('fullscreen-button').addEventListener('click', async () => {
+    try {
+      $('room-dialog').close();
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch (_) { message('Use your browser’s screen controls for more room.'); }
+  });
 
   $('pokemon-search').addEventListener('input', renderCatalog);
   $('pokemon-search').addEventListener('focus', schedulePickerViewport);
@@ -306,13 +548,13 @@
   $('remove-pick').addEventListener('click', () => {
     const selected = slots().find(s => s.key === state.selected);
     if (!selected) return;
-    delete state.picks[selected.key]; renderBoard();
+    delete state.picks[selected.key]; saveDraft(); renderBoard();
     if (narrow.matches) closePicker();
     message(`${selected.role} is ready for a new pick`);
   });
   $('clear-button').addEventListener('click', () => $('clear-dialog').showModal());
   $('clear-dialog').addEventListener('close', () => {
-    if ($('clear-dialog').returnValue === 'clear') { state.picks = {}; state.selected = null; renderBoard(); message('Board cleared. Make your first pick.'); }
+    if ($('clear-dialog').returnValue === 'clear') { state.picks = {}; state.selected = null; saveDraft(); renderBoard(); message('Board cleared. Make your first pick.'); }
   });
   $('sample-button').addEventListener('click', () => { sampleLineup(); message('Example lineup loaded'); });
   document.addEventListener('keydown', e => {
@@ -329,7 +571,8 @@
   phone.addEventListener('change', renderBoard);
 
   initializePersonnelMenus();
-  sampleLineup();
+  loadDraft();
+  renderBoard();
   renderCatalog();
   if (!pokemon.length) message('Pokémon artwork could not load. Please reload the page.');
 
@@ -339,8 +582,8 @@
     const tools = [
       { name: 'read_draft_board', title: 'Read draft board', description: 'Read offense and defense personnel and all active draft positions.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: () => readBoard() },
       { name: 'configure_draft_personnel', title: 'Set personnel', description: 'Set offense and defense personnel, preserving picks in shared positions.', inputSchema: { type: 'object', properties: { offense: { type: 'string', enum: Object.keys(offenseDetails) }, defense: { type: 'string', enum: Object.keys(defenseDetails) } }, required: ['offense', 'defense'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => setPersonnel(input.offense, input.defense) },
-      { name: 'draft_pokemon_to_position', title: 'Draft Pokémon', description: 'Place a Gen 1 Pokémon into an active position. An already drafted Pokémon moves from its old position.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, pokemonId: { type: 'integer', minimum: 1, maximum: 151 } }, required: ['position', 'pokemonId'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => {
-        if (!input || !slots().some(s => s.key === input.position) || !Number.isInteger(input.pokemonId) || !byId.has(input.pokemonId)) throw new Error('Use an active position key and a Gen 1 Pokémon ID from 1 to 151.');
+      { name: 'draft_pokemon_to_position', title: 'Draft Pokémon', description: 'Place a Pokémon from the selected generation into an active position. Players already drafted swap positions.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, pokemonId: { type: 'integer', minimum: 1, maximum: 251 } }, required: ['position', 'pokemonId'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => {
+        if (!input || !slots().some(s => s.key === input.position) || !allowed(input.pokemonId)) throw new Error('Use an active position key and a Pokémon from the selected generation.');
         state.selected = input.position;
         return draftPokemon(input.pokemonId);
       } }

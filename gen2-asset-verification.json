@@ -1,0 +1,65 @@
+{
+  "verified_at_utc": "2026-10-09T14:15:58.975709+00:00",
+  "status": "passed",
+  "root": "/workspace/scratch/gen2-retro-assets",
+  "metadata_records": 251,
+  "generation_counts": {
+    "1": 151,
+    "2": 100
+  },
+  "artwork_files": 100,
+  "retro_files": 251,
+  "all_png_signatures_valid": true,
+  "all_images_decoded_successfully": true,
+  "artwork_dimensions": [
+    475,
+    475
+  ],
+  "retro_dimensions": [
+    56,
+    56
+  ],
+  "all_images_transparent": true,
+  "all_images_have_visible_colored_pixels": true,
+  "images_reencoded_or_upscaled": false,
+  "metadata_schema": {
+    "id": "integer 1–251",
+    "name": "normalized display name",
+    "types": "ordered array of current type names",
+    "image": "assets/pokemon/{id}.png",
+    "retroImage": "assets/retro/{id}.png",
+    "generation": "integer 1 or 2"
+  },
+  "directories": {
+    "artwork": "/workspace/scratch/gen2-retro-assets/artwork",
+    "retro": "/workspace/scratch/gen2-retro-assets/retro",
+    "raw_metadata": "/workspace/scratch/gen2-retro-assets/metadata/pokemon"
+  },
+  "output_files": {
+    "javascript": "/workspace/scratch/gen2-retro-assets/pokemon.js",
+    "json": "/workspace/scratch/gen2-retro-assets/pokemon.json",
+    "sources": "/workspace/scratch/gen2-retro-assets/sources.json"
+  },
+  "name_checks": {
+    "29": "Nidoran♀",
+    "32": "Nidoran♂",
+    "83": "Farfetch’d",
+    "122": "Mr. Mime",
+    "152": "Chikorita",
+    "233": "Porygon2",
+    "250": "Ho-Oh",
+    "251": "Celebi"
+  },
+  "total_image_bytes": 13143597,
+  "javascript_assignment_executed_successfully": true,
+  "source_hashes_rechecked": {
+    "metadata": 251,
+    "images": 351
+  },
+  "visual_spot_check": {
+    "id": 250,
+    "name": "Ho-Oh",
+    "artwork": "passed",
+    "retro": "passed"
+  }
+}

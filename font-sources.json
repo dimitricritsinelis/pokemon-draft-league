@@ -1,0 +1,69 @@
+{
+  "fonts": [
+    {
+      "family": "Barlow",
+      "weight": "400",
+      "url": "https://fonts.gstatic.com/s/barlow/v13/7cHpv4kjgoGqM7EPCw.ttf",
+      "file": "barlow-400.ttf",
+      "sha256": "a35caa4687f434d66453c1fe423d7074cfa9fd7ab80c19b0780f3862887d2fc9",
+      "bytes": 82624
+    },
+    {
+      "family": "Barlow",
+      "weight": "500",
+      "url": "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3_-gc4A.ttf",
+      "file": "barlow-500.ttf",
+      "sha256": "91c841fdfa8e7b94ffedbb983a363947ba6ed720f3bbf0c71d48b618053655bc",
+      "bytes": 81924
+    },
+    {
+      "family": "Barlow",
+      "weight": "600",
+      "url": "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E30-8c4A.ttf",
+      "file": "barlow-600.ttf",
+      "sha256": "c15439e7a03af5714282ec1780ff7b0214ec6a7db96300b54928dbcd2569ca0c",
+      "bytes": 85876
+    },
+    {
+      "family": "Barlow",
+      "weight": "700",
+      "url": "https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3t-4c4A.ttf",
+      "file": "barlow-700.ttf",
+      "sha256": "74103fd6d41bc32c63aa2e6eb3db619ddb80ce9ca1b1420d5548a23b8ee5d154",
+      "bytes": 85776
+    },
+    {
+      "family": "Barlow Condensed",
+      "weight": "500",
+      "url": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4-Lw_3E.ttf",
+      "file": "barlow-condensed-500.ttf",
+      "sha256": "cc9fb2539cf27df48255982e896d28f544483537cdb41f9fabd741af8992d719",
+      "bytes": 81448
+    },
+    {
+      "family": "Barlow Condensed",
+      "weight": "600",
+      "url": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B4873_3E.ttf",
+      "file": "barlow-condensed-600.ttf",
+      "sha256": "0d85af813fc3ed87db0c6265515689b2eef5cbaf7aab17922528dfc95a2cd73f",
+      "bytes": 86636
+    },
+    {
+      "family": "Barlow Condensed",
+      "weight": "700",
+      "url": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2_3E.ttf",
+      "file": "barlow-condensed-700.ttf",
+      "sha256": "7dde307fa887fc65ff5830cfada77a7decc5dae8d3c816c9d39ba3f1af1c4ed7",
+      "bytes": 87120
+    },
+    {
+      "family": "Barlow Condensed",
+      "weight": "800",
+      "url": "https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1_3E.ttf",
+      "file": "barlow-condensed-800.ttf",
+      "sha256": "73bc9e17231e9073780d3c81574c7253cecd5645c93544df1a935054b39a364f",
+      "bytes": 87556
+    }
+  ],
+  "license": "https://raw.githubusercontent.com/google/fonts/main/ofl/barlow/OFL.txt"
+}
