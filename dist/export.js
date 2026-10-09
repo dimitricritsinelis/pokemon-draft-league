@@ -27,7 +27,7 @@
     const top = 142, fieldHeight = 1360;
     ctx.fillStyle = ink; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = yellow; ctx.font = '700 21px Barlow, sans-serif';
-    ctx.fillText(board.generation.toUpperCase(), 48, 35);
+    ctx.fillText(board.generation.toUpperCase() + ' · ' + (board.teamName || 'Team 1').toUpperCase(), 48, 35);
     ctx.fillStyle = '#ffffff'; ctx.font = '700 53px "Barlow Condensed", sans-serif';
     ctx.fillText('POKÉMON DRAFT LEAGUE', 46, 97);
     ctx.textAlign = 'right'; ctx.font = '600 22px Barlow, sans-serif';

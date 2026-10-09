@@ -313,3 +313,51 @@ h1 { font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; t
   .position.empty .position-plate { min-height: 29px; }
   .empty-icon span { width: 32px; height: 32px; font-size: 21px; }
 }
+
+/* Two rosters and the match action share the compact header. */
+.masthead { height: calc(68px + env(safe-area-inset-top)); gap: 8px; }
+.masthead h1 { font-size: 20px; }
+.team-tabs { display: flex; gap: 3px; margin-top: 4px; }
+.team-tabs button { min-height: 30px; padding: 4px 7px; border: 1px solid #d7dfcd; border-radius: 5px; background: #e8eee1; color: #5b6b50; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.team-tabs button[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+.team-tabs small { margin-left: 4px; font-size: 9px; opacity: .65; }
+.simulate-button { flex: 0 0 74px; min-height: 44px; border: 1px solid #ceb450; border-radius: 6px; background: var(--yellow); color: #283321; font-size: 12px; font-weight: 700; line-height: 1.2; padding: 5px; }
+.simulate-button[aria-disabled="true"] { border-color: #d9decd; background: #e9ecdf; color: #77806b; }
+.menu-context { font-size: 10px; color: #708161; margin: -4px 0 12px; }
+.field { height: calc(100dvh - 76px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+@media (min-width: 1001px) {
+  .picker-panel { top: calc(72px + env(safe-area-inset-top)); height: calc(100dvh - 76px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+}
+.pokemon-card.opponent-pick { background: #eff0eb; border-color: #e1e4da; }
+.opponent-pick img { opacity: .35; filter: grayscale(.4); }
+.opponent-pick .card-name, .opponent-pick .card-type, .opponent-pick .card-stats { opacity: .6; }
+.roster-mark { position: absolute; top: 4px; right: 4px; padding: 2px 4px; font-size: 8px; line-height: 1.2; color: #6c785f; border-radius: 3px; background: #e1e6d8; }
+.match-dialog { width: calc(100% - 24px); max-width: 680px; }
+.match-dialog .match-summary { font-size: 14px; line-height: 1.4; margin-bottom: 20px; }
+.scoreboard { width: 100%; border-collapse: collapse; background: #f2f5ed; border-radius: 6px; overflow: hidden; text-align: center; }
+.scoreboard th, .scoreboard td { padding: 9px 4px; font-size: 13px; border-bottom: 1px solid #e2e8d8; }
+.scoreboard thead th { font-size: 10px; text-transform: uppercase; color: #728164; font-weight: 600; }
+.scoreboard th:first-child { text-align: left; padding-left: 12px; }
+.scoreboard tbody th { font-size: 13px; font-weight: 600; }
+.scoreboard .final-score { background: #e6eddc; font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700; }
+.boxscore-heading { display: flex; justify-content: space-between; gap: 6px; margin: 22px 0 12px; font-size: 13px; }
+.boxscore-heading span { font-size: 10px; color: #7a876e; }
+.match-players { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.team-boxscore h3 { margin: 0 0 7px; font-size: 13px; }
+.match-player { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #ebeee3; }
+.match-player img { flex: 0 0 50px; width: 50px; height: 50px; object-fit: contain; }
+.match-player > div { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.boxscore-label { font-size: 9px; color: #748468; text-transform: uppercase; letter-spacing: .8px; }
+.match-player strong { font-size: 14px; }
+.boxscore-line { font-size: 10px; line-height: 1.4; color: #617052; }
+.match-dialog .match-note { font-size: 11px; line-height: 1.4; margin-top: 18px; }
+@media (max-width: 560px) {
+  .masthead { padding-left: 8px; padding-right: 8px; gap: 6px; }
+  .masthead h1 { font-size: 18px; }
+  .brand { gap: 6px; }
+  .simulate-button { flex-basis: 62px; font-size: 11px; }
+  .team-tabs button { padding: 4px 5px; font-size: 10px; }
+  .team-tabs small { font-size: 8px; margin-left: 2px; }
+  .match-players { grid-template-columns: 1fr; gap: 14px; }
+  .match-dialog { padding: 18px; }
+}

@@ -5,13 +5,14 @@
   const $ = id => document.getElementById(id);
   const narrow = window.matchMedia('(max-width: 1000px)');
   const phone = window.matchMedia('(max-width: 560px)');
-  const state = { mode: 'gen1', art: 'artwork', offense: '21', defense: '3-4', selected: null, picks: {} };
+  const state = { mode: 'gen1', team: 0, art: 'artwork', offense: '21', defense: '3-4', selected: null, picks: {} };
   const storageKey = 'pokemon-draft-league-v1';
   const modeLabels = { gen1: 'Gen 1', gen2: 'Gen 2', both: 'Gen 1 + Gen 2' };
   const slotKeys = ['d_fs', 'd_ss', 'd_cb1', 'd_cb2', 'd_de1', 'd_dt1', 'd_dt2', 'd_de2', 'd_lb1', 'd_lb2', 'd_lb3', 'd_lb4', 'd_nb', 'd_db6', 'o_lt', 'o_lg', 'o_c', 'o_rg', 'o_rt', 'o_qb', 'o_rb1', 'o_wr1', 'o_wr2', 'o_wr3', 'o_wr4', 'o_te1', 'o_te2', 'o_rb2'];
   const samplePicks = { d_fs: 82, d_ss: 105, d_cb1: 123, d_cb2: 141, d_de1: 68, d_dt1: 143, d_de2: 67, d_lb1: 24, d_lb2: 62, d_lb3: 57, d_lb4: 28, o_lt: 9, o_lg: 76, o_c: 3, o_rg: 89, o_rt: 115, o_qb: 94, o_rb1: 112, o_wr1: 135, o_wr2: 85, o_te1: 34, o_rb2: 128 };
   const johtoSample = { d_fs: 200, d_ss: 196, d_cb1: 212, d_cb2: 227, d_de1: 214, d_dt1: 205, d_de2: 237, d_lb1: 166, d_lb2: 195, d_lb3: 207, d_lb4: 221, o_lt: 160, o_lg: 208, o_c: 154, o_rg: 242, o_rt: 217, o_qb: 199, o_rb1: 232, o_wr1: 181, o_wr2: 169, o_te1: 248, o_rb2: 241 };
   let boards = { gen1: defaultBoard('gen1'), gen2: defaultBoard('gen2'), both: defaultBoard('both') };
+  let opponents = Object.fromEntries(Object.keys(modeLabels).map(mode => [mode, emptyBoard()]));
   let shared = false;
   let sharedCopy = null;
   let exportUrl;
@@ -32,7 +33,7 @@
   const o = (key, role, x, y) => slot('o_' + key, role, x, y, 'offense');
   const d = (key, role, x, y) => slot('d_' + key, role, x, y, 'defense');
 
-  function slots(mobile = phone.matches) {
+  function slots(mobile = phone.matches, board = state) {
     const lineX = mobile ? [20, 35, 50, 65, 80] : [27, 38.5, 50, 61.5, 73];
     const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 76), o('rb1', 'HB', 50, 92)];
     const eligible = {
@@ -44,7 +45,7 @@
       rb2: o('rb2', 'FB', mobile ? 28 : 39, 88)
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
-    offense.push(...extras[state.offense].map(key => eligible[key]));
+    offense.push(...extras[board.offense].map(key => eligible[key]));
     const defense = [d('fs', 'FS', 35, 9), d('ss', 'SS', 65, 9), d('cb1', 'CB', 2, 28), d('cb2', 'CB', 98, 28)];
     const fourLine = [d('de1', 'DE', 20, 43), d('dt1', 'DT', 40, 43), d('dt2', 'DT', 60, 43), d('de2', 'DE', 80, 43)];
     const fronts = {
@@ -53,9 +54,15 @@
       nickel: [...fourLine, d('lb1', 'LB', 35, 26), d('lb2', 'LB', 57, 26), d('nb', 'NB', 79, 26)],
       dime: [...fourLine, d('lb1', 'MLB', 50, 26), d('nb', 'NB', 28, 26), d('db6', 'DB', 72, 26)]
     };
-    defense.push(...fronts[state.defense]);
+    defense.push(...fronts[board.defense]);
     return [...defense, ...offense].map(s => ({ ...s, ...window.DraftField.project(s.x, s.y), scale: .9 + .12 * s.y / 100 }));
   }
+
+  const teamName = (index = state.team) => 'Team ' + (index + 1);
+  function emptyBoard() { return { offense: '21', defense: '3-4', picks: {} }; }
+  const copyBoard = b => ({ offense: b.offense, defense: b.defense, picks: { ...b.picks } });
+  function teamPair() { return shared ? sharedCopy.teams : [boards[state.mode], opponents[state.mode]]; }
+  function opponentPicks() { return new Set(Object.values(teamPair()[1 - state.team].picks)); }
 
   function defaultBoard(mode) {
     return { offense: '21', defense: '3-4', picks: mode === 'gen2' ? {} : { ...samplePicks } };
@@ -78,86 +85,149 @@
   function snapshot() { return { offense: state.offense, defense: state.defense, picks: { ...state.picks } }; }
   function applyBoard(board) { state.offense = board.offense; state.defense = board.defense; state.picks = { ...board.picks }; state.selected = null; }
 
+  function validatePair(values, mode) {
+    if (!Array.isArray(values) || values.length !== 2) return null;
+    const pair = values.map(value => validateBoard(value, mode));
+    if (pair.some(board => !board)) return null;
+    const ids = pair.flatMap(board => Object.values(board.picks));
+    return new Set(ids).size === ids.length ? pair : null;
+  }
+
   function saveDraft() {
-    if (shared) sharedCopy = { mode: state.mode, art: state.art, ...snapshot() };
-    else boards[state.mode] = snapshot();
-    const saved = { v: 1, mode: state.mode, art: state.art, boards, shared: sharedCopy, viewShared: shared };
+    if (shared) {
+      sharedCopy.team = state.team;
+      sharedCopy.teams[state.team] = snapshot();
+    } else (state.team === 0 ? boards : opponents)[state.mode] = snapshot();
+    const saved = { v: 2, mode: state.mode, team: state.team, art: state.art, boards, opponents, shared: sharedCopy, viewShared: shared };
     try {
       localStorage.setItem(storageKey, JSON.stringify(saved));
       $('save-status').textContent = 'Autosaved';
-      $('save-status').title = 'Saved on this device';
+      $('save-status').title = 'Both teams saved on this device';
     } catch (_) {
       $('save-status').textContent = 'Unsaved';
-      $('save-status').title = 'Browser storage is unavailable. Share a link to keep this lineup.';
+      $('save-status').title = 'Browser storage is unavailable. Share a link to keep both teams.';
     }
   }
 
   function loadDraft() {
     try {
       const raw = localStorage.getItem(storageKey);
-      const saved = raw && raw.length < 15000 ? JSON.parse(raw) : null;
-      if (saved?.v === 1) {
-        Object.keys(modeLabels).forEach(mode => { const board = validateBoard(saved.boards?.[mode], mode); if (board) boards[mode] = board; });
+      const saved = raw && raw.length < 35000 ? JSON.parse(raw) : null;
+      if (saved?.v === 1 || saved?.v === 2) {
+        Object.keys(modeLabels).forEach(mode => {
+          const first = validateBoard(saved.boards?.[mode], mode);
+          if (first) boards[mode] = first;
+          const second = validateBoard(saved.opponents?.[mode], mode);
+          if (second) {
+            const used = new Set(Object.values(boards[mode].picks));
+            Object.entries(second.picks).forEach(([key, id]) => { if (used.has(id)) delete second.picks[key]; });
+            opponents[mode] = second;
+          }
+        });
         if (Object.hasOwn(modeLabels, saved.mode)) state.mode = saved.mode;
-        const sharedBoard = saved.shared && Object.hasOwn(modeLabels, saved.shared.mode) && validateBoard(saved.shared, saved.shared.mode);
-        if (sharedBoard) {
-          sharedCopy = { mode: saved.shared.mode, art: 'artwork', ...sharedBoard };
-          if (saved.viewShared !== false) { shared = true; state.mode = sharedCopy.mode; applyBoard(sharedBoard); }
+        if (saved.team === 0 || saved.team === 1) state.team = saved.team;
+        if (saved.shared && Object.hasOwn(modeLabels, saved.shared.mode)) {
+          const values = saved.v === 1 ? [saved.shared, emptyBoard()] : saved.shared.teams;
+          const pair = validatePair(values, saved.shared.mode);
+          if (pair) {
+            sharedCopy = { mode: saved.shared.mode, team: saved.shared.team === 1 ? 1 : 0, teams: pair };
+            if (saved.viewShared !== false) {
+              shared = true; state.mode = sharedCopy.mode; state.team = sharedCopy.team;
+            }
+          }
         }
       }
     } catch (_) { /* A blocked or damaged save must never prevent playing. */ }
-    if (!shared) applyBoard(boards[state.mode]);
+    applyBoard(teamPair()[state.team]);
     importLink();
     saveDraft();
   }
 
   function importLink() {
-    if (location.hash.startsWith('#draft=')) {
-      try {
-        const token = location.hash.slice(7);
-        if (token.length > 2000 || !/^[A-Za-z0-9_-]+$/.test(token)) throw new Error('Invalid link');
-        const data = JSON.parse(atob(token.replace(/-/g, '+').replace(/_/g, '/')));
-        if (!Array.isArray(data) || data.length !== 5 + slotKeys.length || data[0] !== 1 || !Object.hasOwn(modeLabels, data[1]) || !['artwork', 'retro'].includes(data[4])) throw new Error('Invalid link');
+    if (!location.hash.startsWith('#draft=')) return;
+    try {
+      const token = location.hash.slice(7);
+      if (token.length > 2000 || !/^[A-Za-z0-9_-]+$/.test(token)) throw new Error('Invalid link');
+      const data = JSON.parse(atob(token.replace(/-/g, '+').replace(/_/g, '/')));
+      if (!Array.isArray(data) || !Object.hasOwn(modeLabels, data[1])) throw new Error('Invalid link');
+      let pair, active = 0;
+      const decode = value => {
+        if (!Array.isArray(value) || value.length !== 2 + slotKeys.length || value.slice(2).some(id => !Number.isInteger(id) || id < 0)) return null;
         const picks = {};
-        slotKeys.forEach((key, index) => { const id = data[index + 5]; if (id !== 0) picks[key] = id; });
-        const board = validateBoard({ offense: data[2], defense: data[3], picks }, data[1]);
-        if (!board) throw new Error('Invalid link');
-        shared = true; state.mode = data[1]; applyBoard(board);
-        message('Shared lineup opened. Your draft is kept safe.');
-      } catch (_) { message('That lineup link is incomplete. Your saved draft is ready.'); }
-      // Edits to an imported lineup survive reload instead of reimporting the original.
-      history.replaceState(null, '', location.pathname + location.search);
-    }
+        slotKeys.forEach((key, i) => { if (value[i + 2] !== 0) picks[key] = value[i + 2]; });
+        return { offense: value[0], defense: value[1], picks };
+      };
+      if (data[0] === 1 && data.length === 5 + slotKeys.length && ['artwork', 'retro'].includes(data[4])) {
+        pair = validatePair([decode([data[2], data[3], ...data.slice(5)]), emptyBoard()], data[1]);
+      } else if (data[0] === 2 && data.length === 5 && (data[2] === 0 || data[2] === 1)) {
+        active = data[2]; pair = validatePair([decode(data[3]), decode(data[4])], data[1]);
+      }
+      if (!pair) throw new Error('Invalid link');
+      invalidateMatch();
+      sharedCopy = { mode: data[1], team: active, teams: pair };
+      shared = true; state.mode = data[1]; state.team = active; applyBoard(pair[active]);
+      message('Shared teams opened. Your teams are kept safe.');
+    } catch (_) { message('That matchup link is incomplete. Your saved teams are ready.'); }
+    history.replaceState(null, '', location.pathname + location.search);
   }
 
   function shareUrl() {
-    const data = [1, state.mode, state.offense, state.defense, state.art, ...slotKeys.map(key => state.picks[key] || 0)];
+    saveDraft();
+    const encode = b => [b.offense, b.defense, ...slotKeys.map(key => b.picks[key] || 0)];
+    const data = [2, state.mode, state.team, ...teamPair().map(encode)];
     const token = btoa(JSON.stringify(data)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return location.origin + location.pathname + '#draft=' + token;
   }
 
+  function invalidateMatch() { if ($('match-dialog')?.open) $('match-dialog').close(); }
+
   function changeMode(mode) {
     if (!Object.hasOwn(modeLabels, mode) || state.mode === mode) return;
-    closePicker(false); closePersonnelMenus();
-    saveDraft();
-    shared = false; state.mode = mode; applyBoard(boards[mode]);
+    invalidateMatch(); closePicker(false); closePersonnelMenus(); saveDraft();
+    shared = false; state.mode = mode; applyBoard(teamPair()[state.team]);
     $('pokemon-search').value = '';
     saveDraft(); renderBoard(); renderCatalog();
-    message(`${modeLabels[mode]} lineup ready`);
+    message(`${modeLabels[mode]} pool ready for both teams`);
+  }
+
+  function changeTeam(index) {
+    if ((index !== 0 && index !== 1) || index === state.team) return;
+    closePicker(false); closePersonnelMenus(); saveDraft();
+    state.team = index; applyBoard(teamPair()[index]);
+    $('pokemon-search').value = ''; lastFieldButton = null;
+    saveDraft(); renderBoard(); renderCatalog();
+  }
+
+  function filledCount(board) { return slots(false, board).filter(s => byId.has(board.picks[s.key])).length; }
+  function renderTeams() {
+    const pair = teamPair();
+    pair.forEach((board, index) => {
+      const count = filledCount(index === state.team ? snapshot() : board);
+      const button = document.querySelector(`[data-team="${index}"]`);
+      button.setAttribute('aria-selected', String(index === state.team));
+      button.tabIndex = index === state.team ? 0 : -1;
+      button.setAttribute('aria-label', `${teamName(index)}, ${count} of 22 positions filled`);
+      $('team-count-' + index).textContent = `${count}/22`;
+    });
+    const ready = pair.every((b, i) => filledCount(i === state.team ? snapshot() : b) === 22);
+    $('simulate-match').setAttribute('aria-disabled', String(!ready));
+    $('simulate-match').title = ready ? 'Play a four-quarter game' : 'Fill all 22 positions on both teams';
+    document.querySelector('.board-panel').setAttribute('aria-label', `${teamName()} football draft board`);
+    document.querySelector('.board-panel').setAttribute('aria-labelledby', `team-tab-${state.team}`);
   }
 
   function imagePath(p) { return p.image; }
 
   function renderPreferences() {
     document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode)));
-    $('formation-summary').textContent = `${{ gen1: 'Gen 1', gen2: 'Gen 2', both: 'Both' }[state.mode]} · ${state.offense} OFF · ${{ '3-4': '3–4', '4-3': '4–3', nickel: 'Nickel', dime: 'Dime' }[state.defense]} DEF`;
+    $('formation-summary').textContent = `${teamName()} · ${{ gen1: 'Gen 1', gen2: 'Gen 2', both: 'Both' }[state.mode]} · ${state.offense} OFF · ${{ '3-4': '3–4', '4-3': '4–3', nickel: 'Nickel', dime: 'Dime' }[state.defense]} DEF`;
     $('picker-generation').textContent = { gen1: 'THE ORIGINAL 151', gen2: 'THE JOHTO 100', both: 'ALL 251 POKÉMON' }[state.mode];
     $('catalog-generation').textContent = { gen1: 'GENERATION I', gen2: 'GENERATION II', both: 'GENERATIONS I + II' }[state.mode];
     $('field-footer').textContent = { gen1: 'KANTO', gen2: 'JOHTO', both: 'KANTO + JOHTO' }[state.mode] + ' DRAFT LEAGUE';
     $('shared-notice').hidden = !sharedCopy;
-    $('shared-label').textContent = shared ? 'Shared lineup · your draft is kept safe.' : 'Shared lineup saved separately';
+    $('shared-label').textContent = shared ? 'Shared matchup · your teams are kept safe.' : 'Shared matchup saved separately';
     $('my-lineup').hidden = !shared;
-    $('keep-shared').textContent = shared ? 'Keep lineup' : 'Open shared lineup';
+    $('keep-shared').textContent = shared ? 'Keep matchup' : 'Open shared matchup';
     $('menu-toggle').classList.toggle('has-shared', !!sharedCopy);
   }
 
@@ -217,6 +287,7 @@
     ['offense', 'defense'].forEach(side => {
       $(side + '-options').querySelectorAll('[role="option"]').forEach(option => option.setAttribute('aria-selected', String(option.dataset.value === state[side])));
     });
+    renderTeams();
     renderSelection();
     updatePickedMarkers();
   }
@@ -265,7 +336,8 @@
         const number = document.createElement('strong'); number.className = 'stat-value'; number.textContent = value;
         metric.append(heading, number); metrics.append(metric);
       });
-      button.append(dex, img, name, type, metrics);
+      const roster = document.createElement('span'); roster.className = 'roster-mark'; roster.hidden = true;
+      button.append(dex, roster, img, name, type, metrics);
       button.addEventListener('click', () => draftPokemon(p.id));
       return button;
       });
@@ -291,9 +363,15 @@
 
   function updatePickedMarkers() {
     const visiblePicks = new Set(Object.values(state.picks));
+    const unavailable = opponentPicks();
     document.querySelectorAll('.pokemon-card').forEach(card => {
       const picked = visiblePicks.has(Number(card.dataset.pokemon));
       card.classList.toggle('picked', picked);
+      const claimed = unavailable.has(Number(card.dataset.pokemon));
+      card.disabled = claimed; card.classList.toggle('opponent-pick', claimed);
+      const roster = card.querySelector('.roster-mark');
+      roster.hidden = !claimed; roster.textContent = teamName(1 - state.team);
+      card.setAttribute('aria-label', `${claimed ? 'Unavailable, on ' + teamName(1 - state.team) : 'Draft'} ${byId.get(Number(card.dataset.pokemon)).name}, ${scoutingStats(byId.get(Number(card.dataset.pokemon))).description}`);
     });
   }
 
@@ -425,8 +503,10 @@
 
   function draftPokemon(id) {
     if (!allowed(id)) throw new Error('Choose a Pokémon from the selected generation.');
+    if (opponentPicks().has(id)) { message(`${byId.get(id).name} is already on ${teamName(1 - state.team)}`); return { drafted: false }; }
     const selected = slots().find(s => s.key === state.selected);
     if (!selected) { message('Select a position on the field first.'); return { drafted: false }; }
+    invalidateMatch();
     const origin = Object.keys(state.picks).find(key => state.picks[key] === id && key !== selected.key);
     const replaced = state.picks[selected.key];
     if (origin) {
@@ -443,6 +523,7 @@
 
   function setPersonnel(offense, defense) {
     if (!Object.hasOwn(offenseDetails, offense) || !Object.hasOwn(defenseDetails, defense)) throw new Error('Unknown personnel group.');
+    invalidateMatch();
     state.offense = offense; state.defense = defense;
     saveDraft();
     renderBoard();
@@ -450,14 +531,80 @@
   }
 
   function sampleLineup() {
-    state.offense = '21'; state.defense = '3-4'; state.selected = null;
-    state.picks = { ...(state.mode === 'gen2' ? johtoSample : samplePicks) };
-    saveDraft();
-    renderBoard();
+    invalidateMatch();
+    state.offense = '21'; state.defense = '3-4'; state.selected = null; state.picks = {};
+    const used = opponentPicks();
+    const wanted = state.mode === 'gen2' || (state.mode === 'both' && state.team === 1) ? johtoSample : samplePicks;
+    const current = slots(false).sort((a, b) => (a.role === 'QB' ? -1 : b.role === 'QB' ? 1 : a.side === b.side ? 0 : a.side === 'offense' ? -1 : 1));
+    current.forEach(s => {
+      let id = wanted[s.key];
+      if (!allowed(id) || used.has(id)) {
+        const choices = pokemon.filter(p => allowed(p.id) && !used.has(p.id));
+        choices.sort((a, b) => window.DraftRatings.rate(b.id, s.role) - window.DraftRatings.rate(a.id, s.role));
+        id = choices[0]?.id;
+      }
+      if (id) { state.picks[s.key] = id; used.add(id); }
+    });
+    saveDraft(); renderBoard();
   }
 
   function readBoard() {
-    return { generation: state.mode, art: state.art, offense: state.offense, defense: state.defense, positions: slots().map(s => ({ key: s.key, role: s.role, side: s.side, pokemon: byId.get(state.picks[s.key])?.name || null, pokemonId: state.picks[s.key] || null })) };
+    return { team: teamName(), teamIndex: state.team, generation: state.mode, art: state.art, offense: state.offense, defense: state.defense, positions: slots().map(s => ({ key: s.key, role: s.role, side: s.side, pokemon: byId.get(state.picks[s.key])?.name || null, pokemonId: state.picks[s.key] || null })) };
+  }
+
+  function matchTeams() {
+    saveDraft();
+    return teamPair().map((board, i) => ({ name: teamName(i), positions: slots(false, board).map(s => ({ key: s.key, role: s.role, side: s.side, pokemonId: board.picks[s.key] || null, pokemon: byId.get(board.picks[s.key]) || null })) }));
+  }
+
+  function simulateMatch() {
+    const teams = matchTeams();
+    const missing = teams.map(t => t.positions.filter(p => !p.pokemonId).length);
+    if (missing.some(Boolean)) {
+      message(missing.map((n, i) => n ? `${teamName(i)} needs ${n} more ${n === 1 ? 'pick' : 'picks'}` : '').filter(Boolean).join(' · '));
+      return null;
+    }
+    let result;
+    try { result = window.DraftMatch.simulate(...teams); }
+    catch (_) { message('The match could not run. Please reload and try again.'); return null; }
+    renderMatch(result);
+    setMenuOpen(false, true);
+    if (!$('match-dialog').open) $('match-dialog').showModal();
+    return result;
+  }
+
+  function renderMatch(result) {
+    $('match-title').textContent = result.winner ? `${result.winner} wins` : 'Final · a draw';
+    $('match-summary').textContent = result.summary;
+    const rows = result.teams.map(t => {
+      const row = document.createElement('tr');
+      const name = document.createElement('th'); name.scope = 'row'; name.textContent = t.name; row.append(name);
+      [...t.quarters, t.score].forEach((n, i) => { const cell = document.createElement('td'); cell.textContent = n; if (i === 4) cell.className = 'final-score'; row.append(cell); });
+      return row;
+    });
+    $('match-score-rows').replaceChildren(...rows);
+    $('match-players').replaceChildren(...result.teams.map(t => {
+      const section = document.createElement('section'); section.className = 'team-boxscore';
+      const title = document.createElement('h3'); title.textContent = t.name; section.append(title);
+      const entries = [
+        ['Passing', t.passing, p => `${p.completions}/${p.attempts} · ${p.yards} yds · ${p.touchdowns} TD · ${p.interceptions} INT`],
+        ['Rushing', [...t.rushing].sort((a, b) => b.yards - a.yards)[0], p => `${p.carries} carries · ${p.yards} yds · ${p.touchdowns} TD`],
+        ['Receiving', [...t.receiving].sort((a, b) => b.yards - a.yards)[0], p => `${p.receptions} catches · ${p.yards} yds · ${p.touchdowns} TD`],
+        ['Defense', [...t.defense].sort((a, b) => (b.tackles + b.sacks * 3 + b.interceptions * 5) - (a.tackles + a.sacks * 3 + a.interceptions * 5))[0], p => `${p.tackles} tackles · ${p.sacks} sacks · ${p.interceptions} INT`]
+      ];
+      entries.forEach(([label, player, describe]) => {
+        if (!player) return;
+        const item = document.createElement('div'); item.className = 'match-player';
+        const p = byId.get(player.pokemonId);
+        const img = document.createElement('img'); img.src = p.image; img.alt = ''; img.width = 50; img.height = 50;
+        const text = document.createElement('div');
+        const role = document.createElement('span'); role.className = 'boxscore-label'; role.textContent = label;
+        const name = document.createElement('strong'); name.textContent = p.name;
+        const stats = document.createElement('span'); stats.className = 'boxscore-line'; stats.textContent = describe(player);
+        text.append(role, name, stats); item.append(img, text); section.append(item);
+      });
+      return section;
+    }));
   }
 
   async function prepareExport() {
@@ -473,7 +620,7 @@
     $('export-status').textContent = 'Preparing your image…';
     $('export-dialog').showModal();
     const board = {
-      generation: modeLabels[state.mode], art: state.art,
+      generation: modeLabels[state.mode], teamName: teamName(), art: state.art,
       offense: offenseLabels[state.offense] + ' · ' + offenseDetails[state.offense],
       defense: defenseLabels[state.defense] + ' · ' + defenseDetails[state.defense],
       positions: slots(false).map(s => { const p = byId.get(state.picks[s.key]); return { ...s, pokemon: p || null, stats: p ? scoutingStats(p) : null }; })
@@ -481,7 +628,7 @@
     try {
       const blob = await window.renderDraftImage(board);
       if (run !== exportRun || !$('export-dialog').open) return;
-      exportFile = new File([blob], 'pokemon-draft-lineup.png', { type: 'image/png' });
+      exportFile = new File([blob], `pokemon-draft-${board.teamName.toLowerCase().replace(' ', '-')}.png`, { type: 'image/png' });
       exportUrl = URL.createObjectURL(blob);
       $('export-preview').src = exportUrl;
       $('export-preview').hidden = false;
@@ -519,16 +666,27 @@
     else setMenuOpen(false, true);
     event.preventDefault();
   });
+  document.querySelectorAll('[data-team]').forEach(button => button.addEventListener('click', () => changeTeam(Number(button.dataset.team))));
+  $('team-tabs').addEventListener('keydown', event => {
+    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault(); changeTeam(event.key === 'Home' ? 0 : event.key === 'End' ? 1 : 1 - state.team);
+      document.querySelector(`[data-team="${state.team}"]`).focus();
+    }
+  });
+  $('simulate-match').addEventListener('click', simulateMatch);
+  $('rerun-match').addEventListener('click', simulateMatch);
   $('keep-shared').addEventListener('click', () => {
     if (shared) {
-      shared = false; sharedCopy = null; saveDraft(); renderPreferences(); message('This is now your saved lineup');
+      saveDraft();
+      [boards[state.mode], opponents[state.mode]] = sharedCopy.teams.map(copyBoard);
+      shared = false; sharedCopy = null; saveDraft(); renderPreferences(); message('Both teams are now saved as your matchup');
     } else if (sharedCopy) {
-      saveDraft(); state.mode = sharedCopy.mode; applyBoard(sharedCopy); shared = true;
-      saveDraft(); renderBoard(); renderCatalog();
+      saveDraft(); state.mode = sharedCopy.mode; state.team = sharedCopy.team; shared = true;
+      applyBoard(sharedCopy.teams[state.team]); saveDraft(); renderBoard(); renderCatalog();
     }
   });
   $('my-lineup').addEventListener('click', () => {
-    saveDraft(); shared = false; applyBoard(boards[state.mode]); saveDraft(); renderBoard(); renderCatalog(); message('Your original lineup is ready');
+    invalidateMatch(); saveDraft(); shared = false; applyBoard(teamPair()[state.team]); saveDraft(); renderBoard(); renderCatalog(); message('Your original teams are ready');
   });
   window.addEventListener('hashchange', () => {
     if (!location.hash.startsWith('#draft=')) return;
@@ -558,8 +716,8 @@
     }
   });
   $('send-link').addEventListener('click', () => {
-    navigator.share({ title: 'My Pokémon Draft League lineup', url: $('lineup-url').value }).catch(error => {
-      if (error.name !== 'AbortError') $('link-status').textContent = 'Use Copy link to send your lineup.';
+    navigator.share({ title: 'My Pokémon Draft League matchup', url: $('lineup-url').value }).catch(error => {
+      if (error.name !== 'AbortError') $('link-status').textContent = 'Use Copy link to send your matchup.';
     });
   });
   document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
@@ -592,13 +750,14 @@
   $('remove-pick').addEventListener('click', () => {
     const selected = slots().find(s => s.key === state.selected);
     if (!selected) return;
+    invalidateMatch();
     delete state.picks[selected.key]; saveDraft(); renderBoard();
     if (narrow.matches) closePicker();
     message(`${selected.role} is ready for a new pick`);
   });
   $('clear-button').addEventListener('click', () => { setMenuOpen(false, true); $('clear-dialog').returnValue = ''; $('clear-dialog').showModal(); });
   $('clear-dialog').addEventListener('close', () => {
-    if ($('clear-dialog').returnValue === 'clear') { state.picks = {}; state.selected = null; saveDraft(); renderBoard(); message('Board cleared. Make your first pick.'); }
+    if ($('clear-dialog').returnValue === 'clear') { invalidateMatch(); state.picks = {}; state.selected = null; saveDraft(); renderBoard(); message('Board cleared. Make your first pick.'); }
   });
   $('sample-button').addEventListener('click', () => { setMenuOpen(false, true); sampleLineup(); message('Example lineup loaded'); });
   document.addEventListener('keydown', e => {
@@ -625,6 +784,7 @@
   if (context?.registerTool) {
     const lifecycle = new AbortController();
     const tools = [
+      { name: 'select_draft_team', title: 'Select draft team', description: 'Switch between the two teams sharing the current Pokémon pool.', inputSchema: { type: 'object', properties: { teamIndex: { type: 'integer', enum: [0, 1] } }, required: ['teamIndex'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => { if (!input || ![0, 1].includes(input.teamIndex)) throw new Error('Choose team 0 or 1'); changeTeam(input.teamIndex); return readBoard(); } },
       { name: 'read_draft_board', title: 'Read draft board', description: 'Read offense and defense personnel and all active draft positions.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: () => readBoard() },
       { name: 'configure_draft_personnel', title: 'Set personnel', description: 'Set offense and defense personnel, preserving picks in shared positions.', inputSchema: { type: 'object', properties: { offense: { type: 'string', enum: Object.keys(offenseDetails) }, defense: { type: 'string', enum: Object.keys(defenseDetails) } }, required: ['offense', 'defense'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => setPersonnel(input.offense, input.defense) },
       { name: 'draft_pokemon_to_position', title: 'Draft Pokémon', description: 'Place a Pokémon from the selected generation into an active position. Players already drafted swap positions.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, pokemonId: { type: 'integer', minimum: 1, maximum: 251 } }, required: ['position', 'pokemonId'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => {
