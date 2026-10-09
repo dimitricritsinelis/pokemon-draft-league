@@ -1,0 +1,37 @@
+{
+  "downloaded_at_utc": "2026-10-09T13:20:53Z",
+  "artwork": {
+    "repository": "https://github.com/PokeAPI/sprites",
+    "url_pattern": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png",
+    "verified_api_reference": "https://pokeapi.co/api/v2/pokemon/1",
+    "verified_field": "sprites.other.official-artwork.front_default",
+    "readme": "https://github.com/PokeAPI/sprites/blob/master/README.md",
+    "license": "https://github.com/PokeAPI/sprites/blob/master/LICENCE.txt",
+    "reuse": "The repository is distributed under CC0 1.0 Universal. Its license separately states: All image contents within are Copyright The Pokémon Company. Download availability does not imply a separate copyright license from The Pokémon Company."
+  },
+  "metadata": {
+    "repository": "https://github.com/PokeAPI/pokeapi",
+    "csv_base": "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/",
+    "files": [
+      "pokemon.csv",
+      "pokemon_species_names.csv",
+      "pokemon_types.csv",
+      "type_names.csv"
+    ],
+    "name_language_id": 9,
+    "type_language_id": 9,
+    "types": "Current PokeAPI typings, including later generation additions such as fairy."
+  },
+  "usage": {
+    "data_file": "pokemon.js",
+    "global": "window.POKEMON",
+    "schema": {
+      "id": "National Pokédex integer, 1–151",
+      "name": "English display name",
+      "types": "Ordered lower-case current type names",
+      "image": "Relative URL assets/pokemon/{id}.png"
+    },
+    "copy_images_to": "assets/pokemon/",
+    "images_modified": false
+  }
+}

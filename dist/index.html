@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#12291e">
+  <meta name="description" content="Draft the original 151 Pokémon into your own NFL offense and defense. Pick your personnel, tap a position, and make your pick.">
+  <title>Pokémon Draft League</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312291e'/%3E%3Cpath d='M7 16c5-11 13-11 18 0-5 11-13 11-18 0Z' fill='%23f4cd58'/%3E%3Cpath d='M11 16h10m-7-3v6m4-6v6' stroke='%2312291e' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="assets/pokemon.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">P<span>●</span></span><div><span class="eyebrow">KANTO · ORIGINAL 151</span><h1>Pokémon Draft League</h1></div></div>
+    <div class="header-note"><span class="football" aria-hidden="true">◈</span> Your Pokémon. Your playbook.</div>
+  </header>
+  <main class="game">
+    <section class="board-panel" aria-label="Football draft board">
+      <div class="playbook">
+        <div class="personnel-control"><label for="offense"><span class="team-dot offense-dot"></span>Offense</label><div class="select-wrap"><select id="offense" aria-describedby="offense-detail"><option value="10">10 personnel</option><option value="11">11 personnel</option><option value="12">12 personnel</option><option value="21" selected>21 personnel</option><option value="22">22 personnel</option></select></div><span id="offense-detail" class="personnel-detail">2 RB · 1 TE · 2 WR</span></div>
+        <div class="personnel-control"><label for="defense"><span class="team-dot defense-dot"></span>Defense</label><div class="select-wrap"><select id="defense"><option value="3-4" selected>3–4 defense</option><option value="4-3">4–3 defense</option><option value="nickel">Nickel · 4–2–5</option><option value="dime">Dime · 4–1–6</option></select></div><span id="defense-detail" class="personnel-detail">3 DL · 4 LB · 4 DB</span></div>
+        <div class="draft-count"><strong id="draft-count">22<span>/22</span></strong><span>POSITIONS FILLED</span></div>
+      </div>
+      <div class="field" id="field">
+        <div class="field-texture" aria-hidden="true"></div>
+        <svg class="field-markings" viewBox="0 0 1000 760" preserveAspectRatio="none" aria-hidden="true">
+          <defs><pattern id="yards" width="1000" height="126" patternUnits="userSpaceOnUse"><path d="M40 0H960"/><path d="M40 21h15m-15 21h15m-15 21h15m-15 21h15m-15 21h15M945 21h15m-15 21h15m-15 21h15m-15 21h15m-15 21h15M430 21h12m-12 21h12m-12 21h12m-12 21h12m-12 21h12M558 21h12m-12 21h12m-12 21h12m-12 21h12m-12 21h12"/></pattern></defs>
+          <rect x="40" y="1" width="920" height="758" fill="url(#yards)" stroke="none"/>
+          <path d="M40 0V760M960 0V760"/>
+          <g class="yard-numbers" fill="currentColor" stroke="none" text-anchor="middle"><text x="92" y="145">30</text><text x="908" y="145">30</text><text x="92" y="270">40</text><text x="908" y="270">40</text><text x="92" y="397">50</text><text x="908" y="397">50</text><text x="92" y="523">40</text><text x="908" y="523">40</text><text x="92" y="649">30</text><text x="908" y="649">30</text></g>
+        </svg>
+        <div class="side-label defense-side">DEFENSE</div>
+        <div class="side-label offense-side">OFFENSE</div>
+        <div class="scrimmage-line" aria-hidden="true"></div>
+        <div id="positions"></div>
+        <div class="field-footer" aria-hidden="true">KANTO DRAFT LEAGUE</div>
+      </div>
+      <div class="board-footer"><p><span class="tap-icon" aria-hidden="true">＋</span> Tap a position. Pick your Pokémon.</p><div class="board-actions"><button id="sample-button" class="text-button">Sample lineup</button><button id="clear-button" class="text-button">Clear board</button></div></div>
+    </section>
+    <aside class="picker-panel" id="picker" aria-labelledby="picker-heading">
+      <div class="picker-handle" aria-hidden="true"></div>
+      <div class="picker-heading-row"><div><span class="eyebrow">THE ORIGINAL 151</span><h2 id="picker-heading">Make your pick</h2></div><button id="close-picker" class="icon-button mobile-only" aria-label="Close Pokémon picker">×</button></div>
+      <div id="selection-info" class="selection-info"><span class="selection-badge" id="selection-badge">＋</span><div><strong id="selection-title">Select a position</strong><span id="selection-description">Tap a player on the field to draft.</span></div><button id="remove-pick" class="icon-button" aria-label="Remove Pokémon from selected position" hidden>×</button></div>
+      <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="pokemon-search" type="search" placeholder="Find a Pokémon…" autocomplete="off" aria-label="Find a Pokémon by name or Pokédex number"></label>
+      <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><span>GENERATION I</span></div>
+      <div id="pokemon-list" class="pokemon-list"></div>
+      <div class="picker-bottom"><span>Artwork: <a href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a></span><span>Fan-made draft board</span></div>
+    </aside>
+  </main>
+  <div class="picker-backdrop" id="picker-backdrop" hidden></div>
+  <div class="live-message" id="live-message" role="status" aria-live="polite"></div>
+  <dialog id="clear-dialog"><form method="dialog"><span class="eyebrow">NEW DRAFT</span><h2>Clear your lineup?</h2><p>All 22 positions will be empty. Your personnel choices will stay the same.</p><div class="dialog-actions"><button value="cancel" class="secondary-button">Keep lineup</button><button value="clear" class="primary-button">Clear board</button></div></form></dialog>
+</body>
+</html>
