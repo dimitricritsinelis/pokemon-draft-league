@@ -7,9 +7,9 @@
   <meta name="description" content="Draft the original 151 Pokémon into your own NFL offense and defense. Pick your personnel, tap a position, and make your pick.">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2312291e'/%3E%3Cpath d='M7 16c5-11 13-11 18 0-5 11-13 11-18 0Z' fill='%23f4cd58'/%3E%3Cpath d='M11 16h10m-7-3v6m4-6v6' stroke='%2312291e' stroke-width='2'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
   <script src="assets/pokemon.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=2" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -19,8 +19,8 @@
   <main class="game">
     <section class="board-panel" aria-label="Football draft board">
       <div class="playbook">
-        <div class="personnel-control"><label for="offense"><span class="team-dot offense-dot"></span>Offense</label><div class="select-wrap"><select id="offense" aria-describedby="offense-detail"><option value="10">10 personnel</option><option value="11">11 personnel</option><option value="12">12 personnel</option><option value="21" selected>21 personnel</option><option value="22">22 personnel</option></select></div><span id="offense-detail" class="personnel-detail">2 RB · 1 TE · 2 WR</span></div>
-        <div class="personnel-control"><label for="defense"><span class="team-dot defense-dot"></span>Defense</label><div class="select-wrap"><select id="defense"><option value="3-4" selected>3–4 defense</option><option value="4-3">4–3 defense</option><option value="nickel">Nickel · 4–2–5</option><option value="dime">Dime · 4–1–6</option></select></div><span id="defense-detail" class="personnel-detail">3 DL · 4 LB · 4 DB</span></div>
+        <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
+        <div class="personnel-control"><span id="defense-label" class="personnel-label"><span class="team-dot defense-dot"></span>Defense</span><button id="defense" class="personnel-trigger" type="button" aria-labelledby="defense-label defense-current defense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="defense-options"><strong id="defense-current">3–4 defense</strong><span id="defense-detail">3 DL · 4 LB · 4 DB</span></button><div id="defense-options" class="personnel-options" role="listbox" aria-labelledby="defense-label" hidden></div></div>
         <div class="draft-count"><strong id="draft-count">22<span>/22</span></strong><span>POSITIONS FILLED</span></div>
       </div>
       <div class="field" id="field">
@@ -42,8 +42,8 @@
     <aside class="picker-panel" id="picker" aria-labelledby="picker-heading">
       <div class="picker-handle" aria-hidden="true"></div>
       <div class="picker-heading-row"><div><span class="eyebrow">THE ORIGINAL 151</span><h2 id="picker-heading">Make your pick</h2></div><button id="close-picker" class="icon-button mobile-only" aria-label="Close Pokémon picker">×</button></div>
-      <div id="selection-info" class="selection-info"><span class="selection-badge" id="selection-badge">＋</span><div><strong id="selection-title">Select a position</strong><span id="selection-description">Tap a player on the field to draft.</span></div><button id="remove-pick" class="icon-button" aria-label="Remove Pokémon from selected position" hidden>×</button></div>
-      <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="pokemon-search" type="search" placeholder="Find a Pokémon…" autocomplete="off" aria-label="Find a Pokémon by name or Pokédex number"></label>
+      <div id="selection-info" class="selection-info"><span class="selection-badge" id="selection-badge">＋</span><div><strong id="selection-title">Select a position</strong><span id="selection-description">Tap a player on the field to draft.</span></div><button id="remove-pick" class="remove-button" aria-label="Remove Pokémon from selected position" hidden>Remove</button></div>
+      <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="pokemon-search" type="search" placeholder="Find a Pokémon…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="Find a Pokémon by name or Pokédex number"></label>
       <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><span>GENERATION I</span></div>
       <div id="pokemon-list" class="pokemon-list"></div>
       <div class="picker-bottom"><span>Artwork: <a href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI</a></span><span>Fan-made draft board</span></div>

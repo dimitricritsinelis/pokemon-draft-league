@@ -3,13 +3,18 @@
   const pokemon = window.POKEMON || [];
   const byId = new Map(pokemon.map(p => [p.id, p]));
   const $ = id => document.getElementById(id);
-  const narrow = window.matchMedia('(max-width: 800px)');
+  const narrow = window.matchMedia('(max-width: 800px), (pointer: coarse) and (max-width: 1000px)');
   const phone = window.matchMedia('(max-width: 560px)');
   const state = { offense: '21', defense: '3-4', selected: null, picks: {} };
   let lastFieldButton = null;
   let toastTimer;
-  const offenseDetails = { '10': '1 RB · 0 TE · 4 WR', '11': '1 RB · 1 TE · 3 WR', '12': '1 RB · 2 TE · 2 WR', '21': '2 RB · 1 TE · 2 WR', '22': '2 RB · 2 TE · 1 WR' };
+  let catalogCards;
+  let emptyResult;
+  let viewportFrame;
+  const offenseDetails = { '10': '0 TE · 1 RB · 4 WR', '11': '1 TE · 1 RB · 3 WR', '12': '2 TE · 1 RB · 2 WR', '21': '1 TE · 2 RB · 2 WR', '22': '2 TE · 2 RB · 1 WR' };
   const defenseDetails = { '3-4': '3 DL · 4 LB · 4 DB', '4-3': '4 DL · 3 LB · 4 DB', nickel: '4 DL · 2 LB · 5 DB', dime: '4 DL · 1 LB · 6 DB' };
+  const offenseLabels = { '10': '10 personnel', '11': '11 personnel', '12': '12 personnel', '21': '21 personnel', '22': '22 personnel' };
+  const defenseLabels = { '3-4': '3–4 defense', '4-3': '4–3 defense', nickel: 'Nickel · 4–2–5', dime: 'Dime · 4–1–6' };
   const roleNames = { LT: 'Left tackle', LG: 'Left guard', C: 'Center', RG: 'Right guard', RT: 'Right tackle', QB: 'Quarterback', HB: 'Halfback', FB: 'Fullback', WR: 'Wide receiver', TE: 'Tight end', FS: 'Free safety', SS: 'Strong safety', CB: 'Cornerback', DE: 'Defensive end', NT: 'Nose tackle', DT: 'Defensive tackle', ILB: 'Inside linebacker', OLB: 'Outside linebacker', MLB: 'Middle linebacker', WLB: 'Weakside linebacker', SLB: 'Strongside linebacker', LB: 'Linebacker', NB: 'Nickel back', DB: 'Defensive back' };
   const slot = (key, role, x, y, side) => ({ key, role, x, y, side, name: roleNames[role] });
   const o = (key, role, x, y) => slot('o_' + key, role, x, y, 'offense');
@@ -89,6 +94,11 @@
     $('draft-count').innerHTML = `${filled}<span>/22</span>`;
     $('offense-detail').textContent = offenseDetails[state.offense];
     $('defense-detail').textContent = defenseDetails[state.defense];
+    $('offense-current').textContent = offenseLabels[state.offense];
+    $('defense-current').textContent = defenseLabels[state.defense];
+    ['offense', 'defense'].forEach(side => {
+      $(side + '-options').querySelectorAll('[role="option"]').forEach(option => option.setAttribute('aria-selected', String(option.dataset.value === state[side])));
+    });
     renderSelection();
     updatePickedMarkers();
   }
@@ -99,7 +109,7 @@
     $('selection-info').className = 'selection-info' + (selected ? ' is-selected' + (selected.side === 'defense' ? ' is-defense' : '') : '');
     $('selection-badge').textContent = selected ? selected.role : '＋';
     $('selection-title').textContent = selected ? selected.name : 'Select a position';
-    $('selection-description').textContent = picked ? `${picked.name} · tap a Pokémon to replace` : selected ? 'Tap a Pokémon to draft here.' : 'Tap a player on the field to draft.';
+    $('selection-description').textContent = picked ? `Replacing ${picked.name}` : selected ? 'Choose your Pokémon' : 'Tap a player on the field to draft.';
     $('remove-pick').hidden = !picked;
   }
 
@@ -107,29 +117,35 @@
 
   function renderCatalog() {
     const query = normalize($('pokemon-search').value);
-    const filtered = pokemon.filter(p => normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query));
-    $('catalog-count').textContent = `${filtered.length} Pokémon`;
-    if (!filtered.length) {
-      const empty = document.createElement('p');
-      empty.className = 'empty-results';
-      empty.textContent = 'No Pokémon found. Try a name or Pokédex number.';
-      $('pokemon-list').replaceChildren(empty);
-      return;
-    }
-    $('pokemon-list').replaceChildren(...filtered.map(p => {
+    if (!catalogCards) {
+      catalogCards = pokemon.map(p => {
       const button = document.createElement('button');
       button.className = 'pokemon-card';
       button.dataset.pokemon = p.id;
       button.setAttribute('aria-label', `Draft ${p.name}, Pokédex ${p.id}`);
       const dex = document.createElement('span'); dex.className = 'dex-number'; dex.textContent = '#' + String(p.id).padStart(3, '0');
-      const marker = document.createElement('span'); marker.className = 'picked-marker'; marker.textContent = '✓'; marker.setAttribute('aria-hidden', 'true');
       const img = document.createElement('img'); img.src = p.image; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.draggable = false;
       const name = document.createElement('span'); name.className = 'card-name'; name.textContent = p.name;
       const type = document.createElement('span'); type.className = 'card-type'; type.textContent = p.types.join(' / ');
-      button.append(dex, marker, img, name, type);
+      button.append(dex, img, name, type);
       button.addEventListener('click', () => draftPokemon(p.id));
       return button;
-    }));
+      });
+      emptyResult = document.createElement('p');
+      emptyResult.className = 'empty-results';
+      emptyResult.textContent = 'No Pokémon found. Try a name or Pokédex number.';
+      $('pokemon-list').replaceChildren(...catalogCards, emptyResult);
+    }
+    let found = 0;
+    catalogCards.forEach((card, index) => {
+      const p = pokemon[index];
+      const matches = normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query);
+      card.hidden = !matches;
+      if (matches) found++;
+    });
+    emptyResult.hidden = found > 0;
+    $('catalog-count').textContent = `${found} Pokémon`;
+    $('pokemon-list').scrollTop = 0;
     updatePickedMarkers();
   }
 
@@ -138,7 +154,6 @@
     document.querySelectorAll('.pokemon-card').forEach(card => {
       const picked = visiblePicks.has(Number(card.dataset.pokemon));
       card.classList.toggle('picked', picked);
-      card.querySelector('.picked-marker').hidden = !picked;
     });
   }
 
@@ -159,21 +174,94 @@
       document.querySelector('.board-panel').inert = true;
       document.querySelector('.masthead').inert = true;
       $('close-picker').focus({ preventScroll: true });
+      updatePickerViewport();
     } else $('pokemon-search').focus({ preventScroll: true });
   }
 
   function closePicker(restoreFocus = true) {
+    if (document.activeElement === $('pokemon-search')) $('pokemon-search').blur();
     $('picker').classList.remove('open');
     $('picker').removeAttribute('role');
     $('picker').removeAttribute('aria-modal');
     $('picker-backdrop').hidden = true;
     document.body.classList.remove('picker-open');
+    $('picker').classList.remove('keyboard-open');
+    $('picker').style.removeProperty('--picker-top');
+    $('picker').style.removeProperty('--picker-height');
     document.querySelector('.board-panel').inert = false;
     document.querySelector('.masthead').inert = false;
     if (restoreFocus && lastFieldButton) {
       const button = document.querySelector(`[data-slot="${lastFieldButton.dataset.slot}"]`);
       button?.focus({ preventScroll: true });
     }
+  }
+
+  function updatePickerViewport() {
+    if (!narrow.matches || !$('picker').classList.contains('open')) return;
+    const viewport = window.visualViewport;
+    const height = viewport?.height || window.innerHeight;
+    $('picker').style.setProperty('--picker-top', `${(viewport?.offsetTop || 0) + 8}px`);
+    $('picker').style.setProperty('--picker-height', `${Math.max(0, height - 16)}px`);
+    $('picker').classList.toggle('keyboard-open', document.activeElement === $('pokemon-search') && height < window.innerHeight * 0.8);
+  }
+
+  function schedulePickerViewport() {
+    cancelAnimationFrame(viewportFrame);
+    viewportFrame = requestAnimationFrame(updatePickerViewport);
+  }
+
+  function closePersonnelMenus(restoreFocus = false) {
+    ['offense', 'defense'].forEach(side => {
+      if (!$(side + '-options').hidden && restoreFocus) $(side).focus({ preventScroll: true });
+      $(side + '-options').hidden = true;
+      $(side).setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function openPersonnelMenu(side) {
+    const menu = $(side + '-options');
+    const wasOpen = !menu.hidden;
+    closePersonnelMenus();
+    if (wasOpen) return;
+    menu.hidden = false;
+    $(side).setAttribute('aria-expanded', 'true');
+    menu.querySelector(`[data-value="${state[side]}"]`).focus({ preventScroll: true });
+  }
+
+  function initializePersonnelMenus() {
+    ['offense', 'defense'].forEach(side => {
+      const labels = side === 'offense' ? offenseLabels : defenseLabels;
+      const details = side === 'offense' ? offenseDetails : defenseDetails;
+      const menu = $(side + '-options');
+      menu.replaceChildren(...Object.keys(labels).map(value => {
+        const option = document.createElement('button');
+        option.type = 'button'; option.className = 'personnel-option';
+        option.setAttribute('role', 'option'); option.setAttribute('aria-selected', String(value === state[side]));
+        option.tabIndex = -1; option.dataset.value = value;
+        const label = document.createElement('strong'); label.textContent = labels[value];
+        const detail = document.createElement('span'); detail.textContent = details[value];
+        option.append(label, detail);
+        option.addEventListener('click', () => {
+          setPersonnel(side === 'offense' ? value : state.offense, side === 'defense' ? value : state.defense);
+          closePersonnelMenus(true);
+        });
+        return option;
+      }));
+      $(side).addEventListener('click', () => openPersonnelMenu(side));
+      $(side).addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); openPersonnelMenu(side); } });
+      menu.addEventListener('keydown', e => {
+        const options = [...menu.querySelectorAll('[role="option"]')];
+        const index = options.indexOf(document.activeElement);
+        if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+          e.preventDefault();
+          const next = e.key === 'Home' ? 0 : e.key === 'End' ? options.length - 1 : (index + (e.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+          options[next].focus();
+        }
+        if (e.key === 'Escape') { e.preventDefault(); closePersonnelMenus(true); }
+        if (e.key === 'Tab') closePersonnelMenus(true);
+      });
+    });
+    document.addEventListener('click', e => { if (!e.target.closest('.personnel-control')) closePersonnelMenus(); });
   }
 
   function draftPokemon(id) {
@@ -192,7 +280,6 @@
   function setPersonnel(offense, defense) {
     if (!Object.hasOwn(offenseDetails, offense) || !Object.hasOwn(defenseDetails, defense)) throw new Error('Unknown personnel group.');
     state.offense = offense; state.defense = defense;
-    $('offense').value = offense; $('defense').value = defense;
     renderBoard();
     return readBoard();
   }
@@ -200,7 +287,6 @@
   function sampleLineup() {
     state.offense = '21'; state.defense = '3-4'; state.selected = null;
     state.picks = { d_fs: 82, d_ss: 105, d_cb1: 123, d_cb2: 141, d_de1: 68, d_dt1: 143, d_de2: 67, d_lb1: 24, d_lb2: 62, d_lb3: 57, d_lb4: 28, o_lt: 9, o_lg: 76, o_c: 3, o_rg: 89, o_rt: 115, o_qb: 94, o_rb1: 112, o_wr1: 135, o_wr2: 85, o_te1: 34, o_rb2: 128 };
-    $('offense').value = state.offense; $('defense').value = state.defense;
     renderBoard();
   }
 
@@ -208,9 +294,13 @@
     return { offense: state.offense, defense: state.defense, positions: slots().map(s => ({ key: s.key, role: s.role, side: s.side, pokemon: byId.get(state.picks[s.key])?.name || null, pokemonId: state.picks[s.key] || null })) };
   }
 
-  $('offense').addEventListener('change', e => { setPersonnel(e.target.value, state.defense); message('Offense personnel updated. Shared positions keep their picks.'); });
-  $('defense').addEventListener('change', e => { setPersonnel(state.offense, e.target.value); message('Defense personnel updated. Shared positions keep their picks.'); });
   $('pokemon-search').addEventListener('input', renderCatalog);
+  $('pokemon-search').addEventListener('focus', schedulePickerViewport);
+  $('pokemon-search').addEventListener('blur', schedulePickerViewport);
+  $('pokemon-search').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+  window.visualViewport?.addEventListener('resize', schedulePickerViewport);
+  window.visualViewport?.addEventListener('scroll', schedulePickerViewport);
+  window.addEventListener('resize', schedulePickerViewport);
   $('close-picker').addEventListener('click', () => closePicker());
   $('picker-backdrop').addEventListener('click', () => closePicker());
   $('remove-pick').addEventListener('click', () => {
@@ -238,6 +328,7 @@
   narrow.addEventListener('change', () => closePicker(false));
   phone.addEventListener('change', renderBoard);
 
+  initializePersonnelMenus();
   sampleLineup();
   renderCatalog();
   if (!pokemon.length) message('Pokémon artwork could not load. Please reload the page.');
