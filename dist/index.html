@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#12291e">
-  <meta name="description" content="Draft two NFL teams from Gen 1 and Gen 2 Pokémon. Share your boards and simulate a four-quarter matchup.">
+  <meta name="description" content="Draft two NFL teams from Gen 1 and Gen 2 Pokémon. Pick freely or auction 44 Pokémon with $1,000 per team, then simulate a four-quarter matchup.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pokémon Draft">
@@ -12,18 +12,20 @@
   <link rel="apple-touch-icon" href="assets/app-icon.png">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
-  <link rel="stylesheet" href="styles.css?v=8">
-  <link rel="stylesheet" href="results.css?v=8">
-  <link rel="stylesheet" href="hall.css?v=8">
-  <script src="assets/pokemon.js?v=8" defer></script>
-  <script src="field.js?v=8" defer></script>
-  <script src="export.js?v=8" defer></script>
-  <script src="ratings.js?v=8" defer></script>
-  <script src="simulation.js?v=8" defer></script>
-  <script src="career.js?v=8" defer></script>
-  <script src="results.js?v=8" defer></script>
-  <script src="hall.js?v=8" defer></script>
-  <script src="app.js?v=8" defer></script>
+  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="results.css?v=9">
+  <link rel="stylesheet" href="hall.css?v=9">
+  <link rel="stylesheet" href="auction.css?v=9">
+  <script src="assets/pokemon.js?v=9" defer></script>
+  <script src="field.js?v=9" defer></script>
+  <script src="export.js?v=9" defer></script>
+  <script src="ratings.js?v=9" defer></script>
+  <script src="simulation.js?v=9" defer></script>
+  <script src="career.js?v=9" defer></script>
+  <script src="results.js?v=9" defer></script>
+  <script src="hall.js?v=9" defer></script>
+  <script src="auction.js?v=9" defer></script>
+  <script src="app.js?v=9" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -35,6 +37,7 @@
     <div class="menu-heading"><strong>Draft options</strong><span id="save-status" class="save-status" role="status">Autosaved</span></div>
     <p class="menu-context"><span id="formation-summary">Team 1 · Gen 1 · 21 OFF · 3–4 DEF</span> · <span id="draft-count">22/22</span></p>
     <form class="team-name-form"><label for="team-name">Team name</label><div><input id="team-name" type="text" maxlength="48" placeholder="Team 1" autocomplete="off" enterkeyhint="done"><button type="button" id="save-team-name">Save</button></div></form>
+    <div class="auction-mode-controls"><button type="button" id="auction-start-button" class="menu-action">Auction draft</button><button type="button" id="auction-exit-button" class="menu-action" hidden>Regular draft</button><button type="button" id="auction-new-button" class="menu-action" hidden>New auction</button></div>
     <div class="menu-controls">
       <div class="menu-group"><span class="menu-label">Pokémon pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="both" aria-pressed="false">Both</button></div></div>
         <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
@@ -51,6 +54,10 @@
     </div>
     <div id="shared-notice" class="shared-notice" hidden><span id="shared-label">Shared lineup</span><div class="shared-actions"><button type="button" id="my-lineup" class="text-button">My teams</button><button type="button" id="keep-shared" class="text-button">Keep matchup</button></div></div>
   </nav>
+  <section id="auction-strip" class="auction-strip" aria-label="Auction progress" hidden>
+    <div class="auction-wallets"><span><span id="auction-team-0">Team 1</span> <strong id="auction-budget-0">$1,000</strong></span><span><span id="auction-team-1">Team 2</span> <strong id="auction-budget-1">$1,000</strong></span></div>
+    <div class="auction-progress"><p id="auction-status" role="status"></p><button type="button" id="auction-resume-button">Next Pokémon</button></div>
+  </section>
   <main class="game">
     <section id="draft-board" class="board-panel" role="tabpanel" aria-labelledby="team-tab-0" aria-label="Team 1 football draft board">
       <div class="field" id="field">
@@ -71,6 +78,29 @@
   </main>
   <div class="picker-backdrop" id="picker-backdrop" hidden></div>
   <div class="live-message" id="live-message" role="status" aria-live="polite"></div>
+  <dialog id="auction-setup-dialog" class="auction-setup-dialog" aria-labelledby="auction-setup-title">
+    <div class="dialog-heading"><div><span class="eyebrow">BUILD THROUGH THE BIDDING</span><h2 id="auction-setup-title">Auction draft</h2></div><button type="button" class="icon-button" data-close="auction-setup-dialog" aria-label="Close auction setup">×</button></div>
+    <p class="auction-rules">$1,000 each. 44 random Pokémon, revealed one at a time. Highest bid wins; all ties, including $0–$0, are settled randomly. Each team gets exactly 22 players.</p>
+    <form id="auction-setup-form" novalidate>
+      <div class="auction-setup-names"><label>Team 1 name<input id="auction-name-0" type="text" maxlength="48" placeholder="Team 1" autocomplete="off" enterkeyhint="next"></label><label>Team 2 name<input id="auction-name-1" type="text" maxlength="48" placeholder="Team 2" autocomplete="off" enterkeyhint="done"></label></div>
+      <label class="auction-pool-label" for="auction-pool">Pokémon pool</label><select id="auction-pool"><option value="gen1">Gen 1 · Kanto</option><option value="gen2">Gen 2 · Johto</option><option value="both">Both · all 251</option></select>
+      <p class="auction-save-note" id="auction-setup-note">Your regular drafts are kept separately. Hall of Fame Pokémon stay retired.</p>
+      <p id="auction-setup-error" class="auction-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button type="submit" id="auction-create-button" class="primary-button">Start auction</button></div>
+    </form>
+  </dialog>
+  <dialog id="auction-dialog" class="auction-dialog" aria-labelledby="auction-title">
+    <div class="dialog-heading"><div><span class="eyebrow" id="auction-round">POKÉMON 1 OF 44</span><h2 id="auction-title">Place your bids</h2></div><button type="button" class="icon-button" data-close="auction-dialog" aria-label="Pause auction">×</button></div>
+    <div class="auction-dialog-body">
+      <div class="auction-prospect"><img id="auction-image" alt=""><div><span id="auction-dex" class="eyebrow"></span><h3 id="auction-pokemon"></h3><span id="auction-types"></span><span id="auction-stats"></span></div></div>
+      <form id="auction-bid-form" novalidate>
+        <div class="auction-bids"><div><label id="auction-bid-label-0" for="auction-bid-0">Team 1 bid</label><span id="auction-bid-detail-0" class="auction-bid-detail"></span><div class="auction-bid-input"><span aria-hidden="true">$</span><input type="text" id="auction-bid-0" inputmode="numeric" pattern="[0-9]*" value="0" autocomplete="off" enterkeyhint="next" aria-describedby="auction-bid-detail-0 auction-bid-error"></div></div><div><label id="auction-bid-label-1" for="auction-bid-1">Team 2 bid</label><span id="auction-bid-detail-1" class="auction-bid-detail"></span><div class="auction-bid-input"><span aria-hidden="true">$</span><input type="text" id="auction-bid-1" inputmode="numeric" pattern="[0-9]*" value="0" autocomplete="off" enterkeyhint="done" aria-describedby="auction-bid-detail-1 auction-bid-error"></div></div></div>
+        <p id="auction-bid-error" class="auction-error" role="alert" hidden></p>
+        <p class="auction-tie-note">Tied bids are settled randomly. Only the winner pays.</p>
+        <div class="dialog-actions"><button type="submit" id="auction-bid-button" class="primary-button">Award Pokémon</button></div>
+      </form>
+    </div>
+  </dialog>
   <dialog id="match-dialog" class="match-dialog" aria-labelledby="match-title">
     <div class="dialog-heading"><div><span class="eyebrow">FINAL WHISTLE</span><h2 id="match-title">Match result</h2></div><button type="button" class="icon-button" data-close="match-dialog" aria-label="Close match result">×</button></div>
     <p id="match-summary" class="match-summary"></p>
