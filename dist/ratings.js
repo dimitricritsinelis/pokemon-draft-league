@@ -1,13 +1,14 @@
-/* Internal scouting model. These grades are game mechanics, not displayed Pokémon stats. */
+/* Fictional football scouting: canonical lore inspires game mechanics, not official Pokémon statistics.
+ * Grades stay internal during drafting; the Hall of Fame may reveal a retired Pokémon's role values. */
 (() => {
   'use strict';
 
-  // Each species is reviewed individually. Traits: possession control, field awareness,
-  // functional strength, contact durability, football mobility, passing accuracy,
-  // and a passing ceiling imposed by anatomy. Psychic/tentacle control is explicit;
-  // a high Pokédex speed never gives an armless Pokémon a quarterback's mechanics.
-  // Mouth/talon catches can support a runner or receiver without implying that
-  // the same species can grip and release an accurate forward pass.
+  // Every species has individually reviewed physical/anatomical traits AND a
+  // distinct lore-fit sheet below. Powers can support football mechanics: cannon
+  // launchers, psychic catches, teleport coverage and four-arm blocking/catching.
+  // They never change the separately displayed estimated 40-yard dash time.
+  // Traits: id, control, awareness, strength, durability, mobility, accuracy,
+  // original conventional-release ceiling, and physical scouting note.
   const profiles = [
     [1, 61, 59, 45, 53, 60, 42, 54, 'Vines can grip; a small quadruped with limited throwing leverage.'],
     [2, 67, 64, 62, 68, 54, 46, 59, 'Stronger vine control, but plant bulk slows its feet.'],
@@ -262,49 +263,342 @@
     [251, 95, 99, 61, 66, 98, 93, 98, 'Precise psychic hands and excellent anticipation; small frame still limits line play.']
   ];
 
+  // id, possession method, throwing ceiling, contact-catch ceiling, explicit
+  // role-fit anchors, bounded X factor, and species-specific canonical inspiration.
+  // Roles absent from anchors still use this species' reviewed traits, possession
+  // constraints and positional responsibilities; every one of 24 roles is scored.
+  // OL/DT/LB/CB groups expand to related positional responsibilities below.
+  const loreProfiles = [
+    [1, "vines", 68, 87, {"QB": 56, "WR": 61, "TE": 52, "C": 63, "FS": 55}, 0.28, "Vine Whip supplies flexible hands and a reach catch; the bulb provides balance, but the small body loses contact and deep throwing power."],
+    [2, "vines", 76, 91, {"QB": 64, "WR": 65, "TE": 73, "C": 78, "OL": 73, "LB": 66}, 0.34, "Stronger Vine Whip control permits snaps and catches outside the frame; the heavier bud favors blocking over sharp routes."],
+    [3, "vines", 82, 93, {"QB": 72, "WR": 54, "TE": 80, "C": 97, "OL": 91, "DT": 92, "NT": 93, "DE": 75}, 0.44, "Power Whip vines can snap and redirect rushers while the broad rooted frame anchors the pocket; heavy foliage slows pursuit."],
+    [4, "hands", 76, 88, {"QB": 64, "WR": 61, "HB": 64, "DE": 49, "OL": 27}, 0.26, "Dexterous claws support possession and the tail signals energy, but youthful size limits arm strength and collision leverage."],
+    [5, "hands", 85, 94, {"QB": 73, "WR": 75, "HB": 74, "DE": 77, "OL": 58}, 0.37, "Slash timing, an athletic bipedal stance and competitive aggression suit contested routes and edge counters more than patient reads."],
+    [6, "hands", 93, 98, {"QB": 86, "WR": 92, "TE": 95, "DE": 94, "CB": 83, "OL": 82}, 0.55, "Flight gives Charizard high-point catches and a wide rush arc; strong arms and Dragon Claw leverage create a powerful receiving tight end."],
+    [7, "hands", 79, 92, {"QB": 74, "WR": 60, "TE": 57, "DE": 54, "OL": 46}, 0.27, "Water Gun aim develops timing and touch, while a shell absorbs hits; the small release point and frame limit deep passing and blocking."],
+    [8, "hands", 88, 97, {"QB": 84, "TE": 74, "C": 75, "DE": 72, "OL": 68}, 0.36, "Accurate water aim, hands and practiced shell balance create a composed short passer and secure snapper; reach is still limited."],
+    [9, "launcher", 100, 98, {"QB": 100, "TE": 90, "OL": 97, "C": 92, "DT": 94, "NT": 95, "DE": 84}, 0.63, "Blastoise can load footballs into its precision water cannons and launch deep passes; its shell anchors pass protection, though its heavy feet limit scrambling."],
+    [10, "none", 8, 9, {"QB": 2, "WR": 6, "HB": 8, "DE": 12, "DT": 8, "CB": 13}, 0.13, "String Shot can slow a pursuit lane, but a tiny crawler has no dependable grip, throwing motion or contact frame."],
+    [11, "none", 5, 5, {"QB": 1, "WR": 1, "HB": 1, "OL": 19, "DE": 8, "NT": 23}, 0.08, "Harden offers a stubborn spot block; Metapod cannot move through a route, catch with limbs or execute a forward pass."],
+    [12, "psychic", 70, 78, {"QB": 63, "WR": 75, "CB": 84, "FS": 88, "DE": 59, "OL": 23}, 0.49, "Confusion and Psychic provide limited airborne ball control, while Compound Eyes tracks receivers; frail wings lose trench contact."],
+    [13, "none", 6, 6, {"QB": 1, "WR": 2, "HB": 5, "DE": 15, "CB": 17}, 0.13, "A stinger and String Shot can threaten a pursuit angle, but Weedle has neither a reliable catch mechanism nor useful throwing leverage."],
+    [14, "none", 5, 5, {"QB": 1, "WR": 1, "HB": 1, "OL": 20, "DE": 8, "NT": 24}, 0.08, "Kakuna hardens into a contact obstacle but remains nearly immobile and lacks limbs to catch, snap or throw."],
+    [15, "blades", 30, 25, {"QB": 10, "WR": 15, "TE": 18, "DE": 95, "OLB": 87, "CB": 85, "FS": 78}, 0.58, "Agility and fast twin-drill feints make a dangerous bend-and-counter edge rusher; the sharp drills cannot secure a football without puncturing it."],
+    [16, "talons", 31, 62, {"QB": 12, "WR": 40, "CB": 55, "FS": 55, "DE": 30, "OL": 10}, 0.25, "Keen Eye helps follow the ball and tiny talons can attempt a catch, but Pidgey's small feet and light frame limit retention and tackling."],
+    [17, "talons", 39, 77, {"QB": 20, "WR": 69, "CB": 78, "FS": 80, "DE": 58, "OL": 23}, 0.36, "Keen Eye and fast flight support aerial tracking and talon catches; a bird release remains far less precise than a hand or cannon."],
+    [18, "talons", 48, 93, {"QB": 28, "WR": 94, "CB": 95, "FS": 93, "DE": 81, "TE": 75}, 0.59, "Pidgeot's high-speed flight, excellent vision and strong talons create a deep-ball specialist and wide-ranging corner with limited passing mechanics."],
+    [19, "mouth", 29, 63, {"QB": 8, "WR": 37, "HB": 63, "CB": 52, "DE": 32}, 0.28, "Quick Attack and Run Away make a slippery small runner; a mouth carry is usable, but biting a pass is less reliable than catching with hands."],
+    [20, "mouth", 37, 77, {"QB": 14, "WR": 52, "HB": 78, "FB": 59, "CB": 65, "DE": 58}, 0.37, "Strong incisors and Guts help Raticate retain a carry through contact; Sucker Punch timing aids pursuit, not accurate forward passing."],
+    [21, "talons", 29, 61, {"QB": 10, "WR": 43, "CB": 61, "FS": 56, "DE": 42}, 0.28, "Keen Eye and aggressive flight favor ball tracking and pursuit; small talons and an angry temperament limit secure catches and reads."],
+    [22, "talons", 45, 89, {"QB": 23, "WR": 88, "CB": 91, "FS": 86, "DE": 79, "TE": 62}, 0.48, "A long neck, sharp vision and high-end flight reach contested balls; narrow feet and avian anatomy reduce blocking and passing control."],
+    [23, "coils", 30, 45, {"QB": 8, "WR": 24, "HB": 38, "DE": 49, "LB": 45}, 0.28, "Glare freezes a read and coils wrap runners, but an unarmed snake struggles with a clean catch or independent forward release."],
+    [24, "coils", 40, 67, {"QB": 17, "WR": 43, "HB": 63, "DE": 86, "LB": 84, "SS": 77, "NT": 58}, 0.49, "Intimidate, Glare and flexible coils create disguises and wrap tackles; its jaws can retain carries but cannot deliver an elite pass."],
+    [25, "hands", 85, 92, {"QB": 74, "WR": 88, "HB": 91, "CB": 91, "DE": 70, "OL": 22}, 0.56, "Quick Attack and electric reactions create explosive separation; hands can catch cleanly, but the tiny frame cannot sustain trench contact."],
+    [26, "hands", 94, 97, {"QB": 85, "WR": 91, "HB": 94, "CB": 94, "FS": 90, "DE": 82}, 0.58, "Agility, dexterous paws and tail balance give Raichu sharp cuts and accurate catches; a compact frame favors space over interior blocking."],
+    [27, "claws", 58, 73, {"QB": 30, "WR": 43, "HB": 59, "DE": 68, "DT": 61, "OL": 54}, 0.32, "Dig creates surprise rush paths and curled armor absorbs contact; blunt claw mechanics limit quick snaps and touch passes."],
+    [28, "claws", 72, 84, {"QB": 41, "WR": 60, "HB": 74, "DE": 96, "DT": 85, "LB": 82, "OL": 75}, 0.58, "Sandslash can Dig beneath a blocker, spin through a counter and anchor with armor; its claws still constrain touch throws and ball release."],
+    [29, "mouth", 24, 44, {"QB": 4, "WR": 20, "HB": 37, "CB": 39, "DE": 28}, 0.21, "Alert ears and Poison Point discourage contact, but small quadrupedal limbs offer no strong receiving or passing mechanism."],
+    [30, "mouth", 32, 58, {"QB": 10, "WR": 32, "HB": 53, "SS": 56, "DE": 51, "OL": 35}, 0.27, "Protective instincts and a sturdy hide aid close pursuit; a mouth carry is possible, but the quadrupedal frame limits snaps and contested catches."],
+    [31, "hands", 89, 98, {"QB": 70, "TE": 94, "FB": 93, "OL": 95, "DE": 89, "DT": 94, "LB": 87}, 0.49, "Sheer Force and plated armor combine with useful hands and protective awareness; Nidoqueen wins blocking and contact catches more than finesse routes."],
+    [32, "mouth", 24, 44, {"QB": 4, "WR": 19, "HB": 42, "CB": 39, "DE": 35}, 0.22, "A charging horn and keen hearing favor pursuit, but Nidoran lacks a credible arm-based pass or dependable high-point catch."],
+    [33, "mouth", 32, 57, {"QB": 10, "WR": 30, "HB": 59, "DE": 60, "SS": 58, "OL": 41}, 0.29, "A strong charge and competitive instincts support straight-line running; stiff quadrupedal catching mechanics cap receiving value."],
+    [34, "hands", 88, 96, {"QB": 69, "TE": 91, "FB": 94, "DE": 95, "DT": 96, "OL": 94, "LB": 86}, 0.54, "Sheer Force, a muscular tail and plated hands create a powerful edge counter and contested catch; brute power is stronger than precision reads."],
+    [35, "psychic", 86, 93, {"QB": 76, "WR": 63, "FS": 78, "CB": 62, "OL": 26}, 0.37, "Magic Guard resilience and learned Psychic support gentle ball control and awareness; the small body cannot anchor against larger rushers."],
+    [36, "psychic", 97, 99, {"QB": 93, "WR": 86, "TE": 78, "FS": 92, "SS": 86, "CB": 79, "OL": 47}, 0.58, "Magic Guard and Psychic turn Clefable into a sure-handed, composed playmaker; it can manipulate catches and reads but lacks elite chase speed."],
+    [37, "psychic", 62, 70, {"QB": 49, "WR": 53, "HB": 65, "FS": 66, "CB": 64, "DE": 35}, 0.37, "Extrasensory and clever feints supplement mouth carrying; a small fox's limited fine control and contact strength keep it from elite passing."],
+    [38, "psychic", 95, 98, {"QB": 88, "WR": 94, "FS": 99, "SS": 91, "CB": 93, "DE": 65}, 0.64, "Ninetales' long-lived intelligence, Extrasensory and mysterious tail powers inspire imagined ball control, while deceptive feints disguise coverage; its tails provide reach without line mass."],
+    [39, "hands", 73, 83, {"QB": 49, "WR": 41, "TE": 40, "FS": 46, "OL": 25}, 0.32, "Sing can disrupt cadence and a soft body absorbs a glancing hit; short arms, weak burst and balloon balance reduce reliable field work."],
+    [40, "hands", 84, 96, {"QB": 63, "WR": 61, "TE": 76, "SS": 65, "OL": 58, "NT": 52}, 0.41, "Elastic fur and Competitive resilience help Wigglytuff retain contested catches; broad softness blocks a lane, but slow feet struggle in coverage."],
+    [41, "mouth", 21, 28, {"QB": 5, "WR": 12, "TE": 10, "CB": 60, "FS": 55, "DE": 44}, 0.35, "Echolocation tracks players without sight and nimble flight aids coverage; a small bat's mouth and wings cannot reliably secure a football."],
+    [42, "mouth", 28, 43, {"QB": 8, "WR": 23, "CB": 86, "FS": 80, "DE": 79, "LB": 70}, 0.47, "Large wings and echolocation read pursuit angles, while Inner Focus resists disruption; the mouth can carry but lacks a clean contested catch."],
+    [43, "none", 18, 23, {"QB": 5, "WR": 9, "HB": 11, "CB": 23, "OL": 22, "NT": 26}, 0.24, "Chlorophyll supplies a situational burst and leaves disturb a route, but rooted feet and no workable arms severely restrict possession."],
+    [44, "hands", 36, 49, {"QB": 15, "WR": 21, "TE": 31, "NT": 46, "DT": 42, "FS": 32}, 0.29, "Sticky sap can retain a nearby ball and a heavy bloom obstructs contact; awkward small limbs and poor footwork limit broader roles."],
+    [45, "hands", 51, 63, {"QB": 30, "WR": 31, "TE": 49, "OL": 60, "NT": 63, "DT": 62, "LB": 43}, 0.39, "A wide petal canopy and Chlorophyll create situational reach, but Vileplume's bloom-heavy frame and short arms favor lane obstruction over routes."],
+    [46, "claws", 25, 35, {"QB": 6, "WR": 13, "HB": 16, "DE": 22, "DT": 25}, 0.21, "Effect Spore can distract a blocker and small pincers clasp objects; the tiny, mushroom-burdened frame cannot sustain a secure catch or rush."],
+    [47, "claws", 33, 49, {"QB": 11, "WR": 22, "TE": 32, "DT": 58, "NT": 57, "DE": 37, "OL": 48}, 0.31, "Spore and tough pincers provide an awkward contact obstacle, but the dominating mushroom and slow legs limit reads, release and pursuit."],
+    [48, "psychic", 65, 79, {"QB": 54, "WR": 56, "CB": 65, "FS": 71, "DE": 40}, 0.35, "Compound Eyes tracks the ball while learned Psychic and short paws support catches; immature fine control and a modest frame keep Venonat below developed psychic passers."],
+    [49, "psychic", 68, 76, {"QB": 56, "WR": 63, "CB": 91, "FS": 91, "DE": 63, "OL": 27}, 0.49, "Tinted Lens and Psychic improve airborne ball reads and manipulation; agile flight creates coverage range while a light body loses contact battles."],
+    [50, "none", 5, 4, {"QB": 1, "WR": 1, "HB": 2, "DE": 74, "DT": 42, "CB": 43, "OL": 14}, 0.38, "Dig lets Diglett attack from a surprise gap, but its exposed body has no hands to catch, snap or pass and little tackling mass."],
+    [51, "none", 7, 6, {"QB": 2, "WR": 2, "HB": 3, "DE": 96, "DT": 73, "LB": 69, "OL": 31}, 0.62, "Three coordinated Dig users can force a blocker to protect several rush lanes; absent visible handling limbs make Dugtrio a terrible receiver or passer."],
+    [52, "hands", 83, 92, {"QB": 71, "WR": 83, "HB": 78, "CB": 76, "DE": 43, "OL": 19}, 0.47, "Technician, theft skills and dexterous paws support precise grabs and clever routes; small size and modest arm strength limit contact roles."],
+    [53, "mouth", 48, 87, {"QB": 25, "WR": 67, "HB": 94, "CB": 91, "DE": 78, "FS": 84}, 0.57, "Limber, Fake Out and smooth feline footwork create a shifty runner and edge counter; a mouth catch is less dependable than upright hands."],
+    [54, "psychic", 58, 77, {"QB": 39, "WR": 46, "FS": 49, "DE": 39, "OL": 34}, 0.51, "Headache-triggered psychic bursts produce occasional brilliant plays, but confused reads and unstable control make Psyduck an unreliable starter."],
+    [55, "psychic", 99, 100, {"QB": 96, "WR": 94, "TE": 89, "CB": 88, "FS": 93, "DE": 84}, 0.54, "Psychic talent, webbed hands and disciplined swimming coordination make Golduck an accurate passer and secure catcher with balanced field awareness."],
+    [56, "hands", 73, 93, {"QB": 54, "WR": 77, "HB": 81, "DE": 78, "LB": 69, "OL": 40}, 0.41, "Vital Spirit and nimble martial footwork generate separation; useful hands catch well, but an angry temperament hurts composed quarterback reads."],
+    [57, "hands", 77, 98, {"QB": 60, "TE": 88, "HB": 88, "DE": 98, "LB": 89, "OL": 78}, 0.63, "Anger Point, close-combat hand speed and explosive lateral cuts create a disruptive edge rusher; rage can also overrun a patient play."],
+    [58, "mouth", 36, 76, {"QB": 15, "WR": 48, "HB": 76, "CB": 69, "FS": 71, "DE": 55}, 0.34, "Intimidate and loyal tracking aid disciplined pursuit; a secure mouth carry works underneath but cannot replace fine throwing mechanics."],
+    [59, "mouth", 54, 97, {"QB": 29, "WR": 75, "HB": 100, "FB": 92, "DE": 97, "OLB": 97, "SS": 95}, 0.67, "Extreme Speed, Intimidate and a powerful four-legged stride create a home-run runner and devastating edge pursuit; mouth carrying still limits touch throws."],
+    [60, "none", 7, 10, {"QB": 1, "WR": 3, "HB": 8, "DE": 13, "DT": 16, "CB": 11}, 0.16, "Hypnosis can briefly fool a read, but an armless tadpole has no dependable receiving mechanism and poor turf propulsion."],
+    [61, "hands", 75, 89, {"QB": 59, "WR": 62, "TE": 60, "LB": 64, "DE": 59}, 0.34, "Upright fists and Water Gun timing permit football handling; hypnosis supplies a fake, while immature coordination limits high-pressure decisions."],
+    [62, "hands", 96, 99, {"QB": 82, "TE": 97, "FB": 96, "OL": 92, "DE": 93, "LB": 93}, 0.53, "Powerful fists, exceptional endurance and balanced footwork make Poliwrath a two-way contact athlete who can block and catch without wearing down."],
+    [63, "psychic", 93, 98, {"QB": 71, "WR": 56, "FS": 90, "CB": 85, "DE": 57, "OL": 15}, 0.73, "Teleport can erase a coverage gap even when Abra is slow on foot; psychic possession is feasible, but sleeping most of the day makes reads inconsistent."],
+    [64, "psychic", 100, 100, {"QB": 96, "WR": 91, "FS": 98, "CB": 96, "DE": 72, "OL": 30}, 0.66, "Teleport and precise spoon-guided telekinesis create excellent distribution and coverage recovery; physical fragility limits tackles and blocks."],
+    [65, "psychic", 100, 100, {"QB": 100, "WR": 98, "TE": 87, "FS": 100, "CB": 100, "SS": 90, "DE": 86, "OL": 44}, 0.77, "Alakazam can read routes with extreme intelligence, teleport to a threat and catch with precise telekinesis; a frail frame still limits sustained blocking."],
+    [66, "hands", 88, 98, {"QB": 70, "WR": 71, "TE": 75, "FB": 77, "DE": 69, "OL": 62}, 0.32, "Practiced martial hands and Guts give Machop excellent leverage for its small size; youthful reach and strength still limit dominant trench play."],
+    [67, "hands", 97, 100, {"QB": 83, "TE": 97, "FB": 95, "OL": 97, "DE": 91, "LB": 87}, 0.49, "Machoke's disciplined strength and large hands make a secure contact catcher and blocker; its two arms cannot do both tasks at once like Machamp."],
+    [68, "hands", 100, 100, {"QB": 90, "WR": 91, "TE": 100, "FB": 99, "OL": 100, "C": 98, "DE": 98, "LB": 96}, 0.72, "Machamp can block with two powerful hands while catching with the other two; four-arm No Guard coordination creates a prototype game-changing tight end."],
+    [69, "vines", 65, 88, {"QB": 43, "WR": 58, "TE": 37, "C": 48, "CB": 40, "DE": 37}, 0.33, "Flexible vine arms snap toward a ball and Chlorophyll provides a burst; a thin stem offers little contact durability or powerful throwing leverage."],
+    [70, "vines", 68, 89, {"QB": 47, "WR": 41, "TE": 45, "C": 53, "DT": 40, "FS": 38}, 0.34, "A grasping vine and trapping mouth secure nearby possession, but a hanging pitcher shape has weak turf balance and limited route independence."],
+    [71, "vines", 83, 98, {"QB": 63, "WR": 61, "TE": 81, "FB": 74, "DE": 79, "DT": 72, "C": 70}, 0.49, "Power Whip vines and a trapping pitcher-mouth extend the catch radius and wrap blockers; rooted movement keeps it below the fastest route runners."],
+    [72, "tentacles", 60, 83, {"QB": 40, "WR": 26, "TE": 32, "C": 34, "DE": 43, "DT": 38, "FS": 37}, 0.34, "Tentacles can grip and redirect a ball, but a water-dependent jelly body struggles to establish a pocket base or turf route."],
+    [73, "tentacles", 83, 99, {"QB": 69, "WR": 56, "TE": 87, "C": 82, "DE": 83, "DT": 88, "LB": 75}, 0.61, "Many dexterous tentacles can catch beyond a blocker and wrap several rush lanes; the broad jelly body is powerful but slow on a dry field."],
+    [74, "hands", 69, 88, {"QB": 44, "WR": 32, "TE": 49, "DT": 65, "NT": 63, "OL": 54}, 0.26, "Strong stone hands, Sturdy and a compact floating body help short contact plays; low reach and slow reactions limit routes and passing."],
+    [75, "hands", 77, 97, {"QB": 56, "TE": 80, "C": 82, "OL": 92, "DT": 93, "NT": 92, "DE": 71}, 0.39, "Four stone arms create a broad blocking surface and several catch points; the heavy rolling frame favors interior leverage over coverage."],
+    [76, "hands", 88, 100, {"QB": 66, "TE": 84, "OL": 98, "DT": 99, "NT": 100, "DE": 82, "FS": 37}, 0.54, "A dense rocky shell, Sturdy and Rollout create an elite interior anchor; hands can retain contact catches, but mass slows deep-field recovery."],
+    [77, "mouth", 24, 70, {"QB": 8, "WR": 40, "HB": 75, "CB": 71, "DE": 55, "OL": 27}, 0.35, "Run Away and springy horse strides create open-field speed; a mouth carry works, while hooves cannot secure high-point catches or throw."],
+    [78, "mouth", 30, 88, {"QB": 13, "WR": 58, "HB": 98, "CB": 94, "DE": 91, "OLB": 92, "FB": 80}, 0.55, "Extreme galloping speed and a sharp horn threaten every pursuit angle; a horse can mouth-carry, but awkward catches keep receiving below rushing value."],
+    [79, "psychic", 61, 70, {"QB": 30, "WR": 26, "TE": 41, "NT": 47, "DT": 44, "FS": 30}, 0.25, "Slowpoke can use Psychic, yet famously delayed reactions create late throws and missed reads; its soft body offers only modest contact blocking."],
+    [80, "psychic", 93, 98, {"QB": 79, "TE": 84, "OL": 86, "DT": 91, "NT": 94, "FS": 68, "HB": 37}, 0.41, "Psychic control and a shell-backed body create a secure pocket passer and anchor; slow recognition and foot speed limit pursuit and scrambling."],
+    [81, "none", 18, 16, {"QB": 6, "WR": 5, "DE": 48, "CB": 60, "FS": 62, "DT": 36, "OL": 29}, 0.31, "Magnet Pull disrupts metallic blockers and levitation changes pursuit angles; magnetism cannot reliably grip an ordinary leather football."],
+    [82, "none", 28, 24, {"QB": 12, "WR": 10, "DE": 78, "CB": 78, "FS": 85, "DT": 74, "OL": 57}, 0.47, "Three coordinated magnets and Analytic reads cover passing lanes, but a hovering steel cluster still lacks a fine leather-ball catch mechanism."],
+    [83, "hands", 86, 98, {"QB": 76, "WR": 84, "TE": 63, "DE": 60, "CB": 63, "OL": 26}, 0.47, "Expert leek handling transfers to grip, hand-eye timing and play-action deception; the small bird has technique without elite contact mass."],
+    [84, "mouth", 28, 64, {"QB": 10, "WR": 39, "HB": 73, "CB": 63, "DE": 55, "OL": 25}, 0.32, "Two heads can watch the ball and pursuit simultaneously while fast legs accelerate; beaks retain carries better than contested passes."],
+    [85, "mouth", 42, 94, {"QB": 22, "WR": 83, "HB": 97, "CB": 86, "FS": 84, "DE": 82}, 0.58, "Tri Attack coordination lets three heads track and secure a pass while powerful legs run routes; the beaks still offer little controlled throwing touch."],
+    [86, "mouth", 22, 41, {"QB": 7, "WR": 16, "HB": 10, "DT": 41, "NT": 44, "OL": 25}, 0.21, "Thick Fat resists contact and a mouth can hold a ball, but flippers supply poor land propulsion and very limited passing control."],
+    [87, "mouth", 31, 58, {"QB": 14, "WR": 23, "TE": 35, "NT": 70, "DT": 63, "OL": 47, "FS": 31}, 0.32, "Thick Fat and a smooth seal body can hold a stationary gap; slippery movement helps escape once, but turf routes and catches remain difficult."],
+    [88, "hands", 44, 64, {"QB": 23, "WR": 23, "TE": 36, "NT": 53, "DT": 55, "C": 41}, 0.28, "Sticky Hold supplies a reliable nearby grip and sludge absorbs contact; deformable arms and slow motion make precise releases inconsistent."],
+    [89, "hands", 63, 92, {"QB": 43, "WR": 39, "TE": 75, "OL": 91, "C": 82, "DT": 94, "NT": 96, "DE": 61}, 0.49, "Sticky Hold makes contact catches difficult to strip and a deformable sludge mass seals a blocking gap; slow feet and messy release limit passing."],
+    [90, "none", 5, 6, {"QB": 1, "WR": 1, "HB": 1, "NT": 20, "DT": 18, "OL": 13}, 0.09, "A hard shell can obstruct a tiny patch of turf, but Shellder has no stable catch limbs, throwing motion or field movement."],
+    [91, "none", 10, 15, {"QB": 2, "WR": 4, "TE": 7, "NT": 87, "DT": 81, "OL": 61, "DE": 39}, 0.34, "An enormous armored shell and Skill Link spines hold an interior gap; the nearly immobile body cannot receive or chase and still needs lateral help."],
+    [92, "psychic", 87, 94, {"QB": 74, "WR": 84, "CB": 90, "FS": 93, "DE": 72, "OL": 18}, 0.66, "Gastly can use Psychic and an extending tongue for possession while levitating through deceptive routes; its gaseous frame cannot sustain conventional blocks."],
+    [93, "psychic", 98, 100, {"QB": 89, "WR": 98, "CB": 97, "FS": 97, "DE": 93, "TE": 82, "OL": 38}, 0.71, "Floating ghost hands and psychic control secure catches independently of the body; disappearing hands and shadow feints create an elusive edge counter."],
+    [94, "hands", 100, 100, {"QB": 98, "WR": 100, "TE": 94, "CB": 98, "FS": 97, "DE": 100, "LB": 91, "OL": 68}, 0.82, "Shadow movement, practiced ghost hands and deceptive feints let Gengar separate, disguise reads and slip a block; its real contact strength remains below huge anchors."],
+    [95, "coils", 24, 39, {"QB": 5, "WR": 12, "TE": 18, "OL": 86, "DT": 88, "NT": 96, "DE": 70, "CB": 33}, 0.4, "A long rock body and Bind clog several run gaps; burrowing offers a surprise rush, but its coils cannot make precise snaps or contested catches."],
+    [96, "psychic", 88, 97, {"QB": 75, "WR": 63, "FS": 78, "SS": 72, "DE": 53, "OL": 43}, 0.44, "Psychic and dream-reading awareness support ball control and disguised reads; short, slow feet keep recovery range and edge pressure modest."],
+    [97, "psychic", 99, 100, {"QB": 94, "WR": 85, "FS": 98, "SS": 90, "CB": 87, "DE": 73, "OL": 48}, 0.66, "Pendulum precision, Hypnosis and psychic manipulation disguise the quarterback's intent and bait routes; limited physical burst prevents an automatic coverage win."],
+    [98, "claws", 37, 61, {"QB": 14, "WR": 29, "TE": 38, "DE": 37, "DT": 44, "OL": 35}, 0.23, "Hyper Cutter gives firm contact leverage, but uneven pincers make quick catches and clean throwing releases awkward on a small frame."],
+    [99, "claws", 53, 82, {"QB": 28, "TE": 75, "FB": 67, "OL": 93, "DT": 93, "NT": 91, "DE": 80}, 0.44, "A giant pincer and Sheer Force can control a blocker with exceptional grip; the same oversized claw offers limited passing touch and catch flexibility."],
+    [100, "none", 5, 3, {"QB": 1, "WR": 1, "HB": 2, "DE": 73, "CB": 66, "DT": 36, "OL": 22}, 0.46, "Soundproof and fast rolling motion support disruptive collision pressure, but an unarmed sphere cannot possess, snap or throw a football reliably."],
+    [101, "none", 7, 4, {"QB": 1, "WR": 1, "HB": 2, "DE": 96, "CB": 89, "FS": 81, "OLB": 84, "NT": 46}, 0.73, "Electrode's explosive rolling burst and Aftermath threat force quick protection decisions; lacking a grip makes it a poor offensive ball carrier despite speed."],
+    [102, "psychic", 62, 72, {"QB": 44, "WR": 24, "FS": 42, "DE": 23, "OL": 19, "NT": 22}, 0.3, "A linked psychic egg group can redirect a nearby ball, but weak movement and fragile bodies limit route execution and contact responsibility."],
+    [103, "psychic", 88, 97, {"QB": 76, "WR": 65, "TE": 88, "C": 89, "OL": 86, "DT": 88, "FS": 79}, 0.48, "Several heads share psychic reads and telekinetic catches above a tall frame; tree-like legs anchor blocks but cannot turn quickly in man coverage."],
+    [104, "hands", 87, 95, {"QB": 78, "WR": 51, "TE": 49, "DE": 43, "SS": 51, "OL": 28}, 0.32, "Practiced Bone Club throws give Cubone real release mechanics and timing; the small masked body limits reach, pace and collision leverage."],
+    [105, "hands", 100, 99, {"QB": 96, "TE": 83, "DE": 87, "LB": 85, "OL": 79, "FS": 78}, 0.56, "Boomerang-like Bonemerang accuracy and Lightning Rod awareness transfer to football release and ball tracking; thick bone leverage supports close contact."],
+    [106, "hands", 68, 82, {"QB": 41, "WR": 62, "HB": 85, "DE": 96, "OLB": 91, "LB": 83, "OL": 65}, 0.59, "Stretching legs, High Jump Kick angles and Limber footwork let Hitmonlee reach around tackles and change rush lanes; ball touch is less polished than its feet."],
+    [107, "hands", 93, 100, {"QB": 76, "TE": 91, "WR": 84, "DE": 94, "LB": 90, "OL": 81}, 0.51, "Iron Fist boxing timing and rapid hands let Hitmonchan punch clear rush lanes and secure short catches; its release is coordinated without elite field vision."],
+    [108, "tongue", 80, 100, {"QB": 60, "WR": 75, "TE": 97, "FB": 82, "C": 90, "OL": 75, "DE": 63}, 0.57, "A long prehensile tongue creates an enormous catch radius and extra grip while hands block; Oblivious poise helps possession despite slow route speed."],
+    [109, "none", 7, 4, {"QB": 1, "WR": 1, "TE": 2, "DE": 31, "DT": 27, "FS": 36, "OL": 15}, 0.27, "Levitation changes approach angles and gas clouds disguise pursuit, but a floating sphere without manipulators cannot secure a football."],
+    [110, "none", 10, 7, {"QB": 2, "WR": 2, "TE": 4, "DE": 61, "DT": 73, "NT": 66, "FS": 54, "OL": 44}, 0.39, "Linked floating gas bodies and Neutralizing Gas can disrupt offensive rhythm; no handling limbs and slow pursuit make possession roles implausible."],
+    [111, "mouth", 23, 40, {"QB": 4, "WR": 14, "HB": 48, "FB": 68, "OL": 85, "DT": 88, "NT": 90, "DE": 73}, 0.31, "Rock Head charging power and thick armor win straight-ahead contact; a quadrupedal horn cannot replace catches, snaps or controlled passing."],
+    [112, "hands", 75, 95, {"QB": 51, "TE": 84, "FB": 87, "OL": 100, "DT": 100, "NT": 100, "DE": 91, "CB": 40}, 0.49, "Rock-solid armor and huge hands control blockers and contact catches; slow turning and ordinary tactical touch keep Rhydon out of finesse coverage and passing."],
+    [113, "hands", 89, 100, {"QB": 73, "WR": 71, "TE": 77, "C": 71, "FS": 78, "SS": 65, "OL": 39}, 0.43, "Natural Cure resilience and practiced egg handling make Chansey exceptionally secure with the ball; gentle strength and short reach limit blocking force."],
+    [114, "vines", 77, 100, {"QB": 56, "WR": 83, "TE": 87, "C": 83, "DE": 84, "LB": 80, "OL": 71}, 0.55, "Dense prehensile vines wrap a football and several opponents at once, with Regenerator supporting stamina; short body motion limits deep route speed."],
+    [115, "hands", 97, 100, {"QB": 87, "WR": 89, "TE": 100, "FB": 99, "OL": 97, "C": 94, "DE": 95, "LB": 97}, 0.65, "Scrappy contact, protective awareness and a pouch keep possession secure through traffic; large hands can catch while powerful body leverage protects the pocket."],
+    [116, "launcher", 39, 30, {"QB": 28, "WR": 6, "HB": 4, "DE": 8, "OL": 6}, 0.29, "An accurately aimed Water Gun suggests a small snout launcher, but a tiny seahorse cannot load or retain a football well and has almost no turf movement."],
+    [117, "launcher", 76, 62, {"QB": 66, "WR": 17, "TE": 18, "DE": 26, "NT": 23, "OL": 17}, 0.49, "Sniper aim and powerful snout jets can launch a loaded football from a fixed pocket; no arms and water dependence punish catches, movement and blocking."],
+    [118, "none", 6, 6, {"QB": 1, "WR": 1, "HB": 2, "DE": 9, "DT": 12, "CB": 10}, 0.17, "Swift swimming and a horn do not create a land route or ball grip; Goldeen is poorly equipped for ordinary turf football."],
+    [119, "none", 9, 9, {"QB": 2, "WR": 2, "HB": 3, "DT": 39, "NT": 35, "DE": 24, "OL": 21}, 0.25, "A strong aquatic body and horn can make a rare stationary collision, but lacking turf locomotion or manipulators severely limits every ball role."],
+    [120, "claws", 37, 61, {"QB": 15, "WR": 31, "CB": 51, "FS": 51, "DE": 42, "OL": 21}, 0.35, "A rotating star body and Recover support persistent pursuit, while star points can clasp roughly; no fine release joint limits passing and snaps."],
+    [121, "psychic", 96, 100, {"QB": 88, "WR": 94, "CB": 99, "FS": 99, "DE": 88, "TE": 67, "OL": 41}, 0.71, "Starmie's precise Psychic, Rapid Spin and distributed star reach let it catch without hands and pivot abruptly in coverage; a light rotating base loses sustained blocks."],
+    [122, "psychic", 100, 100, {"QB": 99, "WR": 94, "TE": 98, "C": 94, "OL": 91, "FS": 98, "CB": 96, "DE": 87}, 0.77, "Mr. Mime's practiced hands, Barrier and Light Screen form invisible blocking walls while psychic precision secures a catch; barriers are powerful but bounded, never automatic wins."],
+    [123, "blades", 28, 29, {"QB": 8, "WR": 18, "TE": 18, "DE": 100, "OLB": 99, "CB": 88, "LB": 89, "OL": 72}, 0.7, "Double Team, Agility and Swords Dance create a shifty, long-armed edge threat; razor scythes can deflect a pass but cannot safely retain a football."],
+    [124, "psychic", 97, 100, {"QB": 88, "WR": 80, "TE": 74, "FS": 85, "CB": 73, "DE": 49, "OL": 39}, 0.53, "Psychic control and rhythmic body coordination support touch throws and catches; slow feet and modest contact strength leave it vulnerable in pursuit."],
+    [125, "hands", 96, 100, {"QB": 86, "WR": 95, "TE": 91, "DE": 97, "CB": 93, "LB": 93, "OL": 79}, 0.62, "Quick electric reactions, dexterous hands and Static and electric burst create separation and rush counters; imposing grip helps retain contested catches."],
+    [126, "hands", 89, 97, {"QB": 76, "TE": 88, "DE": 89, "FB": 85, "OL": 80, "WR": 78}, 0.48, "Powerful arms and accurate Fire Blast targeting support throwing and contact catches; an aggressive flame-heavy stance is less suited to patient coverage reads."],
+    [127, "claws", 64, 88, {"QB": 41, "TE": 85, "FB": 81, "OL": 96, "DE": 95, "DT": 91, "LB": 82}, 0.53, "Mold Breaker strength and enormous lifting pincers pry open protection, while smaller hands can retain catches; delicate release is weaker than leverage."],
+    [128, "mouth", 31, 77, {"QB": 12, "WR": 49, "HB": 97, "FB": 98, "DE": 91, "OLB": 86, "OL": 82}, 0.58, "Intimidate, Anger Point and explosive bull charges break tackle attempts and collapse a rush lane; mouth carrying is workable, but hooves cannot throw or high-point cleanly."],
+    [129, "none", 4, 4, {"QB": 1, "WR": 1, "HB": 1, "DE": 4, "NT": 8, "CB": 4}, 0.06, "Magikarp's flopping Splash lacks a useful football grip, throwing motion or stable turf movement; occasional leaps do not make a reliable receiver."],
+    [130, "mouth", 34, 71, {"QB": 14, "WR": 31, "TE": 50, "OL": 92, "DT": 97, "NT": 99, "DE": 83, "LB": 69}, 0.58, "Intimidate and overwhelming serpentine power seal gaps and force hurried reads; huge jaws can retain a ball, but awkward land turns and no hands limit passing and routes."],
+    [131, "psychic", 75, 83, {"QB": 59, "WR": 31, "TE": 54, "NT": 84, "DT": 74, "FS": 70, "OL": 60}, 0.42, "Intelligent navigation, Psychic and a broad shell offer a composed stationary passer or anchor; flippers severely limit dry-field route and scramble movement."],
+    [132, "transform", 96, 97, {"QB": 88, "WR": 89, "TE": 89, "OL": 82, "DE": 88, "CB": 90, "FS": 91, "LB": 85}, 0.86, "Transform lets Ditto adapt its body to the assigned role and imitate useful mechanics; unfamiliar execution and finite adaptation prevent perfect copying of an opposing star."],
+    [133, "mouth", 37, 72, {"QB": 14, "WR": 43, "HB": 64, "CB": 59, "FS": 60, "DE": 32}, 0.31, "Adaptability and quick reactions support short cuts and a mouth carry; a small quadruped lacks independent catch hands and passing leverage."],
+    [134, "mouth", 47, 85, {"QB": 24, "WR": 62, "HB": 87, "CB": 86, "DE": 81, "SS": 84, "OL": 49}, 0.54, "Water-like body changes and Acid Armor let Vaporeon slip a tackle or block; a mouth catch is useful but less secure than a dexterous hand catch."],
+    [135, "mouth", 44, 87, {"QB": 22, "WR": 70, "HB": 100, "CB": 99, "FS": 96, "DE": 94, "OLB": 92}, 0.68, "Quick Attack and lightning-fast reactions make Jolteon lethal in space and on a shifty edge rush; an ordinary mouth grip still caps complex catches and passing."],
+    [136, "mouth", 42, 84, {"QB": 21, "WR": 61, "HB": 91, "FB": 82, "DE": 86, "SS": 81, "OL": 57}, 0.48, "Guts and powerful compact muscles generate contact balance; a furry mouth carry is secure underneath, while lack of hands constrains throws and high catches."],
+    [137, "digital", 92, 93, {"QB": 85, "WR": 69, "FS": 90, "CB": 81, "C": 66, "OL": 44}, 0.57, "Analytic software, Conversion and learned Psychic manipulation model route reads and ball placement; rigid geometry and modest physical power limit contact work."],
+    [138, "tentacles", 48, 72, {"QB": 27, "WR": 18, "TE": 27, "DT": 36, "NT": 38, "OL": 25}, 0.27, "Tentacles clasp a nearby football and a shell resists contact; small water-dependent legs cannot supply effective turf routes or a stable long throw."],
+    [139, "tentacles", 71, 97, {"QB": 49, "WR": 34, "TE": 63, "C": 67, "DT": 89, "NT": 91, "OL": 76, "DE": 57}, 0.42, "Many tentacles secure snaps around heavy shell armor, while Shell Smash offers a risky burst; poor turf movement limits sustained routes and pursuit."],
+    [140, "claws", 23, 37, {"QB": 5, "WR": 11, "HB": 12, "DT": 29, "NT": 28, "DE": 24}, 0.23, "Battle Armor protects a low shell crawler, but tiny claws and limited movement make football catches, throws and contact leverage difficult."],
+    [141, "blades", 27, 28, {"QB": 7, "WR": 15, "TE": 18, "DE": 99, "OLB": 91, "LB": 87, "CB": 85, "OL": 78}, 0.62, "Swift Swim-like burst, Swords Dance and predatory turns create a shifty blade-armed edge rush; scythes threaten the football rather than secure a safe catch."],
+    [142, "talons", 49, 98, {"QB": 30, "WR": 96, "TE": 87, "DE": 98, "CB": 97, "FS": 94, "OLB": 93}, 0.69, "High-speed flight, strong talons and predatory reach dominate contested aerial catches and wide rush angles; the birdlike release remains poor passing equipment."],
+    [143, "hands", 83, 100, {"QB": 62, "TE": 91, "FB": 95, "OL": 100, "C": 93, "DT": 100, "NT": 100, "DE": 71, "CB": 21}, 0.51, "Thick Fat, huge weight and strong hands create a dominant nose tackle and contact catcher; sleepy, slow recovery prevents that mass from translating to deep coverage."],
+    [144, "talons", 58, 99, {"QB": 35, "WR": 95, "TE": 84, "CB": 99, "FS": 100, "DE": 89, "SS": 89}, 0.65, "Precise aerial movement, sharp vision and ice-themed route control give Articuno exceptional deep coverage and talon catches; a wing release limits quarterback fit."],
+    [145, "talons", 54, 97, {"QB": 29, "WR": 94, "DE": 100, "OLB": 100, "CB": 99, "FS": 98, "SS": 93}, 0.76, "Lightning-fast flight and pressure create a terrifying wide rush arc and recovery range; powerful talons receive well but cannot equal precision throwing hands."],
+    [146, "talons", 54, 98, {"QB": 30, "WR": 96, "TE": 91, "DE": 99, "OLB": 96, "CB": 95, "FS": 95}, 0.71, "Powerful flight, long aerial reach and legendary endurance create high catches and edge pressure; the wing-and-talon anatomy still limits football release."],
+    [147, "coils", 26, 38, {"QB": 5, "WR": 15, "HB": 32, "CB": 39, "DE": 29, "OL": 16}, 0.28, "Shed Skin resilience and flexible coils aid a small escape move, but Dratini lacks precise catch limbs and contact leverage."],
+    [148, "coils", 53, 80, {"QB": 26, "WR": 57, "HB": 72, "CB": 91, "FS": 97, "DE": 75, "OLB": 76}, 0.55, "Graceful aerial movement, Shed Skin and keen environmental awareness suit deep coverage; a coil catch is possible but lacks hand precision and throwing touch."],
+    [149, "hands", 100, 100, {"QB": 96, "WR": 100, "TE": 100, "OL": 99, "DE": 100, "CB": 97, "FS": 99, "LB": 99}, 0.8, "Extreme Speed, Multiscale and gentle dexterous hands create rare power, recovery and ball control; flight and long reach make Dragonite a premium receiving tight end."],
+    [150, "psychic", 100, 100, {"QB": 100, "WR": 100, "TE": 99, "OL": 90, "DE": 100, "CB": 100, "FS": 100, "LB": 100, "NT": 87}, 0.87, "Mewtwo combines precise telekinesis, tactical intellect, teleportation and powerful hands; it excels in space and decisions without matching the widest physical nose-tackle anchors."],
+    [151, "psychic", 100, 100, {"QB": 100, "WR": 100, "TE": 91, "OL": 72, "DE": 96, "CB": 100, "FS": 100, "LB": 91, "NT": 56}, 0.88, "Mew's Transform, Teleport and extraordinary move breadth create adaptable routes and psychic catches; a tiny natural frame still cannot permanently replace a huge interior anchor."],
+    [152, "vines", 43, 67, {"QB": 22, "WR": 32, "HB": 40, "FS": 44, "OL": 26, "DE": 25}, 0.25, "A sensitive leaf detects changes and Vine Whip can retain short possession; a small quadrupedal body provides limited throwing leverage or contact reach."],
+    [153, "vines", 60, 86, {"QB": 40, "WR": 43, "TE": 60, "C": 59, "OL": 55, "LB": 53}, 0.32, "Razor Leaf awareness and neck vines extend the catch radius; good plant balance supports a short block, though upright throwing and sharp cuts remain limited."],
+    [154, "vines", 76, 98, {"QB": 61, "TE": 89, "C": 93, "OL": 94, "DT": 87, "LB": 80, "WR": 61}, 0.49, "A long neck and anime-depicted vine control reach catches and snaps, while a calming aroma stabilizes reads; a broad plant frame favors blocking over sharp separation."],
+    [155, "hands", 43, 64, {"QB": 26, "WR": 37, "HB": 43, "DE": 31, "OL": 18}, 0.25, "Quick defensive flames disguise a cut, but small forepaws and uncertain upright balance restrict passing and contested possession."],
+    [156, "hands", 65, 84, {"QB": 47, "WR": 62, "HB": 79, "DE": 68, "CB": 65, "OL": 31}, 0.39, "Quick Attack and limber weasel movement create shifty routes; small forepaws catch underneath but offer limited release and blocking leverage."],
+    [157, "hands", 92, 98, {"QB": 77, "WR": 87, "TE": 93, "DE": 98, "LB": 88, "OL": 82}, 0.57, "Explosive flame-backed acceleration and powerful bipedal arms create a bursty edge threat and contact receiver; accuracy is useful rather than elite."],
+    [158, "hands", 73, 89, {"QB": 48, "WR": 55, "HB": 62, "DE": 53, "OL": 39}, 0.3, "Strong jaws and playful athletic hands retain short possession, but impulsive reads and a small frame limit precise distribution and blocking."],
+    [159, "hands", 82, 95, {"QB": 59, "TE": 80, "FB": 77, "DE": 76, "OL": 70, "LB": 71}, 0.35, "A tough hide, strong grip and forceful Water Gun targeting improve contact roles; youthful temper and average fine control limit elite passing."],
+    [160, "hands", 94, 100, {"QB": 78, "TE": 98, "FB": 98, "OL": 99, "DE": 100, "DT": 96, "LB": 93}, 0.64, "Sheer Force, powerful hands and surprising crocodilian bursts make Feraligatr a dominant blocker, contact catcher and attacking edge counter."],
+    [161, "hands", 58, 74, {"QB": 36, "WR": 35, "FS": 57, "CB": 40, "DE": 20, "OL": 13}, 0.28, "Keen scouting habits and a high lookout stance improve safety reads, but tiny paws and weak contact strength keep execution modest."],
+    [162, "hands", 78, 94, {"QB": 57, "WR": 88, "HB": 88, "CB": 83, "DE": 68, "OL": 32}, 0.5, "Furret's flexible tunnel-running body and Quick Attack make it elusive through traffic; forepaws can catch, while a narrow frame loses blocking leverage."],
+    [163, "psychic", 55, 65, {"QB": 32, "WR": 35, "FS": 71, "CB": 56, "DE": 22, "OL": 15}, 0.31, "An exact internal clock and Extrasensory anticipation predict routes; small talons and immature psychic control limit throws and catches."],
+    [164, "psychic", 89, 98, {"QB": 76, "WR": 79, "FS": 99, "CB": 91, "SS": 82, "DE": 50, "OL": 29}, 0.61, "Noctowl's night vision, Insomnia and Psychic give excellent anticipatory coverage and telekinetic catches; bulk and slower burst limit tight man turns."],
+    [165, "hands", 49, 67, {"QB": 27, "WR": 41, "CB": 49, "FS": 46, "DE": 24, "OL": 15}, 0.26, "Several small limbs can clasp a pass and Early Bird helps readiness; weak strength and fragile flight limit contested catches and tackling."],
+    [166, "hands", 81, 97, {"QB": 62, "WR": 87, "TE": 70, "CB": 91, "FS": 85, "DE": 71}, 0.52, "Many practiced punching hands and fast flight secure catches from several angles; a light insect frame cannot sustain an interior block."],
+    [167, "web", 29, 42, {"QB": 10, "WR": 22, "CB": 38, "FS": 42, "DE": 25, "OL": 19}, 0.27, "Silk can snag a nearby ball and trip a route angle, but a tiny spider's grip and frame are unreliable through contact."],
+    [168, "web", 48, 76, {"QB": 26, "WR": 53, "TE": 49, "CB": 74, "FS": 83, "DE": 80, "LB": 72}, 0.51, "Sticky web lines and patient ambush timing disguise coverage and attack a blocker from the side; multi-leg grips catch awkwardly and cannot throw with touch."],
+    [169, "mouth", 34, 48, {"QB": 10, "WR": 25, "DE": 97, "OLB": 89, "CB": 99, "FS": 92, "OL": 36}, 0.71, "Four wings independently reverse flight direction and echolocation reads angles, making Crobat an elite recovery corner and shifty edge threat; wings cannot secure a normal catch."],
+    [170, "none", 7, 6, {"QB": 1, "WR": 1, "HB": 2, "DE": 9, "FS": 17, "OL": 5}, 0.2, "Flashing antennae can signal a fake, but a small water-bound fish lacks a dependable football grip and land propulsion."],
+    [171, "none", 10, 11, {"QB": 2, "WR": 3, "HB": 3, "DT": 38, "NT": 33, "FS": 39, "DE": 23}, 0.29, "A glowing lure and Volt Absorb support deceptive awareness, but Lanturn has no handling limbs and poor turf movement."],
+    [172, "hands", 62, 76, {"QB": 36, "WR": 43, "HB": 53, "CB": 47, "DE": 19, "OL": 8}, 0.35, "Quick electric reactions create an occasional burst, but unstable self-shocking control and tiny hands make possession and contact inconsistent."],
+    [173, "psychic", 59, 77, {"QB": 40, "WR": 28, "FS": 39, "CB": 28, "DE": 12, "OL": 8}, 0.3, "Magic Guard and emerging psychic potential help gentle ball control, but tiny limbs and immature reads make Cleffa a poor contact starter."],
+    [174, "hands", 38, 53, {"QB": 18, "WR": 16, "TE": 19, "FS": 20, "DE": 8, "OL": 7}, 0.21, "Competitive spirit and balloon softness survive a glancing hit, yet a tiny voice-dependent body has weak hands, speed and stable release."],
+    [175, "hands", 53, 73, {"QB": 31, "WR": 26, "TE": 32, "FS": 46, "CB": 29, "OL": 17}, 0.35, "Hustle and lucky Serene Grace moments create surprises; the small eggshell protects contact without providing range, powerful hands or mature reads."],
+    [176, "psychic", 79, 97, {"QB": 60, "WR": 74, "FS": 89, "CB": 87, "DE": 42, "OL": 20}, 0.55, "Serene Grace, calm flight and Extrasensory-like awareness create timely coverage breaks and light psychic catches; small limbs and low mass limit contact work."],
+    [177, "psychic", 78, 86, {"QB": 57, "WR": 39, "FS": 85, "CB": 69, "DE": 20, "OL": 12}, 0.48, "Future Sight predicts route breaks and psychic control bypasses tiny bird limbs; fragile size and limited practical experience cap execution."],
+    [178, "psychic", 99, 100, {"QB": 89, "WR": 85, "FS": 100, "CB": 96, "SS": 85, "DE": 64, "OL": 37}, 0.74, "Xatu can foresee a developing play, teleport to a lane and use Psychic to secure the ball; prediction is strong but bounded by focus and physical fragility."],
+    [179, "mouth", 22, 48, {"QB": 5, "WR": 18, "HB": 29, "FS": 37, "DT": 24, "OL": 20}, 0.23, "Static wool absorbs a little contact and a glowing tail signals readiness, but ordinary mouth handling and sheep-like feet limit passing and routes."],
+    [180, "hands", 66, 86, {"QB": 45, "WR": 50, "TE": 53, "FS": 57, "DE": 39, "OL": 34}, 0.31, "Standing forelimbs and electric coordination improve possession; a modest frame and uneven burst limit deep routes and powerful throws."],
+    [181, "hands", 93, 100, {"QB": 83, "WR": 82, "TE": 94, "C": 84, "FS": 88, "DE": 76, "OL": 73}, 0.48, "Lighthouse-like awareness, precise electric targeting and strong hands give Ampharos composed distribution and contact catches, despite average chase speed."],
+    [182, "hands", 72, 89, {"QB": 49, "WR": 50, "CB": 49, "FS": 55, "OL": 19, "DE": 24}, 0.35, "Dancing footwork, Chlorophyll bursts and coordinated leaf arms make sharp small cuts; a tiny body lacks throw power and blocking leverage."],
+    [183, "hands", 49, 70, {"QB": 25, "WR": 31, "HB": 51, "FB": 54, "DE": 48, "OL": 31}, 0.34, "Huge Power reliably adds surprising contact force and a buoyant tail restores balance; tiny hands and low reach still limit contested possession and passing."],
+    [184, "hands", 73, 95, {"QB": 46, "TE": 77, "FB": 83, "DE": 78, "LB": 74, "OL": 67, "HB": 74}, 0.44, "Huge Power turns small arm movements into substantial contact force and a buoyant body recovers balance; modest throwing finesse and short reach remain."],
+    [185, "hands", 65, 84, {"QB": 35, "TE": 59, "OL": 87, "DT": 90, "NT": 93, "DE": 51, "FS": 25}, 0.35, "A rock-hard imitation tree and Sturdy hold a run gap while disguising intent; stiff branch hands and slow feet struggle with catches and coverage."],
+    [186, "hands", 93, 99, {"QB": 85, "WR": 76, "TE": 79, "FS": 87, "LB": 83, "DE": 67}, 0.43, "A commanding croak, coordinated frog hands and Perish Song-like timing support tactical leadership; nimble feet help underneath play without elite line force."],
+    [187, "none", 14, 16, {"QB": 3, "WR": 4, "HB": 6, "CB": 20, "DE": 8, "OL": 4}, 0.26, "Windborne movement can drift into a lane, but a nearly weightless cotton plant has no stable grip or route control through contact."],
+    [188, "hands", 24, 32, {"QB": 8, "WR": 14, "CB": 31, "FS": 27, "DE": 12, "OL": 8}, 0.3, "Sensitive overhead leaves time wind changes, yet small plant arms and a fragile drifting frame cannot secure contested possession reliably."],
+    [189, "hands", 43, 59, {"QB": 23, "WR": 42, "CB": 77, "FS": 79, "DE": 31, "OL": 13}, 0.49, "Acrobatics and exceptional wind reading create sudden coverage changes; cotton-puff arms can cradle a ball but shed it under strong contact."],
+    [190, "tail", 90, 100, {"QB": 79, "WR": 98, "HB": 91, "CB": 91, "TE": 65, "DE": 45, "OL": 21}, 0.66, "Aipom's dexterous tail-hand catches behind its body while its ordinary hands balance or block; Pickup dexterity makes an outstanding small slot receiver."],
+    [191, "none", 4, 4, {"QB": 1, "WR": 1, "HB": 1, "DE": 2, "NT": 3, "OL": 2}, 0.08, "A nearly static seed has no handling limbs or functional contact reach; sunny growth potential cannot execute a present-day football assignment."],
+    [192, "hands", 38, 56, {"QB": 17, "WR": 19, "TE": 21, "FS": 25, "DE": 13, "OL": 16}, 0.24, "Chlorophyll and leaf arms give situational movement and a nearby grip, but rooted slow legs and low strength severely limit useful passing and pursuit."],
+    [193, "claws", 26, 38, {"QB": 8, "WR": 19, "CB": 96, "FS": 87, "DE": 86, "OLB": 80, "OL": 17}, 0.68, "Speed Boost, Compound Eyes and abrupt dragonfly turns create elite coverage recovery and shifty edge pressure; tiny insect feet cannot secure a large football reliably."],
+    [194, "none", 7, 9, {"QB": 1, "WR": 2, "HB": 8, "DE": 15, "DT": 23, "OL": 16}, 0.19, "Water Absorb and an easygoing gait help resilience, but Wooper has no arms or precise ball-control power to catch or pass."],
+    [195, "hands", 61, 86, {"QB": 38, "TE": 60, "OL": 71, "DT": 78, "NT": 85, "FS": 41, "LB": 59}, 0.36, "Unaware poise ignores offensive fakes and a sturdy soft body absorbs contact; slow recognition, short arms and modest hands limit distribution and range."],
+    [196, "psychic", 100, 100, {"QB": 96, "WR": 97, "CB": 99, "FS": 100, "DE": 83, "OL": 30}, 0.74, "Espeon predicts movement through sensitive fur and uses precise Psychic to catch without hands; rapid reactions and Magic Bounce-like reads favor space over trenches."],
+    [197, "psychic", 73, 94, {"QB": 55, "WR": 65, "HB": 80, "CB": 90, "FS": 96, "SS": 95, "LB": 76, "OL": 51}, 0.56, "Synchronize, patient ambush instincts and learned Psychic improve ball control and deceptive reads; exceptional durability suits safety, while fine passing remains less practiced."],
+    [198, "talons", 51, 86, {"QB": 26, "WR": 74, "CB": 85, "FS": 89, "DE": 48, "OL": 16}, 0.51, "Prankster misdirection, theft instincts and strong talons bait and snatch passes; a small crow lacks power and precise throwing joints."],
+    [199, "psychic", 100, 100, {"QB": 100, "TE": 81, "C": 87, "FS": 90, "SS": 81, "OL": 68, "HB": 31}, 0.65, "Slowking's extraordinary intelligence, calm hands and Psychic calculate excellent throws and zone reads; slow feet restrict scrambling and recovery even when the read is correct."],
+    [200, "psychic", 94, 100, {"QB": 81, "WR": 91, "CB": 98, "FS": 99, "DE": 87, "OL": 20}, 0.7, "Misdreavus levitates through misdirection, uses Psychic for possession and Perish Song timing to disguise a play; its small ghost body cannot anchor physical blocks."],
+    [201, "none", 18, 16, {"QB": 5, "WR": 5, "HB": 8, "FS": 37, "CB": 29, "DE": 19, "OL": 8}, 0.32, "Unown's collective mysterious power and levitation do not establish precise individual telekinesis; a solitary glyph lacks a dependable catch or passing mechanism."],
+    [202, "hands", 31, 50, {"QB": 13, "WR": 18, "TE": 33, "OL": 71, "DT": 74, "NT": 83, "LB": 59, "FS": 27}, 0.42, "Counter and Mirror Coat instincts punish a committed collision, making Wobbuffet a stubborn gap defender; passive behavior and stubby hands limit offensive decisions."],
+    [203, "psychic", 89, 98, {"QB": 78, "WR": 79, "FS": 94, "CB": 86, "LB": 73, "DE": 60, "OL": 37}, 0.53, "A second watchful head and Psychic track threats on both sides while controlling the ball; quadrupedal balance gives range but less human-style block leverage."],
+    [204, "none", 5, 4, {"QB": 1, "WR": 1, "HB": 1, "NT": 32, "DT": 30, "DE": 11, "OL": 23}, 0.14, "Sturdy armor and a hanging cone can obstruct a fixed lane, but Pineco lacks a football grip and meaningful turf movement."],
+    [205, "none", 10, 7, {"QB": 2, "WR": 2, "TE": 3, "OL": 72, "DT": 97, "NT": 100, "DE": 49, "FS": 18}, 0.43, "Heavy steel armor, Sturdy and Gyro Ball collision leverage make Forretress an exceptional stationary gap plug; mobility and ball handling are extreme weaknesses."],
+    [206, "coils", 24, 37, {"QB": 5, "WR": 13, "HB": 23, "DE": 40, "DT": 38, "FS": 34, "OL": 23}, 0.3, "Serene Grace, burrowing and small evasive wing beats produce surprise angles, but Dunsparce's clumsy long body has no dependable hands or fast route footwork."],
+    [207, "claws", 62, 87, {"QB": 35, "WR": 68, "CB": 90, "FS": 82, "DE": 92, "OLB": 84, "TE": 60}, 0.57, "Gliding pivots, Hyper Cutter pincers and a prehensile tail change the rush angle; claws catch competently but release less precisely than hands."],
+    [208, "coils", 28, 45, {"QB": 7, "WR": 15, "TE": 21, "OL": 99, "DT": 100, "NT": 100, "DE": 88, "CB": 23}, 0.53, "A massive steel serpent can Bind several run gaps and burrow beneath protection; coils and jaws remain poor snapping and passing tools and huge turns lose coverage."],
+    [209, "hands", 63, 84, {"QB": 34, "WR": 38, "HB": 41, "TE": 37, "DE": 34, "OL": 27}, 0.28, "Intimidate disguises a nervous temperament and small upright paws can grip; modest size and uncertain confidence limit dependable contact execution."],
+    [210, "hands", 83, 96, {"QB": 60, "TE": 87, "FB": 92, "OL": 84, "DE": 88, "LB": 81, "SS": 73}, 0.43, "Intimidate, huge jaws and strong upright hands give Granbull leverage and secure contact catches; slow feet and average touch limit finesse play."],
+    [211, "none", 7, 7, {"QB": 1, "WR": 1, "HB": 2, "NT": 28, "DT": 31, "DE": 13, "OL": 17}, 0.21, "Intimidating spines and Poison Point discourage a collision, but an aquatic puffer has neither turf propulsion nor a reliable football grip."],
+    [212, "claws", 83, 100, {"QB": 63, "WR": 83, "TE": 97, "OL": 95, "DE": 100, "DT": 90, "LB": 96, "CB": 81}, 0.72, "Technician precision, Bullet Punch timing and powerful steel pincers create elite rush counters and contact catches; armor favors leverage over long recovery sprinting."],
+    [213, "tentacles", 28, 45, {"QB": 10, "WR": 8, "TE": 13, "NT": 75, "DT": 66, "OL": 39, "DE": 16, "CB": 7}, 0.37, "Sturdy and extreme shell defense hold a tiny fixed spot, while thin tentacles grip nearby objects; almost no speed or size prevents elite blocking or pursuit."],
+    [214, "hands", 83, 99, {"QB": 56, "TE": 95, "FB": 99, "OL": 100, "DE": 99, "DT": 97, "LB": 92}, 0.62, "Guts, Moxie and astonishing lifting strength let Heracross throw blockers aside with useful hands and horn leverage; fine quarterback touch remains secondary."],
+    [215, "hands", 88, 99, {"QB": 67, "WR": 98, "HB": 96, "CB": 98, "DE": 97, "OLB": 91, "OL": 40}, 0.69, "Pickpocket dexterity, Feint and slippery clawed footwork create a superb slot receiver and shifty edge threat; claws can grip safely but a slight frame loses anchor blocks."],
+    [216, "hands", 73, 91, {"QB": 43, "WR": 43, "HB": 39, "TE": 42, "DE": 25, "OL": 24}, 0.27, "Honey-hand dexterity and Pickup instincts help retain a ball, but a small inexperienced bear lacks powerful contact leverage and field awareness."],
+    [217, "hands", 95, 100, {"QB": 76, "TE": 99, "FB": 98, "OL": 100, "DE": 97, "DT": 98, "LB": 91}, 0.63, "Guts, Quick Feet and huge bear hands combine surprising lateral burst with secure catches and overwhelming block leverage; patient distribution is useful but not its specialty."],
+    [218, "none", 6, 4, {"QB": 1, "WR": 1, "HB": 1, "NT": 19, "DT": 20, "DE": 5, "OL": 10}, 0.12, "A molten slug resists some contact but cannot hold a football safely or move through an assignment; heat does not supply a practical throwing mechanism."],
+    [219, "none", 9, 7, {"QB": 2, "WR": 2, "TE": 3, "NT": 63, "DT": 56, "OL": 39, "DE": 17, "CB": 3}, 0.26, "A heavy rocky shell and Flame Body obstruct a fixed gap, but an almost motionless hot body lacks hands and cannot pursue, receive or pass reliably."],
+    [220, "mouth", 20, 38, {"QB": 4, "WR": 12, "HB": 25, "DE": 22, "DT": 26, "OL": 19}, 0.21, "A keen nose reads ground movement and furry bulk absorbs a glancing hit; the small quadruped has no precise catch limbs or throwing release."],
+    [221, "mouth", 28, 58, {"QB": 9, "WR": 23, "FB": 69, "OL": 89, "DT": 91, "NT": 94, "DE": 66, "CB": 27}, 0.37, "Thick Fat, tusk leverage and a heavy shaggy body control interior contact; poor vision and quadrupedal handling keep throws and catches far below blocking value."],
+    [222, "none", 12, 17, {"QB": 3, "WR": 5, "TE": 9, "NT": 39, "DT": 35, "OL": 23, "FS": 18}, 0.24, "Regenerator and tough coral endure contact, but short rigid branches do not supply controlled catches, release or practical turf pursuit."],
+    [223, "launcher", 83, 58, {"QB": 75, "WR": 12, "HB": 5, "DE": 17, "OL": 11}, 0.58, "Lock-On, Sniper and accurately aimed mouth jets can fire a loaded football from the pocket; water dependence and no hands make routes and self-loading difficult."],
+    [224, "launcher", 100, 100, {"QB": 100, "WR": 49, "TE": 84, "C": 85, "OL": 67, "DT": 69, "DE": 55}, 0.74, "Octillery can load a football with suction-cup tentacles and fire it through its cannon-like mouth using Lock-On and Sniper precision; slow land repositioning limits scrambling."],
+    [225, "tail", 78, 98, {"QB": 54, "WR": 84, "TE": 48, "CB": 54, "FS": 56, "OL": 15}, 0.56, "A hollow tail carries parcels and Present timing transfers to short tosses and secure catches; light build and inconsistent gifts make contact and deep passing weak."],
+    [226, "mouth", 34, 48, {"QB": 13, "WR": 17, "TE": 24, "FS": 52, "CB": 48, "NT": 61, "DE": 43}, 0.35, "Mantine can glide over the water and read a wide lane, but a ray's fins provide little football grip and a poor dry-field route or throwing base."],
+    [227, "talons", 48, 94, {"QB": 24, "WR": 84, "TE": 88, "OL": 92, "DE": 99, "DT": 80, "CB": 94, "FS": 91}, 0.61, "Steel wings, Sturdy and sharp banking turns deflect passes and slice a rush lane; talons can receive, but armor doesn't create a precision forward release."],
+    [228, "mouth", 29, 63, {"QB": 10, "WR": 35, "HB": 64, "CB": 62, "FS": 65, "DE": 45}, 0.33, "Early Bird and coordinated pack tracking help route anticipation; a small dog's mouth handles a carry more reliably than an airborne catch or pass."],
+    [229, "mouth", 42, 86, {"QB": 20, "WR": 59, "HB": 92, "CB": 92, "FS": 94, "DE": 88, "OLB": 85}, 0.58, "Pack tactics, Nasty Plot reads and fast predatory cuts create pursuit and separation; a doglike mouth grip still limits deep contested catches and accurate throwing."],
+    [230, "launcher", 96, 79, {"QB": 91, "WR": 25, "TE": 31, "FS": 52, "DT": 51, "OL": 32}, 0.67, "Sniper precision and powerful spiral mouth jets make Kingdra a dangerous fixed-pocket cannon passer; no hands and severe land-motion limits weaken other ball roles."],
+    [231, "trunk", 57, 79, {"QB": 30, "WR": 35, "FB": 54, "OL": 48, "DE": 40, "DT": 53}, 0.3, "A prehensile trunk cradles the ball and a sturdy small body keeps balance, but trunk release and immature reads limit accurate passing."],
+    [232, "trunk", 76, 94, {"QB": 47, "TE": 70, "FB": 100, "HB": 88, "OL": 98, "DT": 98, "NT": 98, "DE": 91}, 0.59, "A trunk secures possession while armored Rollout momentum bowls through contact; dense tire-like balance anchors gaps but offers limited fine throwing touch."],
+    [233, "digital", 100, 100, {"QB": 98, "WR": 84, "C": 82, "FS": 99, "CB": 94, "DE": 70, "OL": 60}, 0.73, "Upgraded targeting, Download and Analytic adapt to defensive structure and use Psychic to control the ball precisely; modest physical leverage prevents a universal contact ace."],
+    [234, "psychic", 76, 91, {"QB": 51, "WR": 63, "HB": 84, "CB": 89, "FS": 95, "DE": 76, "OL": 37}, 0.56, "Antler-created spatial illusions and learned Psychic distort route reads and support possession; a nimble quadruped excels at disguise rather than upright blocking mechanics."],
+    [235, "hands", 100, 100, {"QB": 96, "WR": 84, "FS": 86, "CB": 79, "DE": 57, "OL": 28}, 0.79, "Sketch lets Smeargle study a useful move and paint precise ball trajectories with hand-and-tail control; frail strength and imperfect execution prevent limitless copied power."],
+    [236, "hands", 70, 91, {"QB": 43, "WR": 55, "TE": 48, "DE": 54, "LB": 49, "OL": 34}, 0.28, "Determined martial practice supplies usable hands and cuts, but inexperience limits reads, strength and consistent contact technique."],
+    [237, "hands", 85, 96, {"QB": 62, "WR": 73, "HB": 87, "DE": 100, "OLB": 98, "LB": 93, "OL": 67}, 0.66, "Technician, Triple Kick and Rapid Spin balance let Hitmontop pivot around a tackle and counter inside; hand skill is useful while elite value comes from shifty rush footwork."],
+    [238, "psychic", 71, 84, {"QB": 43, "WR": 30, "FS": 40, "CB": 30, "DE": 10, "OL": 8}, 0.31, "Emerging psychic control and rhythmic coordination permit light possession, but tiny limbs and a fragile frame cannot create reliable contact or deep passing power."],
+    [239, "hands", 71, 89, {"QB": 46, "WR": 59, "HB": 62, "CB": 56, "DE": 43, "OL": 20}, 0.36, "Quick electric arm rotations build promising catch timing and cuts; youthful control and small size limit powerful throws and collision roles."],
+    [240, "hands", 58, 81, {"QB": 33, "WR": 40, "HB": 38, "DE": 37, "TE": 34, "OL": 21}, 0.29, "Small but functional hands and accurate flame aiming permit basic throws; immature focus, short reach and weak contact leverage cap value."],
+    [241, "hands", 90, 100, {"QB": 73, "TE": 95, "FB": 98, "HB": 92, "OL": 93, "C": 88, "DE": 89, "LB": 86}, 0.53, "Scrappy contact, Rollout balance and a surprisingly quick bipedal frame provide secure catches and powerful running; milk-carrying coordination supports hands and short touch."],
+    [242, "hands", 97, 100, {"QB": 88, "WR": 79, "TE": 91, "C": 86, "FS": 85, "SS": 80, "OL": 56, "DT": 53}, 0.55, "Natural Cure, remarkable resilience and practiced egg handling retain catches through traffic; gentle force and slow recovery keep Blissey below bruising trench specialists."],
+    [243, "mouth", 49, 89, {"QB": 24, "WR": 69, "HB": 100, "DE": 100, "OLB": 100, "CB": 99, "FS": 98, "SS": 99}, 0.79, "Legendary lightning burst and coordinated predatory tracking create explosive edge pursuit and recovery coverage; a secure mouth carry still cannot match precision passing hands."],
+    [244, "mouth", 47, 90, {"QB": 22, "WR": 66, "HB": 99, "FB": 100, "DE": 98, "OLB": 96, "SS": 99, "OL": 94}, 0.72, "Extreme Speed, immense strength and enduring volcanic power break contact and collapse rush lanes; mouth carrying favors backfield work rather than technical passing."],
+    [245, "psychic", 82, 99, {"QB": 64, "WR": 89, "HB": 100, "CB": 100, "FS": 100, "SS": 97, "DE": 92, "OL": 64}, 0.76, "Graceful legendary movement, Extrasensory and water-purifying awareness give precise pursuit and supported catches; a quadrupedal frame still limits fine arm-based release and blocking stance."],
+    [246, "hands", 63, 85, {"QB": 32, "TE": 43, "FB": 49, "OL": 49, "DT": 57, "DE": 37}, 0.25, "Guts and a dense rocky body resist contact while small hands carry nearby possession; undeveloped reads and slow legs limit broader execution."],
+    [247, "none", 7, 5, {"QB": 1, "WR": 1, "HB": 3, "OL": 56, "DT": 73, "NT": 77, "DE": 84, "CB": 19}, 0.33, "Pupitar can vent gas to rocket into a rush gap and armor absorbs impact; its cocoon body has no dependable hands for catches, snaps or passes."],
+    [248, "hands", 89, 98, {"QB": 67, "TE": 91, "FB": 94, "OL": 100, "DT": 100, "NT": 100, "DE": 98, "LB": 87, "CB": 48}, 0.63, "Unnerve, overwhelming armored power and dexterous claws dominate protection and interior gaps; large turning radius and ordinary touch limit finesse coverage and quarterback value."],
+    [249, "psychic", 100, 100, {"QB": 97, "WR": 99, "TE": 100, "OL": 99, "DE": 100, "CB": 99, "FS": 100, "LB": 99}, 0.83, "Lugia combines psychic possession, hand-like wings, Multiscale and careful storm control to win catches, reads and edge angles without making every collision an automatic victory."],
+    [250, "psychic", 95, 100, {"QB": 82, "WR": 99, "TE": 97, "DE": 100, "OLB": 100, "CB": 98, "FS": 100, "DT": 89}, 0.79, "Regenerator endurance, Psychic and legendary aerial reach create extraordinary catches and coverage range; psychic release makes Ho-Oh a credible passer without a pocket specialist's practiced precision."],
+    [251, "psychic", 100, 100, {"QB": 100, "WR": 100, "TE": 83, "CB": 100, "FS": 100, "DE": 84, "LB": 86, "OL": 39}, 0.88, "Celebi's Psychic, future awareness and short time-shift feints predict route breaks and secure the ball; temporal creativity is bounded and a tiny frame remains a weak trench anchor."],
+  ];
+
   const roles = Object.freeze(['LT', 'LG', 'C', 'RG', 'RT', 'QB', 'HB', 'FB', 'WR', 'TE', 'FS', 'SS', 'CB', 'DE', 'NT', 'DT', 'ILB', 'OLB', 'MLB', 'WLB', 'SLB', 'LB', 'NB', 'DB']);
   const catalog = window.POKEMON;
   if (!Array.isArray(catalog) || catalog.length !== 251) throw new Error('Draft ratings require the complete 251-Pokémon catalog.');
   const catalogById = new Map(catalog.map(p => [p.id, p]));
-  if (catalogById.size !== 251 || profiles.length !== 251) throw new Error('Incomplete Pokémon scouting coverage.');
+  const loreById = new Map(loreProfiles.map(p => [p[0], p]));
+  if (catalogById.size !== 251 || profiles.length !== 251 || loreById.size !== 251) throw new Error('Incomplete Pokémon scouting coverage.');
   const clamp = n => Math.max(0, Math.min(100, n));
   const mix = (...terms) => terms.reduce((total, [value, weight]) => total + value * weight, 0);
-  const matrix = new Map();
+  const matrix = new Map(), factors = new Map();
+  const groups = Object.freeze({
+    OL: ['LT', 'LG', 'C', 'RG', 'RT'],
+    LB: ['ILB', 'MLB', 'WLB', 'SLB', 'OLB', 'LB'],
+    OLB: ['OLB', 'WLB', 'SLB'],
+    CB: ['CB', 'NB', 'DB']
+  });
+  const roleTasks = Object.freeze({
+    QB: 'Passing weighs reads, a feasible controlled release, accuracy and pocket poise most heavily.',
+    HB: 'Running weighs ball security, burst, shifty cuts and contact balance.',
+    FB: 'Fullback weighs lead blocking, contact balance and secure short possession.',
+    WR: 'Receiving requires a feasible catch mechanism, separation and retention through contact.',
+    TE: 'Tight end combines contested catches, reach, blocking leverage and traffic awareness.',
+    LT: 'Left tackle values reach, lateral protection, leverage and reliable contact.',
+    RT: 'Right tackle values reach, lateral protection, leverage and reliable contact.',
+    LG: 'Left guard values a stable base, close-contact force and interior awareness.',
+    RG: 'Right guard values a stable base, close-contact force and interior awareness.',
+    C: 'Center must make a reliable snap, identify rush lanes and hold an interior base.',
+    DE: 'Edge play rewards shifty counters, sudden angles and burst as well as contact strength.',
+    DT: 'Defensive tackle values gap control, leverage, contact resistance and short-area feet.',
+    NT: 'Nose tackle values mass, a wide stable base and double-team resistance, with usable footwork.',
+    FS: 'Free safety values anticipation, ball tracking and rapid recovery to a deep threat.',
+    SS: 'Strong safety blends route awareness, contact tackling and short-area recovery.',
+    CB: 'Corner values route mirroring, sharp changes of direction and ball tracking.',
+    NB: 'Nickel corner values shifty slot coverage, short-area reads and usable tackling.',
+    DB: 'Extra defensive back blends coverage recovery, ball tracking and deep awareness.',
+    ILB: 'Inside linebacker values run reads, tackling leverage and coverage in traffic.',
+    MLB: 'Middle linebacker values run reads, tackling leverage and coverage in traffic.',
+    OLB: 'Outside linebacker blends edge pursuit, lateral recovery and coverage reads.',
+    WLB: 'Weakside linebacker emphasizes pursuit, recovery and changes of direction.',
+    SLB: 'Strongside linebacker combines tight-end coverage, block leverage and pursuit.',
+    LB: 'Linebacker blends anticipation, pursuit, contact tackling and underneath coverage.'
+  });
 
-  for (const [id, control, awareness, strength, durability, mobility, accuracy, qbCeiling] of profiles) {
-    const p = catalogById.get(id);
-    if (!p || matrix.has(id) || ![p.heightMeters, p.weightKg, p.fortySeconds].every(n => Number.isFinite(n) && n > 0) ||
-        ![control, awareness, strength, durability, mobility, accuracy, qbCeiling].every(n => Number.isInteger(n) && n >= 0 && n <= 100)) {
+  for (const [id, originalControl, awareness, strength, durability, mobility, originalAccuracy] of profiles) {
+    const p = catalogById.get(id), lore = loreById.get(id);
+    if (!p || !lore || matrix.has(id) || ![p.heightMeters, p.weightKg, p.fortySeconds].every(n => Number.isFinite(n) && n > 0)) {
       throw new Error('Missing, duplicate or invalid Pokémon physical profile: ' + id);
     }
-    // Saturation keeps huge serpents from gaining unlimited reach, and very low
-    // mass does not erase explicitly reviewed supernatural functional strength.
+    const [, method, qbCeiling, catchCeiling, roleFits, xFactor] = lore;
+    if (!Number.isInteger(qbCeiling) || !Number.isInteger(catchCeiling) || qbCeiling < 0 || qbCeiling > 100 || catchCeiling < 0 || catchCeiling > 100 || !Number.isFinite(xFactor) || xFactor < 0 || xFactor > 1) throw new Error('Invalid lore scouting profile: ' + id);
+    // Documented Psychic/vines/tentacles/tails/cannons can supply functional ball
+    // control. A type alone never does: individual Unown, magnets, gas spheres
+    // and immobile cocoons retain explicit no-grip constraints.
+    const poweredControl = ['psychic', 'digital', 'launcher', 'vines', 'tentacles', 'tail', 'tongue', 'transform', 'trunk'].includes(method);
+    const control = method === 'none' ? Math.min(originalControl, catchCeiling) : poweredControl ? Math.max(originalControl, catchCeiling * .94) : originalControl;
+    const accuracy = ['psychic', 'digital', 'launcher', 'transform'].includes(method) ? Math.max(originalAccuracy, qbCeiling - 9) : originalAccuracy;
     const mass = clamp(45 + Math.log2(p.weightKg / 18) * 15);
     const reach = clamp(p.heightMeters * 45);
     const frame = mass * .70 + reach * .30;
     const power = strength * .86 + frame * .14;
     const contact = durability * .92 + mass * .08;
     const speed = clamp(100 * Math.exp(-(p.fortySeconds - 2.65) / 5.1));
-    // Mobility is species-reviewed turf/flight agility. A burrower or floating
-    // cocoon does not receive a fast backfield grade just from estimated 40 time.
     const movement = mobility * .70 + speed * .30;
     const handFactor = .55 + .45 * control / 100;
-    const coverControl = Math.min(100, control + 16); // Deflections need less grip than receptions.
-    // Weight and armor alone cannot make a stationary cocoon or water-bound fish
-    // an elite blocker: trenches still require stance changes and short-area feet.
+    const coverControl = Math.min(100, control + 16); // A deflection needs less grip than a retained catch.
     const trenchFootwork = .65 + .35 * Math.min(1, mobility / 45);
 
-    const qb = Math.min(qbCeiling, mix([control, .26], [awareness, .27], [accuracy, .25], [power, .12], [movement, .05], [reach, .05]));
+    const qb = mix([control, .26], [awareness, .27], [accuracy, .25], [power, .12], [movement, .05], [reach, .05]);
     const hb = mix([speed, .23], [movement, .24], [power, .15], [contact, .13], [control, .19], [frame, .06]) * handFactor;
     const fb = mix([power, .28], [contact, .23], [frame, .15], [movement, .12], [control, .16], [awareness, .06]) * handFactor;
     const wr = mix([speed, .23], [movement, .17], [control, .30], [awareness, .14], [reach, .11], [contact, .05]) * handFactor;
     const te = mix([frame, .20], [control, .26], [power, .19], [contact, .14], [movement, .10], [awareness, .07], [speed, .04]) * handFactor;
-    // Linemen can block with an unconventional body, but centers must reliably
-    // snap. Hand control therefore matters more at C than guard or tackle.
     const tackle = mix([power, .29], [contact, .22], [frame, .23], [movement, .13], [awareness, .08], [control, .05]) * trenchFootwork;
     const guard = mix([power, .32], [contact, .25], [frame, .25], [movement, .06], [awareness, .07], [control, .05]) * trenchFootwork;
     const center = mix([power, .23], [contact, .19], [frame, .19], [control, .22], [awareness, .14], [movement, .03]) * (.65 + .35 * control / 100) * trenchFootwork;
-    const de = mix([power, .30], [contact, .17], [frame, .14], [movement, .20], [speed, .11], [awareness, .08]) * trenchFootwork;
+    // A fast/shifty rusher is not forced to match an interior anchor's mass:
+    // movement + burst + reads now total 53% before its lore counter-move fit.
+    const de = mix([power, .23], [contact, .13], [frame, .11], [movement, .28], [speed, .15], [awareness, .10]) * trenchFootwork;
     const dt = mix([power, .34], [contact, .28], [frame, .26], [movement, .07], [awareness, .05]) * trenchFootwork;
     const nt = mix([power, .31], [contact, .31], [frame, .30], [movement, .03], [awareness, .05]) * trenchFootwork;
     const linebacker = mix([power, .19], [contact, .14], [movement, .21], [speed, .13], [awareness, .20], [coverControl, .08], [frame, .05]);
@@ -317,37 +611,56 @@
       LT: tackle, LG: guard, C: center, RG: guard, RT: tackle, QB: qb,
       HB: hb, FB: fb, WR: wr, TE: te, FS: fs, SS: ss, CB: cb,
       DE: de, DT: dt, NT: nt, ILB: inside, OLB: outside, MLB: inside,
-      WLB: outside * .70 + linebacker * .30,
-      SLB: inside * .45 + outside * .55,
+      WLB: outside * .70 + linebacker * .30, SLB: inside * .45 + outside * .55,
       LB: linebacker, NB: cb * .70 + ss * .30, DB: cb * .55 + fs * .45
     };
-    // A secure mouth/talon carry does not automatically imply a reliable snap.
-    // Limited arm/release anatomy also constrains center, even on a huge body.
-    if (qbCeiling < 40) grades.C = Math.min(grades.C, control < 20 ? 35 : 59);
     const openFieldMobility = .55 + .45 * Math.min(1, mobility / 50);
-    for (const role of ['HB', 'FB', 'WR', 'TE', 'FS', 'SS', 'CB', 'ILB', 'OLB', 'MLB', 'WLB', 'SLB', 'LB', 'NB', 'DB']) {
-      grades[role] *= openFieldMobility;
+    for (const role of ['HB', 'FB', 'WR', 'TE', 'FS', 'SS', 'CB', 'ILB', 'OLB', 'MLB', 'WLB', 'SLB', 'LB', 'NB', 'DB']) grades[role] *= openFieldMobility;
+
+    // Explicit creative role fits weigh 70%; the reviewed physical/anatomical
+    // baseline still weighs 30%. Exceptional role-mechanic synergy adds at most
+    // three points. Group anchors are expanded before exact roles, so a specific
+    // snap or safety responsibility can intentionally differ from the family.
+    const anchors = {};
+    for (const [key, fit] of Object.entries(roleFits)) {
+      if (!Number.isInteger(fit) || fit < 0 || fit > 100 || (!roles.includes(key) && !groups[key])) throw new Error('Invalid positional lore fit: ' + id + '/' + key);
+      for (const role of groups[key] || [key]) anchors[role] = fit;
     }
-    // A centered scale leaves clear differences between competent, outstanding
-    // and anatomically unsuitable picks, instead of clustering the roster at C.
-    for (const role of roles) grades[role] = Math.round(clamp(grades[role]));
-    matrix.set(id, Object.freeze(grades));
+    for (const [key, fit] of Object.entries(roleFits)) if (roles.includes(key)) anchors[key] = fit;
+    for (const role of roles) {
+      if (anchors[role] !== undefined) grades[role] = grades[role] * .30 + anchors[role] * .70 + (anchors[role] >= 95 ? 3 : 0);
+    }
+    // Receivers MUST have a plausible catch. Being fast, gigantic or Psychic-
+    // type is not enough when that species lacks real control. Safe blade/pincer
+    // grip, ordinary mouth catches and actual telekinesis have distinct ceilings.
+    for (const role of ['WR', 'TE']) grades[role] = Math.min(grades[role], catchCeiling);
+    for (const role of ['HB', 'FB']) grades[role] = Math.min(grades[role], Math.min(100, catchCeiling + (method === 'mouth' || method === 'coils' ? 15 : 6)));
+    if (method === 'none') { grades.C = Math.min(grades.C, catchCeiling); grades.QB = Math.min(grades.QB, qbCeiling); }
+    else if (['mouth', 'talons', 'blades', 'coils', 'web'].includes(method)) grades.C = Math.min(grades.C, Math.min(59, catchCeiling));
+    grades.QB = Math.min(grades.QB, qbCeiling);
+    const roleFactors = {};
+    for (const role of roles) {
+      grades[role] = Math.round(clamp(grades[role]));
+      // The extra factor only scales a bounded occasional simulation event.
+      // Poor anatomical fit cannot turn into an elite starter through luck.
+      roleFactors[role] = Math.round(xFactor * Math.sqrt(grades[role] / 100) * (.55 + .45 * (anchors[role] === undefined ? grades[role] : anchors[role]) / 100) * 1000) / 1000;
+    }
+    matrix.set(id, Object.freeze(grades)); factors.set(id, Object.freeze(roleFactors));
   }
 
-  // Fail early if future catalog edits ever omit a species or board role.
+  function validate(id, role) {
+    if (!Number.isInteger(id) || !matrix.has(id)) throw new RangeError('Unknown Pokémon ID for positional grade.');
+    if (!roles.includes(role)) throw new RangeError('Unknown football position for positional grade.');
+  }
   for (let id = 1; id <= 251; id++) {
     const grades = matrix.get(id);
-    if (!grades || roles.some(role => !Number.isInteger(grades[role]) || grades[role] < 0 || grades[role] > 100)) {
-      throw new Error('Incomplete positional grades: ' + id);
-    }
+    if (!grades || roles.some(role => !Number.isInteger(grades[role]) || grades[role] < 0 || grades[role] > 100 || !Number.isFinite(factors.get(id)[role]) || factors.get(id)[role] < 0 || factors.get(id)[role] > 1)) throw new Error('Incomplete positional grades: ' + id);
   }
 
   window.DraftRatings = Object.freeze({
     roles,
-    rate(id, role) {
-      if (!Number.isInteger(id) || !matrix.has(id)) throw new RangeError('Unknown Pokémon ID for positional grade.');
-      if (!roles.includes(role)) throw new RangeError('Unknown football position for positional grade.');
-      return matrix.get(id)[role];
-    }
+    rate(id, role) { validate(id, role); return matrix.get(id)[role]; },
+    factor(id, role) { validate(id, role); return factors.get(id)[role]; },
+    explain(id, role) { validate(id, role); return loreById.get(id)[6] + ' ' + roleTasks[role]; }
   });
 })();

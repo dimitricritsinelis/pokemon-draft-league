@@ -12,23 +12,29 @@
   <link rel="apple-touch-icon" href="assets/app-icon.png">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
-  <link rel="stylesheet" href="styles.css?v=7">
-  <script src="assets/pokemon.js?v=7" defer></script>
-  <script src="field.js?v=7" defer></script>
-  <script src="export.js?v=7" defer></script>
-  <script src="ratings.js?v=7" defer></script>
-  <script src="simulation.js?v=7" defer></script>
-  <script src="app.js?v=7" defer></script>
+  <link rel="stylesheet" href="styles.css?v=8">
+  <link rel="stylesheet" href="results.css?v=8">
+  <link rel="stylesheet" href="hall.css?v=8">
+  <script src="assets/pokemon.js?v=8" defer></script>
+  <script src="field.js?v=8" defer></script>
+  <script src="export.js?v=8" defer></script>
+  <script src="ratings.js?v=8" defer></script>
+  <script src="simulation.js?v=8" defer></script>
+  <script src="career.js?v=8" defer></script>
+  <script src="results.js?v=8" defer></script>
+  <script src="hall.js?v=8" defer></script>
+  <script src="app.js?v=8" defer></script>
 </head>
 <body>
   <header class="masthead">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">P</span><div><h1>Pokémon Draft League</h1><div id="team-tabs" class="team-tabs" role="tablist" aria-label="Draft team"><button type="button" role="tab" id="team-tab-0" data-team="0" aria-selected="true" aria-controls="draft-board">Team 1 <small id="team-count-0">22/22</small></button><button type="button" role="tab" id="team-tab-1" data-team="1" aria-selected="false" aria-controls="draft-board" tabindex="-1">Team 2 <small id="team-count-1">0/22</small></button></div></div></div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">P</span><div><h1>Pokémon Draft League</h1><div id="team-tabs" class="team-tabs" role="tablist" aria-label="Draft team"><button type="button" role="tab" id="team-tab-0" data-team="0" aria-selected="true" aria-controls="draft-board"><span id="team-label-0">Team 1</span> <small id="team-count-0">22/22</small></button><button type="button" role="tab" id="team-tab-1" data-team="1" aria-selected="false" aria-controls="draft-board" tabindex="-1"><span id="team-label-1">Team 2</span> <small id="team-count-1">0/22</small></button></div></div></div>
     <button type="button" id="simulate-match" class="simulate-button" aria-label="Simulate Match" aria-disabled="true">Simulate<br>Match</button>
     <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Open draft options" aria-expanded="false" aria-controls="draft-menu"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
   </header>
   <nav class="draft-tools" id="draft-menu" aria-label="Draft options" hidden>
     <div class="menu-heading"><strong>Draft options</strong><span id="save-status" class="save-status" role="status">Autosaved</span></div>
     <p class="menu-context"><span id="formation-summary">Team 1 · Gen 1 · 21 OFF · 3–4 DEF</span> · <span id="draft-count">22/22</span></p>
+    <form class="team-name-form"><label for="team-name">Team name</label><div><input id="team-name" type="text" maxlength="48" placeholder="Team 1" autocomplete="off" enterkeyhint="done"><button type="button" id="save-team-name">Save</button></div></form>
     <div class="menu-controls">
       <div class="menu-group"><span class="menu-label">Pokémon pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="both" aria-pressed="false">Both</button></div></div>
         <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
@@ -40,6 +46,7 @@
       <button type="button" id="sample-button" class="menu-action">Sample lineup</button>
       <button type="button" id="clear-button" class="menu-action danger-action">Clear board</button>
       <button type="button" id="stats-help" class="menu-action">Stats guide</button>
+      <button type="button" id="hall-button" class="menu-action">Hall of Fame</button>
       <button type="button" id="room-button" class="menu-action">More room</button>
     </div>
     <div id="shared-notice" class="shared-notice" hidden><span id="shared-label">Shared lineup</span><div class="shared-actions"><button type="button" id="my-lineup" class="text-button">My teams</button><button type="button" id="keep-shared" class="text-button">Keep matchup</button></div></div>
@@ -68,10 +75,22 @@
     <div class="dialog-heading"><div><span class="eyebrow">FINAL WHISTLE</span><h2 id="match-title">Match result</h2></div><button type="button" class="icon-button" data-close="match-dialog" aria-label="Close match result">×</button></div>
     <p id="match-summary" class="match-summary"></p>
     <table class="scoreboard" aria-label="Points scored in each quarter"><thead><tr><th scope="col">Team</th><th scope="col">Q1</th><th scope="col">Q2</th><th scope="col">Q3</th><th scope="col">Q4</th><th scope="col">Final</th></tr></thead><tbody id="match-score-rows"></tbody></table>
-    <div class="boxscore-heading"><strong>Key performers</strong><span>Simulated game stats</span></div>
+    <div id="match-mvps" class="match-mvps"></div>
+    <div id="match-highlights" class="match-highlights"></div>
+    <div class="boxscore-heading"><strong>Full box score</strong><span>All 44 Pokémon · tap for details</span></div>
     <div id="match-players" class="match-players"></div>
-    <p class="match-note">A four-quarter fantasy matchup. Every game can play out differently.</p>
+    <p class="match-note">A four-quarter fantasy matchup. Every game can play out differently. Blocking stats are fantasy tracking.</p>
+    <p id="match-career-status" class="match-note"></p>
     <div class="dialog-actions"><button type="button" class="secondary-button" data-close="match-dialog">Back to draft</button><button type="button" id="rerun-match" class="primary-button">Play again</button></div>
+  </dialog>
+  <dialog id="hall-dialog" class="hall-dialog" aria-labelledby="hall-title">
+    <div class="dialog-heading"><div><span class="eyebrow">THE GREATS</span><h2 id="hall-title">Hall of Fame</h2></div><button type="button" class="icon-button" data-close="hall-dialog" aria-label="Close Hall of Fame">×</button></div>
+    <p class="hall-intro">Induct a Pokémon to lock in its career and retire it from your drafts. You can bring it back by removing it.</p>
+    <div class="hall-views" role="group" aria-label="Career collection"><button type="button" id="hall-view" aria-pressed="true">Hall of Fame <span id="hall-count">0</span></button><button type="button" id="career-view" aria-pressed="false">Career roster</button></div>
+    <label class="hall-search"><span class="sr-only">Find a Pokémon in career records</span><input type="search" id="hall-search" placeholder="Find a Pokémon…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"></label>
+    <p id="hall-message" class="hall-message" role="status"></p>
+    <div id="hall-list" class="hall-list"></div>
+    <p id="hall-storage" class="hall-storage">Careers and the Hall of Fame are saved on this device.</p>
   </dialog>
   <dialog id="clear-dialog"><form method="dialog"><span class="eyebrow">NEW DRAFT</span><h2>Clear your lineup?</h2><p>This team’s positions will be emptied. The other team and your personnel choices will stay the same.</p><div class="dialog-actions"><button value="cancel" class="secondary-button">Keep lineup</button><button value="clear" class="primary-button">Clear board</button></div></form></dialog>
   <dialog id="export-dialog" class="export-dialog" aria-labelledby="export-title">

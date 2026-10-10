@@ -1,0 +1,52 @@
+.match-dialog { max-width: 860px; }
+.match-dialog #match-title { overflow-wrap: anywhere; }
+.match-dialog p { overflow-wrap: anywhere; }
+.scoreboard { table-layout: fixed; }
+.scoreboard th:first-child { width: 35%; overflow-wrap: anywhere; }
+.scoreboard th, .scoreboard td { font-variant-numeric: tabular-nums; }
+.match-mvps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 18px 0 12px; }
+.mvp-card { display: flex; gap: 9px; align-items: flex-start; background: #f8f5e7; border: 1px solid #e5dba9; border-radius: 7px; padding: 11px; min-width: 0; }
+.mvp-card > img { flex-shrink: 0; object-fit: contain; }
+.mvp-card > div { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.mvp-card strong { font-size: 16px; }
+.mvp-team { font-size: 11px; color: #7a755b; overflow-wrap: anywhere; }
+.match-dialog .mvp-description { font-size: 11px; line-height: 1.4; color: #736544; }
+.match-highlights { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.highlight-card { border: 1px solid #dfe6d5; border-radius: 7px; padding: 12px; background: #f9fbf5; min-width: 0; }
+.match-dialog .highlight-card p { font-size: 12px; line-height: 1.45; margin-top: 6px; color: #566c48; }
+.highlight-card .boxscore-label { overflow-wrap: anywhere; display: block; }
+.match-players { align-items: start; gap: 20px; }
+.team-boxscore { min-width: 0; }
+.team-boxscore h3 { font-size: 19px; font-family: 'Barlow Condensed', sans-serif; overflow-wrap: anywhere; }
+.match-dialog .team-game-totals { font-size: 10px; line-height: 1.4; color: #76866a; margin: 0 0 13px; }
+.unit-heading { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #6a8159; margin: 13px 0 5px; padding: 6px 0; border-bottom: 1px solid #d9e4ca; }
+details.match-player { display: block; padding: 0; border-bottom: 1px solid #e7ecdf; }
+.player-heading { display: flex; align-items: center; gap: 7px; padding: 9px 0; cursor: pointer; min-height: 62px; list-style: none; }
+.player-heading::-webkit-details-marker { display: none; }
+.player-heading > img { flex: 0 0 36px; width: 36px; height: 36px; object-fit: contain; }
+.boxscore-role { flex: 0 0 23px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; color: #7c8f6d; font-weight: 700; }
+.player-summary { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.player-summary > strong { font-size: 13px; }
+.boxscore-line { font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }
+.player-expand { flex: 0 0 17px; font-size: 17px; color: #91a281; text-align: right; }
+.match-player[open] .player-expand { font-size: 0; }
+.match-player[open] .player-expand::before { content: '−'; font-size: 17px; }
+.player-stat-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px 8px; padding: 8px 0 14px; margin: 0; }
+.player-stat-grid div { min-width: 0; }
+.player-stat-grid dt { font-size: 10px; line-height: 1.3; color: #75846b; }
+.player-stat-grid dd { font-family: 'Barlow Condensed', sans-serif; margin: 3px 0 0; font-size: 19px; font-weight: 600; }
+@media (max-width: 560px) {
+ .match-mvps, .match-highlights, .match-players { grid-template-columns: 1fr; }
+ .match-mvps { gap: 8px; margin-top: 13px; }
+ .match-highlights { gap: 8px; }
+ .mvp-card { padding: 10px; }
+ .mvp-card > img { width: 44px; height: 44px; }
+ .player-heading { padding: 7px 0; }
+ .boxscore-heading { align-items: start; }
+ .boxscore-heading span { max-width: 130px; text-align: right; line-height: 1.35; }
+ .scoreboard th:first-child { padding-left: 6px; width: 34%; }
+ .scoreboard tbody th { font-size: 11px; }
+ .scoreboard th, .scoreboard td { padding-left: 3px; padding-right: 3px; font-size: 12px; }
+ .scoreboard thead th { font-size: 8px; }
+ .player-stat-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
