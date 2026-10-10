@@ -19,9 +19,12 @@
   // Replay every award rather than trusting totals saved by the browser.
   // A team reaching 22 players leaves the bidding pool for later lots.
   function validate(value) {
+    const skipped = object(value) && value.skipped === undefined ? [] : value?.skipped;
     if (!object(value) || value.v !== 1 || !modes.has(value.mode) ||
         !Array.isArray(value.lots) || value.lots.length !== lotCount ||
         new Set(value.lots).size !== lotCount || !Array.from(value.lots).every(id => eligible(id, value.mode)) ||
+        !Array.isArray(skipped) || skipped.length > 251 || new Set(skipped).size !== skipped.length ||
+        !Array.from(skipped).every(id => eligible(id, value.mode) && !value.lots.includes(id)) ||
         !Array.isArray(value.awards) || value.awards.length > lotCount ||
         !Number.isInteger(value.placed) || value.placed < 0 || value.placed > lotCount ||
         (value.awards.length !== value.placed && value.awards.length !== value.placed + 1)) return null;
@@ -46,7 +49,7 @@
       awards.push({ pokemonId: award.pokemonId, team: award.team, amount: award.amount,
         bids: award.bids.slice(), tied: award.tied });
     }
-    return { v: 1, mode: value.mode, lots: value.lots.slice(), awards, placed: value.placed };
+    return { v: 1, mode: value.mode, lots: value.lots.slice(), skipped: skipped.slice(), awards, placed: value.placed };
   }
 
   function requireSession(value) {
@@ -66,7 +69,7 @@
       const other = Math.floor(draw(random) * (index + 1));
       [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
     }
-    return { v: 1, mode, lots: shuffled.slice(0, lotCount), awards: [], placed: 0 };
+    return { v: 1, mode, lots: shuffled.slice(0, lotCount), skipped: [], awards: [], placed: 0 };
   }
 
   function phase(value) {
@@ -125,5 +128,20 @@
     return session;
   }
 
-  window.DraftAuction = Object.freeze({ create, validate, current, bid, place, phase, budgets, counts, owned });
+  function skip(value, ids, random = Math.random) {
+    const session = requireSession(value);
+    if (phase(session) !== 'bidding') throw new Error('Only the Pokémon currently up for bidding can be skipped.');
+    if (!Array.isArray(ids) || !Array.from(ids).every(id => eligible(id, session.mode)) || new Set(ids).size !== ids.length) {
+      throw new Error('The replacement pool must contain unique Pokémon from the selected generation.');
+    }
+    const unavailable = new Set([...session.lots, ...session.skipped]);
+    const candidates = ids.filter(id => !unavailable.has(id));
+    if (!candidates.length) throw new Error('No replacement Pokémon remain in this pool. Bid on this Pokémon to finish the auction.');
+    const replacement = candidates[Math.floor(draw(random) * candidates.length)];
+    session.skipped.push(session.lots[session.placed]);
+    session.lots[session.placed] = replacement;
+    return session;
+  }
+
+  window.DraftAuction = Object.freeze({ create, validate, current, bid, place, phase, budgets, counts, owned, skip });
 })();

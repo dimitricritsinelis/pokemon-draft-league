@@ -735,7 +735,7 @@
     const currentBefore = window.DraftAuction.current(auction.session);
     const retired = id => window.DraftCareers.isInducted(id);
     const awardedRetiree = auction.session.awards.some(a => retired(a.pokemonId));
-    const replacements = pokemon.filter(p => allowed(p.id, auction.session.mode) && !retired(p.id) && !auction.session.lots.includes(p.id)).map(p => p.id);
+    const replacements = auctionReplacementPool();
     const upcoming = auction.session.lots.slice(auction.session.awards.length).filter(retired);
     if (awardedRetiree || upcoming.length > replacements.length) {
       if (auctionActive) exitAuction(false);
@@ -754,6 +754,12 @@
       message('This Pokémon retired. A new prospect is ready for fresh bids.');
     }
     return true;
+  }
+
+  function auctionReplacementPool() {
+    if (!auction) return [];
+    const excluded = new Set([...auction.session.lots, ...(auction.session.skipped || [])]);
+    return pokemon.filter(p => allowed(p.id, auction.session.mode) && !window.DraftCareers.isInducted(p.id) && !excluded.has(p.id)).map(p => p.id);
   }
 
   function enterAuction() {
@@ -813,6 +819,7 @@
     ['sample-button', 'clear-button'].forEach(id => { $(id).disabled = auctionActive; $(id).title = auctionActive ? 'Auction players belong to their winning team. Use New auction to restart.' : ''; });
     if (!auctionActive) return;
     const remaining = window.DraftAuction.budgets(auction.session), phase = window.DraftAuction.phase(auction.session);
+    if (phase === 'bidding') renderAuctionSkip();
     $('auction-strip').dataset.phase = phase;
     [0, 1].forEach(i => { $('auction-team-' + i).textContent = teamName(i); $('auction-budget-' + i).textContent = '$' + remaining[i].toLocaleString('en-US'); });
     $('auction-resume-button').hidden = phase === 'complete';
@@ -849,8 +856,31 @@
       input.setAttribute('aria-invalid', 'false');
     });
     $('auction-bid-error').hidden = true;
+    renderAuctionSkip();
     if (!$('auction-dialog').open) $('auction-dialog').showModal();
     $('auction-bid-button').focus({ preventScroll: true }); syncAuctionViewport();
+  }
+
+  function renderAuctionSkip() {
+    const canSkip = auctionReplacementPool().length > 0;
+    $('auction-skip-button').disabled = !canSkip;
+    if (canSkip) $('auction-skip-button').removeAttribute('aria-describedby');
+    else $('auction-skip-button').setAttribute('aria-describedby', 'auction-skip-note');
+    $('auction-skip-note').hidden = canSkip;
+  }
+
+  function skipAuctionPokemon() {
+    if (!auctionActive || !$('auction-dialog').open || window.DraftAuction.phase(auction.session) !== 'bidding') return;
+    const current = window.DraftAuction.current(auction.session);
+    if (!reconcileAuctionRetirees() || current !== window.DraftAuction.current(auction.session)) return;
+    try {
+      const pool = pokemon.filter(p => allowed(p.id, auction.session.mode) && !window.DraftCareers.isInducted(p.id)).map(p => p.id);
+      auction.session = window.DraftAuction.skip(auction.session, pool);
+    } catch (error) {
+      $('auction-bid-error').textContent = error.message; $('auction-bid-error').hidden = false; return;
+    }
+    saveDraft(); renderAuction(); openAuctionRound();
+    document.querySelector('.auction-dialog-body').scrollTop = 0;
   }
 
   function resolveAuctionBid() {
@@ -903,6 +933,7 @@
   $('auction-resume-button').addEventListener('click', openAuctionRound);
   $('auction-setup-form').addEventListener('submit', event => { event.preventDefault(); startAuction(); });
   $('auction-bid-form').addEventListener('submit', event => { event.preventDefault(); resolveAuctionBid(); });
+  $('auction-skip-button').addEventListener('click', skipAuctionPokemon);
   [0, 1].forEach(i => {
     const input = $('auction-bid-' + i);
     input.addEventListener('focus', () => { input.select(); syncAuctionViewport(); });
