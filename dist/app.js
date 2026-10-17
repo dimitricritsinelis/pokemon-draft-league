@@ -10,6 +10,7 @@
   const auctionStorageKey = 'pokemon-draft-auction-v1';
   const incomingSharedLink = location.hash.startsWith('#draft=');
   let auction = null, auctionActive = false, regularView = null;
+  let lastMatchTeams = null, matchupAction = 'simulate';
   const modeLabels = { gen1: 'Gen 1', gen2: 'Gen 2', both: 'Gen 1 + Gen 2' };
   const slotKeys = ['d_fs', 'd_ss', 'd_cb1', 'd_cb2', 'd_de1', 'd_dt1', 'd_dt2', 'd_de2', 'd_lb1', 'd_lb2', 'd_lb3', 'd_lb4', 'd_nb', 'd_db6', 'o_lt', 'o_lg', 'o_c', 'o_rg', 'o_rt', 'o_qb', 'o_rb1', 'o_wr1', 'o_wr2', 'o_wr3', 'o_wr4', 'o_te1', 'o_te2', 'o_rb2'];
   const samplePicks = { d_fs: 82, d_ss: 105, d_cb1: 123, d_cb2: 141, d_de1: 68, d_dt1: 143, d_de2: 67, d_lb1: 24, d_lb2: 62, d_lb3: 57, d_lb4: 28, o_lt: 9, o_lg: 76, o_c: 3, o_rg: 89, o_rt: 115, o_qb: 94, o_rb1: 112, o_wr1: 135, o_wr2: 85, o_te1: 34, o_rb2: 128 };
@@ -66,7 +67,9 @@
   function emptyBoard() { return { name: '', offense: '21', defense: '3-4', picks: {} }; }
   const copyBoard = b => ({ name: cleanName(b.name), offense: b.offense, defense: b.defense, picks: { ...b.picks } });
   function teamPair() { return auctionActive ? auction.teams : shared ? sharedCopy.teams : [boards[state.mode], opponents[state.mode]]; }
-  function opponentPicks() { return new Set(Object.values(teamPair()[1 - state.team].picks)); }
+  function opponentPicks() { return new Set(teamPair().flatMap((board, i) => i === state.team ? [] : Object.values(board.picks))); }
+  function claimedTeam(id) { return teamPair().findIndex((board, i) => i !== state.team && Object.values(board.picks).includes(id)); }
+  const auctionTeamIndexes = () => Array.from({ length: auction.session.teamCount }, (_, i) => i);
 
   function defaultBoard(mode) {
     return { name: '', offense: '21', defense: '3-4', picks: mode === 'gen2' ? {} : { ...samplePicks } };
@@ -105,8 +108,8 @@
     saveDraft(); renderBoard(); renderCatalog();
   }
 
-  function validatePair(values, mode) {
-    if (!Array.isArray(values) || values.length !== 2) return null;
+  function validatePair(values, mode, count = 2) {
+    if (!Array.isArray(values) || values.length !== count) return null;
     const pair = values.map(value => validateBoard(value, mode));
     if (pair.some(board => !board)) return null;
     const ids = pair.flatMap(board => Object.values(board.picks));
@@ -201,16 +204,21 @@
     history.replaceState(null, '', location.pathname + location.search);
   }
 
-  function shareUrl() {
+  function shareUrl(indices = [0, 1]) {
     saveDraft();
     const encode = b => [cleanName(b.name), b.offense, b.defense, ...slotKeys.map(key => b.picks[key] || 0)];
-    const data = [3, state.mode, state.team, ...teamPair().map(encode)];
+    const active = Math.max(0, indices.indexOf(state.team));
+    const data = [3, state.mode, active, ...indices.map(i => encode(teamPair()[i]))];
     const bytes = new TextEncoder().encode(JSON.stringify(data));
     const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return location.origin + location.pathname + '#draft=' + token;
   }
 
-  function invalidateMatch() { if ($('match-dialog')?.open) $('match-dialog').close(); }
+  function invalidateMatch() {
+    if ($('match-dialog')?.open) $('match-dialog').close();
+    if ($('matchup-dialog')?.open) $('matchup-dialog').close();
+    lastMatchTeams = null;
+  }
 
   function changeMode(mode) {
     if (auctionActive) { message('Return to Regular draft to change the Pokémon pool.'); return; }
@@ -223,7 +231,7 @@
   }
 
   function changeTeam(index) {
-    if ((index !== 0 && index !== 1) || index === state.team) return;
+    if (!Number.isInteger(index) || index < 0 || index >= teamPair().length || index === state.team) return;
     closePicker(false); closePersonnelMenus(); saveDraft();
     state.team = index; applyBoard(teamPair()[index]);
     $('pokemon-search').value = ''; lastFieldButton = null;
@@ -232,22 +240,37 @@
 
   function filledCount(board) { return slots(false, board).filter(s => byId.has(board.picks[s.key])).length; }
   function renderTeams() {
-    const pair = teamPair();
+    const pair = teamPair(), many = pair.length > 2;
+    $('team-tabs').hidden = many;
+    $('team-switcher').hidden = !many;
     pair.forEach((board, index) => {
       const count = filledCount(index === state.team ? snapshot() : board);
       const button = document.querySelector(`[data-team="${index}"]`);
-      button.setAttribute('aria-selected', String(index === state.team));
-      button.tabIndex = index === state.team ? 0 : -1;
-      button.setAttribute('aria-label', `${teamName(index)}, ${count} of 22 positions filled`);
-      button.title = teamName(index);
-      $('team-label-' + index).textContent = teamName(index);
-      $('team-count-' + index).textContent = `${count}/22`;
+      if (button) {
+        button.setAttribute('aria-selected', String(index === state.team));
+        button.tabIndex = index === state.team ? 0 : -1;
+        button.setAttribute('aria-label', `${teamName(index)}, ${count} of 22 positions filled`);
+        button.title = teamName(index);
+        $('team-label-' + index).textContent = teamName(index);
+        $('team-count-' + index).textContent = `${count}/22`;
+      }
     });
+    if (many) {
+      $('team-switcher').replaceChildren(...pair.map((board, index) => {
+        const option = document.createElement('option'); option.value = String(index);
+        option.textContent = `${teamName(index)} · ${filledCount(index === state.team ? snapshot() : board)}/22`;
+        return option;
+      }));
+      $('team-switcher').value = String(state.team);
+    }
     const ready = (!auctionActive || window.DraftAuction.phase(auction.session) === 'complete') && pair.every((b, i) => filledCount(i === state.team ? snapshot() : b) === 22);
     $('simulate-match').setAttribute('aria-disabled', String(!ready));
-    $('simulate-match').title = ready ? 'Play a four-quarter game' : 'Fill all 22 positions on both teams';
-    document.querySelector('.board-panel').setAttribute('aria-label', `${teamName()} football draft board`);
-    document.querySelector('.board-panel').setAttribute('aria-labelledby', `team-tab-${state.team}`);
+    $('simulate-match').title = ready ? many ? 'Choose two teams for a four-quarter game' : 'Play a four-quarter game' : 'Fill all 22 positions on every team';
+    const board = document.querySelector('.board-panel');
+    board.setAttribute('aria-label', `${teamName()} football draft board`);
+    board.setAttribute('role', many ? 'region' : 'tabpanel');
+    if (many) board.removeAttribute('aria-labelledby');
+    else board.setAttribute('aria-labelledby', `team-tab-${state.team}`);
   }
 
   function imagePath(p) { return p.image; }
@@ -405,7 +428,8 @@
 
   function updatePickedMarkers() {
     const visiblePicks = new Set(Object.values(state.picks));
-    const unavailable = opponentPicks();
+    const unavailable = new Map();
+    teamPair().forEach((board, i) => { if (i !== state.team) Object.values(board.picks).forEach(id => unavailable.set(id, i)); });
     const owned = auctionActive ? new Set(window.DraftAuction.owned(auction.session, state.team)) : null;
     document.querySelectorAll('.pokemon-card').forEach(card => {
       const picked = visiblePicks.has(Number(card.dataset.pokemon));
@@ -415,8 +439,9 @@
       const unowned = owned && !owned.has(Number(card.dataset.pokemon));
       card.disabled = claimed || retired || unowned; card.classList.toggle('opponent-pick', claimed || retired);
       const roster = card.querySelector('.roster-mark');
-      roster.hidden = !claimed && !retired; roster.textContent = retired ? 'Hall of Fame' : teamName(1 - state.team);
-      card.setAttribute('aria-label', `${retired ? 'Retired, Hall of Fame' : claimed ? 'Unavailable, on ' + teamName(1 - state.team) : 'Draft'} ${byId.get(Number(card.dataset.pokemon)).name}, ${scoutingStats(byId.get(Number(card.dataset.pokemon))).description}`);
+      const ownerName = claimed ? teamName(unavailable.get(Number(card.dataset.pokemon))) : '';
+      roster.hidden = !claimed && !retired; roster.textContent = retired ? 'Hall of Fame' : ownerName;
+      card.setAttribute('aria-label', `${retired ? 'Retired, Hall of Fame' : claimed ? 'Unavailable, on ' + ownerName : 'Draft'} ${byId.get(Number(card.dataset.pokemon)).name}, ${scoutingStats(byId.get(Number(card.dataset.pokemon))).description}`);
     });
   }
 
@@ -558,7 +583,7 @@
     }
     if (!allowed(id)) throw new Error('Choose a Pokémon from the selected generation.');
     if (window.DraftCareers.isInducted(id)) { message(`${byId.get(id).name} is retired in the Hall of Fame`); return { drafted: false }; }
-    if (opponentPicks().has(id)) { message(`${byId.get(id).name} is already on ${teamName(1 - state.team)}`); return { drafted: false }; }
+    if (opponentPicks().has(id)) { message(`${byId.get(id).name} is already on ${teamName(claimedTeam(id))}`); return { drafted: false }; }
     const selected = slots().find(s => s.key === state.selected);
     if (!selected) { message('Select a position on the field first.'); return { drafted: false }; }
     invalidateMatch();
@@ -616,26 +641,33 @@
     return { team: teamName(), teamIndex: state.team, generation: state.mode, art: state.art, offense: state.offense, defense: state.defense, positions: slots().map(s => ({ key: s.key, role: s.role, side: s.side, pokemon: byId.get(state.picks[s.key])?.name || null, pokemonId: state.picks[s.key] || null })) };
   }
 
-  function matchTeams() {
+  function matchTeams(indices) {
     saveDraft();
-    return teamPair().map((board, i) => ({ name: teamName(i), positions: slots(false, board).map(s => ({ key: s.key, role: s.role, side: s.side, pokemonId: board.picks[s.key] || null, pokemon: byId.get(board.picks[s.key]) || null })) }));
+    return indices.map(i => { const board = teamPair()[i]; return { name: teamName(i), positions: slots(false, board).map(s => ({ key: s.key, role: s.role, side: s.side, pokemonId: board.picks[s.key] || null, pokemon: byId.get(board.picks[s.key]) || null })) }; });
   }
 
-  function simulateMatch() {
-    if (auctionActive && window.DraftAuction.phase(auction.session) !== 'complete') { message('Finish all 44 auction picks before simulating the match.'); return null; }
-    const teams = matchTeams();
+  function simulateMatch(indices) {
+    if (auctionActive && window.DraftAuction.phase(auction.session) !== 'complete') { message(`Finish all ${auction.session.lots.length} auction picks before simulating the match.`); return null; }
+    if (!Array.isArray(indices)) {
+      if (teamPair().length > 2) { openMatchupChooser('simulate'); return null; }
+      indices = [0, 1];
+    }
+    if (!validMatchup(indices)) return null;
+    const teams = matchTeams(indices);
     if (teams.some(t => t.positions.some(p => p.pokemonId && window.DraftCareers.isInducted(p.pokemonId)))) {
       hallChanged(null, true); message('Retired Pokémon have left the draft. Fill the open positions.'); return null;
     }
     const missing = teams.map(t => t.positions.filter(p => !p.pokemonId).length);
     if (missing.some(Boolean)) {
-      message(missing.map((n, i) => n ? `${teamName(i)} needs ${n} more ${n === 1 ? 'pick' : 'picks'}` : '').filter(Boolean).join(' · '));
+      message(missing.map((n, i) => n ? `${teams[i].name} needs ${n} more ${n === 1 ? 'pick' : 'picks'}` : '').filter(Boolean).join(' · '));
       return null;
     }
     let result;
     try { result = window.DraftMatch.simulate(...teams); }
     catch (_) { message('The match could not run. Please reload and try again.'); return null; }
     window.DraftCareers.recordMatch(result);
+    lastMatchTeams = indices.slice();
+    if (auctionActive) { auction.matchup = indices.slice(); saveDraft(); }
     renderMatch(result);
     setMenuOpen(false, true);
     if (!$('match-dialog').open) $('match-dialog').showModal();
@@ -685,9 +717,15 @@
     }
   }
 
-  function openLinkDialog() {
+  function openLinkDialog(indices) {
+    if (!Array.isArray(indices)) {
+      if (teamPair().length > 2) { openMatchupChooser('share'); return; }
+      indices = [0, 1];
+    }
+    if (!validMatchup(indices)) return;
     setMenuOpen(false, true);
-    $('lineup-url').value = shareUrl();
+    $('lineup-url').value = shareUrl(indices);
+    $('link-description').textContent = `${teamName(indices[0])}, ${teamName(indices[1])}, their personnel, and the Pokémon pool travel with this link.`;
     $('link-status').textContent = '';
     $('send-link').hidden = !navigator.share;
     $('link-dialog').showModal();
@@ -697,8 +735,11 @@
   function saveAuction() {
     try {
       if (!auction) localStorage.removeItem(auctionStorageKey);
-      else localStorage.setItem(auctionStorageKey, JSON.stringify({ v: 1, ...auction, active: auctionActive, team: state.team, regularView }));
-      if (auctionActive) { $('save-status').textContent = 'Autosaved'; $('save-status').title = 'Auction bids, budgets and both teams saved on this device'; }
+      else {
+        if (auctionActive) auction.team = state.team;
+        localStorage.setItem(auctionStorageKey, JSON.stringify({ v: 1, ...auction, active: auctionActive, regularView }));
+      }
+      if (auctionActive) { $('save-status').textContent = 'Autosaved'; $('save-status').title = 'Auction bids, budgets and every team saved on this device'; }
     } catch (_) {
       if (auctionActive) { $('save-status').textContent = 'Unsaved'; $('save-status').title = 'Browser storage is unavailable. Keep this tab open to finish the auction.'; }
     }
@@ -707,10 +748,10 @@
   function loadAuction() {
     try {
       const raw = localStorage.getItem(auctionStorageKey);
-      const saved = raw && raw.length < 18000 ? JSON.parse(raw) : null;
+      const saved = raw && raw.length < 35000 ? JSON.parse(raw) : null;
       if (!saved || saved.v !== 1) return;
       const session = window.DraftAuction.validate(saved.session);
-      const teams = session && validatePair(saved.teams, session.mode);
+      const teams = session && validatePair(saved.teams, session.mode, session.teamCount);
       if (!teams) throw new Error('Invalid auction');
       const placed = session.awards.slice(0, session.placed);
       teams.forEach((board, index) => {
@@ -719,11 +760,12 @@
         const ids = Object.values(board.picks);
         if (Object.keys(board.picks).some(key => !active.has(key)) || ids.length !== owned.length || ids.some(id => !owned.includes(id))) throw new Error('Invalid auction roster');
       });
-      auction = { session, teams };
+      auction = { session, teams, team: Number.isInteger(saved.team) && saved.team >= 0 && saved.team < session.teamCount ? saved.team : 0 };
+      if (Array.isArray(saved.matchup) && saved.matchup.length === 2 && new Set(saved.matchup).size === 2 && saved.matchup.every(i => Number.isInteger(i) && i >= 0 && i < session.teamCount)) auction.matchup = saved.matchup.slice();
       regularView = saved.regularView && Object.hasOwn(modeLabels, saved.regularView.mode) ? { mode: saved.regularView.mode, team: saved.regularView.team === 1 ? 1 : 0, shared: !!saved.regularView.shared && !!sharedCopy } : { mode: state.mode, team: state.team, shared };
       if (!reconcileAuctionRetirees()) return;
       if (saved.active && !incomingSharedLink) {
-        auctionActive = true; state.mode = session.mode; state.team = saved.team === 1 ? 1 : 0;
+        auctionActive = true; state.mode = session.mode; state.team = auction.team;
         applyBoard(auction.teams[state.team]);
       }
       saveAuction();
@@ -742,7 +784,7 @@
       auction = null; saveAuction();
       message('An auction player retired. Your regular drafts are ready; start a new auction.'); return false;
     }
-    for (let i = auction.session.awards.length; i < 44; i++) {
+    for (let i = auction.session.awards.length; i < auction.session.lots.length; i++) {
       if (retired(auction.session.lots[i])) {
         const index = Math.floor(Math.random() * replacements.length);
         auction.session.lots[i] = replacements.splice(index, 1)[0];
@@ -766,8 +808,8 @@
     if (!auction || !reconcileAuctionRetirees()) { openAuctionSetup(); return; }
     if (!auctionActive) {
       saveDraft(); regularView = { mode: state.mode, team: state.team, shared };
-      auctionActive = true; state.mode = auction.session.mode; state.team = 0;
-      applyBoard(auction.teams[0]);
+      auctionActive = true; state.mode = auction.session.mode; state.team = auction.team || 0;
+      applyBoard(auction.teams[state.team]);
     }
     closePicker(false); invalidateMatch(); setMenuOpen(false, true);
     saveDraft(); renderBoard(); renderCatalog(); openAuctionRound();
@@ -787,7 +829,9 @@
 
   function openAuctionSetup() {
     closePicker(false); setMenuOpen(false, true); saveDraft();
-    [0, 1].forEach(i => { $('auction-name-' + i).value = teamName(i); });
+    [0, 1, 2, 3].forEach(i => { $('auction-name-' + i).value = teamPair()[i] ? teamName(i) : 'Team ' + (i + 1); });
+    $('auction-team-count').value = String(auction?.session.teamCount || 2);
+    renderAuctionSetup();
     $('auction-pool').value = state.mode;
     $('auction-setup-note').textContent = auction ? 'Starting a new auction replaces your saved auction. Your regular drafts and careers are kept.' : 'Your regular drafts are kept separately. Hall of Fame Pokémon stay retired.';
     $('auction-setup-error').hidden = true;
@@ -797,20 +841,25 @@
   }
 
   function startAuction() {
-    const mode = $('auction-pool').value;
+    const mode = $('auction-pool').value, teamCount = Number($('auction-team-count').value);
     let session;
-    try { session = window.DraftAuction.create(pokemon.filter(p => allowed(p.id, mode) && !window.DraftCareers.isInducted(p.id)).map(p => p.id), { mode }); }
+    try { session = window.DraftAuction.create(pokemon.filter(p => allowed(p.id, mode) && !window.DraftCareers.isInducted(p.id)).map(p => p.id), { mode, teamCount }); }
     catch (error) { $('auction-setup-error').textContent = error.message; $('auction-setup-error').hidden = false; return; }
     saveDraft();
-    const teams = teamPair().map((board, i) => ({ name: cleanName($('auction-name-' + i).value), offense: board.offense, defense: board.defense, picks: {} }));
+    const previousTeams = teamPair();
+    const teams = Array.from({ length: teamCount }, (_, i) => {
+      const board = previousTeams[i] || emptyBoard();
+      return { name: cleanName($('auction-name-' + i).value), offense: board.offense, defense: board.defense, picks: {} };
+    });
     if (!auctionActive) regularView = { mode: state.mode, team: state.team, shared };
-    auction = { session, teams }; auctionActive = true;
+    auction = { session, teams, team: 0 }; auctionActive = true;
     state.mode = mode; state.team = 0; applyBoard(teams[0]);
     $('auction-setup-dialog').close(); invalidateMatch(); saveDraft(); renderBoard(); renderCatalog(); openAuctionRound();
   }
 
   function renderAuction() {
     document.body.classList.toggle('auction-active', auctionActive);
+    document.body.dataset.auctionTeams = String(auctionActive ? auction.session.teamCount : 2);
     $('auction-strip').hidden = !auctionActive;
     $('auction-exit-button').hidden = !auctionActive;
     $('auction-new-button').hidden = !auction;
@@ -821,13 +870,14 @@
     const remaining = window.DraftAuction.budgets(auction.session), phase = window.DraftAuction.phase(auction.session);
     if (phase === 'bidding') renderAuctionSkip();
     $('auction-strip').dataset.phase = phase;
-    [0, 1].forEach(i => { $('auction-team-' + i).textContent = teamName(i); $('auction-budget-' + i).textContent = '$' + remaining[i].toLocaleString('en-US'); });
+    document.querySelectorAll('[data-auction-wallet]').forEach(el => { el.hidden = Number(el.dataset.auctionWallet) >= auction.session.teamCount; });
+    auctionTeamIndexes().forEach(i => { $('auction-team-' + i).textContent = teamName(i); $('auction-budget-' + i).textContent = '$' + remaining[i].toLocaleString('en-US'); });
     $('auction-resume-button').hidden = phase === 'complete';
     $('auction-resume-button').textContent = phase === 'placement' ? 'Place pick' : auction.session.placed ? 'Next Pokémon' : 'Open bidding';
     if (phase === 'placement') {
       const award = auction.session.awards.at(-1);
       $('auction-status').textContent = `${byId.get(award.pokemonId).name} → ${teamName(award.team)} for $${award.amount}. Tap an empty position.`;
-    } else $('auction-status').textContent = phase === 'complete' ? '44/44 drafted. Swap positions if you like, then Simulate Match.' : `Pokémon ${auction.session.placed + 1} of 44 · ready for bids`;
+    } else $('auction-status').textContent = phase === 'complete' ? `${auction.session.lots.length}/${auction.session.lots.length} drafted. Ready to Simulate Match.` : `Pokémon ${auction.session.placed + 1} of ${auction.session.lots.length} · ready for bids`;
   }
 
   function openAuctionRound() {
@@ -835,7 +885,7 @@
     setMenuOpen(false, true); closePicker(false);
     if (!reconcileAuctionRetirees()) return;
     const phase = window.DraftAuction.phase(auction.session);
-    if (phase === 'complete') { message('Both auction teams are ready to simulate.'); return; }
+    if (phase === 'complete') { message('All auction teams are ready to simulate.'); return; }
     if (phase === 'placement') {
       const award = auction.session.awards.at(-1);
       changeTeam(award.team);
@@ -844,15 +894,17 @@
       return;
     }
     const p = byId.get(window.DraftAuction.current(auction.session)), stats = scoutingStats(p);
-    $('auction-round').textContent = `POKÉMON ${auction.session.placed + 1} OF 44`;
+    $('auction-round').textContent = `POKÉMON ${auction.session.placed + 1} OF ${auction.session.lots.length}`;
     $('auction-pokemon').textContent = p.name; $('auction-image').src = p.image; $('auction-image').alt = p.name;
     $('auction-dex').textContent = '#' + String(p.id).padStart(3, '0'); $('auction-types').textContent = p.types.join(' / ');
     $('auction-stats').textContent = `${stats.height} · ${stats.weight} lb · ${stats.forty}s est. 40`;
     const budgets = window.DraftAuction.budgets(auction.session), counts = window.DraftAuction.counts(auction.session);
-    [0, 1].forEach(i => {
+    document.querySelectorAll('[data-auction-bid]').forEach(el => { el.hidden = Number(el.dataset.auctionBid) >= auction.session.teamCount; });
+    auctionTeamIndexes().forEach(i => {
       $('auction-bid-label-' + i).textContent = teamName(i) + ' bid';
       $('auction-bid-detail-' + i).textContent = `${counts[i]}/22 · $${budgets[i].toLocaleString('en-US')} left${counts[i] === 22 ? ' · Roster full' : ''}`;
       const input = $('auction-bid-' + i); input.value = '0'; input.disabled = counts[i] === 22;
+      input.enterKeyHint = counts.slice(i + 1).some(count => count < 22) ? 'next' : 'done';
       input.setAttribute('aria-invalid', 'false');
     });
     $('auction-bid-error').hidden = true;
@@ -887,7 +939,7 @@
     if (!auctionActive || window.DraftAuction.phase(auction.session) !== 'bidding') return;
     const budgets = window.DraftAuction.budgets(auction.session), counts = window.DraftAuction.counts(auction.session), bids = [];
     let invalid = null;
-    [0, 1].forEach(i => {
+    auctionTeamIndexes().forEach(i => {
       const input = $('auction-bid-' + i), raw = input.value.trim();
       const valid = counts[i] === 22 || (/^\d{1,4}$/.test(raw) && Number(raw) <= budgets[i]);
       input.setAttribute('aria-invalid', String(!valid));
@@ -920,12 +972,64 @@
   function syncAuctionViewport() {
     const dialog = $('auction-dialog'), viewport = window.visualViewport;
     const height = viewport?.height || innerHeight;
-    const keyboard = dialog.open && document.activeElement?.matches('#auction-bid-0, #auction-bid-1') && height < innerHeight * .8;
+    const keyboard = dialog.open && document.activeElement?.matches('.auction-bid-input input') && height < innerHeight * .8;
     dialog.style.setProperty('--auction-top', `${(viewport?.offsetTop || 0) + 8}px`);
     dialog.style.setProperty('--auction-height', `${Math.max(0, height - 16)}px`);
     dialog.classList.toggle('keyboard-open', !!keyboard);
     $('auction-title').textContent = keyboard ? $('auction-pokemon').textContent : 'Place your bids';
   }
+
+
+  function renderAuctionSetup() {
+    const count = Number($('auction-team-count').value);
+    document.querySelectorAll('[data-auction-name]').forEach(el => { el.hidden = Number(el.dataset.auctionName) >= count; });
+    $('auction-rules').textContent = `$1,000 each. ${count * 22} random Pokémon, revealed one at a time. Highest bid wins; ties, including all $0 bids, are settled randomly among teams with room left. Each team gets 22 players.`;
+    $('auction-setup-summary').textContent = `${count} teams · ${count * 22} Pokémon · $1,000 per team`;
+    $('auction-setup-error').hidden = true;
+  }
+
+  function validMatchup(indices) {
+    return Array.isArray(indices) && indices.length === 2 && indices[0] !== indices[1] && indices.every(i => Number.isInteger(i) && i >= 0 && i < teamPair().length);
+  }
+
+  function openMatchupChooser(action) {
+    closePicker(false); setMenuOpen(false, true); saveDraft();
+    matchupAction = action;
+    const pair = teamPair();
+    const chosen = auctionActive && validMatchup(auction.matchup) ? auction.matchup : [state.team, (state.team + 1) % pair.length];
+    [0, 1].forEach(side => {
+      const select = $('matchup-team-' + side);
+      select.replaceChildren(...pair.map((board, index) => {
+        const option = document.createElement('option'); option.value = String(index); option.textContent = teamName(index); return option;
+      }));
+      select.value = String(chosen[side]);
+    });
+    $('matchup-title').textContent = action === 'share' ? 'Share a matchup' : 'Choose your matchup';
+    $('matchup-description').textContent = action === 'share' ? 'Choose the two teams to include in your share link.' : 'Choose any two teams for a four-quarter game.';
+    $('matchup-play-button').textContent = action === 'share' ? 'Share link' : 'Simulate Match';
+    $('matchup-error').hidden = true;
+    updateMatchupOptions();
+    $('matchup-dialog').showModal();
+    $('matchup-play-button').focus({ preventScroll: true });
+  }
+
+  function updateMatchupOptions() {
+    [0, 1].forEach(side => {
+      const other = $('matchup-team-' + (1 - side)).value;
+      [...$('matchup-team-' + side).options].forEach(option => { option.disabled = option.value === other; });
+    });
+  }
+
+  $('auction-team-count').addEventListener('change', renderAuctionSetup);
+  [0, 1].forEach(side => $('matchup-team-' + side).addEventListener('change', updateMatchupOptions));
+  $('matchup-play-button').addEventListener('click', () => {
+    const indices = [Number($('matchup-team-0').value), Number($('matchup-team-1').value)];
+    if (!validMatchup(indices)) { $('matchup-error').textContent = 'Choose two different teams.'; $('matchup-error').hidden = false; return; }
+    if (auctionActive) { auction.matchup = indices.slice(); saveDraft(); }
+    $('matchup-dialog').close();
+    if (matchupAction === 'share') openLinkDialog(indices);
+    else simulateMatch(indices);
+  });
 
   $('auction-start-button').addEventListener('click', () => auction ? enterAuction() : openAuctionSetup());
   $('auction-exit-button').addEventListener('click', () => exitAuction());
@@ -934,14 +1038,15 @@
   $('auction-setup-form').addEventListener('submit', event => { event.preventDefault(); startAuction(); });
   $('auction-bid-form').addEventListener('submit', event => { event.preventDefault(); resolveAuctionBid(); });
   $('auction-skip-button').addEventListener('click', skipAuctionPokemon);
-  [0, 1].forEach(i => {
+  [0, 1, 2, 3].forEach(i => {
     const input = $('auction-bid-' + i);
     input.addEventListener('focus', () => { input.select(); syncAuctionViewport(); });
     input.addEventListener('blur', () => requestAnimationFrame(syncAuctionViewport));
     input.addEventListener('keydown', event => {
       if (event.key !== 'Enter') return;
       event.preventDefault();
-      if (i === 0 && !$('auction-bid-1').disabled) $('auction-bid-1').focus();
+      const next = auctionTeamIndexes().find(index => index > i && !$('auction-bid-' + index).disabled);
+      if (next !== undefined) $('auction-bid-' + next).focus();
       else { input.blur(); $('auction-bid-button').focus(); }
     });
     input.addEventListener('input', () => { input.setAttribute('aria-invalid', 'false'); $('auction-bid-error').hidden = true; });
@@ -970,6 +1075,7 @@
     else setMenuOpen(false, true);
     event.preventDefault();
   });
+  $('team-switcher').addEventListener('change', event => changeTeam(Number(event.target.value)));
   document.querySelectorAll('[data-team]').forEach(button => button.addEventListener('click', () => changeTeam(Number(button.dataset.team))));
   $('team-tabs').addEventListener('keydown', event => {
     if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
@@ -977,8 +1083,8 @@
       document.querySelector(`[data-team="${state.team}"]`).focus();
     }
   });
-  $('simulate-match').addEventListener('click', simulateMatch);
-  $('rerun-match').addEventListener('click', simulateMatch);
+  $('simulate-match').addEventListener('click', () => simulateMatch());
+  $('rerun-match').addEventListener('click', () => simulateMatch(lastMatchTeams));
   $('keep-shared').addEventListener('click', () => {
     if (auctionActive) exitAuction(false);
     if (shared) {
@@ -1011,7 +1117,7 @@
       }
     });
   });
-  $('share-link').addEventListener('click', openLinkDialog);
+  $('share-link').addEventListener('click', () => openLinkDialog());
   $('copy-link').addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText($('lineup-url').value);
@@ -1097,7 +1203,7 @@
   if (context?.registerTool) {
     const lifecycle = new AbortController();
     const tools = [
-      { name: 'select_draft_team', title: 'Select draft team', description: 'Switch between the two teams sharing the current Pokémon pool.', inputSchema: { type: 'object', properties: { teamIndex: { type: 'integer', enum: [0, 1] } }, required: ['teamIndex'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => { if (!input || ![0, 1].includes(input.teamIndex)) throw new Error('Choose team 0 or 1'); changeTeam(input.teamIndex); return readBoard(); } },
+      { name: 'select_draft_team', title: 'Select draft team', description: 'Select an available team sharing the current Pokémon pool, including up to four auction teams.', inputSchema: { type: 'object', properties: { teamIndex: { type: 'integer', enum: [0, 1, 2, 3] } }, required: ['teamIndex'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => { if (!input || !Number.isInteger(input.teamIndex) || input.teamIndex < 0 || input.teamIndex >= teamPair().length) throw new Error('Choose an available team index'); changeTeam(input.teamIndex); return readBoard(); } },
       { name: 'read_draft_board', title: 'Read draft board', description: 'Read offense and defense personnel and all active draft positions.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: () => readBoard() },
       { name: 'configure_draft_personnel', title: 'Set personnel', description: 'Set offense and defense personnel, preserving picks in shared positions.', inputSchema: { type: 'object', properties: { offense: { type: 'string', enum: Object.keys(offenseDetails) }, defense: { type: 'string', enum: Object.keys(defenseDetails) } }, required: ['offense', 'defense'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => setPersonnel(input.offense, input.defense) },
       { name: 'draft_pokemon_to_position', title: 'Draft Pokémon', description: 'Place a Pokémon from the selected generation into an active position. Players already drafted swap positions.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, pokemonId: { type: 'integer', minimum: 1, maximum: 251 } }, required: ['position', 'pokemonId'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => {
