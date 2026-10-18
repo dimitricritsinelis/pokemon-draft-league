@@ -1363,6 +1363,681 @@
       "id": 251,
       "fortySeconds": 4.6,
       "reason": "Small powered flight; time travel and instant relocation are excluded."
+    },
+    {
+      "id": 252,
+      "fortySeconds": 4.38,
+      "reason": "Hooked feet and athletic tail balance give a quick turf start; short legs and a small stride prevent elite straight-line speed."
+    },
+    {
+      "id": 253,
+      "fortySeconds": 4.05,
+      "reason": "A masterful leaper with fast foot turnover and longer strides than Treecko, but no Unburden boost is assumed."
+    },
+    {
+      "id": 254,
+      "fortySeconds": 3.69,
+      "reason": "Long springy legs and exceptional ordinary agility support a fast standing start; Unburden and attack-assisted launches are excluded."
+    },
+    {
+      "id": 255,
+      "fortySeconds": 6.31,
+      "reason": "A very small chick with explicitly unsteady steps and a short stride; no Speed Boost acceleration is included."
+    },
+    {
+      "id": 256,
+      "fortySeconds": 4.71,
+      "reason": "Powerful trained legs accelerate well on turf, while the compact frame limits stride length; no Speed Boost ramp is assumed."
+    },
+    {
+      "id": 257,
+      "fortySeconds": 4.03,
+      "reason": "Powerful ordinary running legs and spring deliver an excellent start, but this turf dash excludes Speed Boost and giant attack-assisted jumps."
+    },
+    {
+      "id": 258,
+      "fortySeconds": 6.34,
+      "reason": "Short legs and low canonical speed make this a slow dry-turf run despite useful strength and sensory awareness."
+    },
+    {
+      "id": 259,
+      "fortySeconds": 5.58,
+      "reason": "Sturdy bipedal legs improve over Mudkip, but short strides on dry turf and middling speed keep the dash modest."
+    },
+    {
+      "id": 260,
+      "fortySeconds": 5.12,
+      "reason": "Powerful legs move its broad frame efficiently for short bursts, but its build and moderate base speed limit a full turf sprint."
+    },
+    {
+      "id": 261,
+      "fortySeconds": 5.94,
+      "reason": "Persistent pursuit is not high top speed; short legs and low base speed keep the standing-start time slow, without Quick Feet activation."
+    },
+    {
+      "id": 262,
+      "fortySeconds": 4.52,
+      "reason": "An athletic adult quadruped with strong pursuit legs runs well from a standstill; Quick Feet and Moxie do not alter the estimate."
+    },
+    {
+      "id": 263,
+      "fortySeconds": 5.02,
+      "reason": "Lively feet accelerate quickly, but habitual lateral weaving and short legs reduce a straight turf dash; Quick Feet is not activated."
+    },
+    {
+      "id": 264,
+      "fortySeconds": 4.01,
+      "reason": "Fast straight-line running and a compact streamlined body suit this dash; the estimate includes its standing-start buildup and excludes Quick Feet."
+    },
+    {
+      "id": 265,
+      "fortySeconds": 12.9,
+      "reason": "A small caterpillar advances with slow suction-pad crawling, with no flight or powered launch."
+    },
+    {
+      "id": 266,
+      "fortySeconds": 30.0,
+      "reason": "A nearly immobile cocoon cannot run a normal dash; this capped estimate represents extremely slow unaided movement."
+    },
+    {
+      "id": 267,
+      "fortySeconds": 4.78,
+      "reason": "Ordinary wingbeats provide workable short flight, with no Quiver Dance boost or Tailwind assistance assumed."
+    },
+    {
+      "id": 268,
+      "fortySeconds": 30.0,
+      "reason": "A stationary cocoon has no running mechanism; the capped estimate represents extremely slow unaided movement."
+    },
+    {
+      "id": 269,
+      "fortySeconds": 4.71,
+      "reason": "Sustained ordinary moth flight gives decent range from a hover start, without Quiver Dance boosts."
+    },
+    {
+      "id": 270,
+      "fortySeconds": 14.2,
+      "reason": "Its short walking limbs and aquatic design produce a very slow dry-turf dash; Swift Swim does not apply."
+    },
+    {
+      "id": 271,
+      "fortySeconds": 5.76,
+      "reason": "A biped can run on land, but Lombre's comfort in water and moderate base speed do not translate to a fast dry-turf sprint."
+    },
+    {
+      "id": 272,
+      "fortySeconds": 4.92,
+      "reason": "Rhythmic coordinated legs and a stable broad body yield a good ordinary start, without rain-triggered Swift Swim."
+    },
+    {
+      "id": 273,
+      "fortySeconds": 14.1,
+      "reason": "A small acorn body with stubby feet advances slowly on turf; Chlorophyll sunlight acceleration is excluded."
+    },
+    {
+      "id": 274,
+      "fortySeconds": 4.96,
+      "reason": "Nimble bipedal forest movement supports good short speed, but short legs limit a full sprint and Chlorophyll is not activated."
+    },
+    {
+      "id": 275,
+      "fortySeconds": 4.35,
+      "reason": "Long-legged tree movement supports a fast turf run, without Wind Rider, Chlorophyll or gust-propelled acceleration."
+    },
+    {
+      "id": 276,
+      "fortySeconds": 4.09,
+      "reason": "Fast ordinary wingbeats and a light body provide a quick flight start; Guts does not add speed."
+    },
+    {
+      "id": 277,
+      "fortySeconds": 3.54,
+      "reason": "Exceptionally fast ordinary flight and practiced steep pursuit translate to a strong short flight dash, without attack-assisted dives."
+    },
+    {
+      "id": 278,
+      "fortySeconds": 4.16,
+      "reason": "Ordinary low flight is efficient and quick, but a standing-start estimate assumes still air rather than free strong wind."
+    },
+    {
+      "id": 279,
+      "fortySeconds": 4.95,
+      "reason": "A broad-winged transporter can fly steadily with a load, but a heavier start and moderate speed reduce short-dash acceleration."
+    },
+    {
+      "id": 280,
+      "fortySeconds": 7.08,
+      "reason": "Small legs and tentative ordinary movement make the turf dash slow; Teleport is explicitly excluded."
+    },
+    {
+      "id": 281,
+      "fortySeconds": 5.65,
+      "reason": "Coordinated dance steps improve ordinary movement, but small limbs remain modest sprinters and teleportation is excluded."
+    },
+    {
+      "id": 282,
+      "fortySeconds": 4.73,
+      "reason": "A tall coordinated biped has workable ordinary running speed; future sight, Teleport and gravity distortion do not shorten a measured turf dash."
+    },
+    {
+      "id": 283,
+      "fortySeconds": 8.45,
+      "reason": "Water-skating ability does not transfer cleanly to dry turf; thin legs and a tiny contact base make a normal run awkward."
+    },
+    {
+      "id": 284,
+      "fortySeconds": 4.12,
+      "reason": "Rapid four-wing flight starts quickly and changes direction sharply; the estimate assumes ordinary flight in dry still air."
+    },
+    {
+      "id": 285,
+      "fortySeconds": 13.2,
+      "reason": "Stubby feet and a squat mushroom body produce a slow turf shuffle, without Quick Feet activation."
+    },
+    {
+      "id": 286,
+      "fortySeconds": 4.38,
+      "reason": "Sprightly boxing footwork and strong legs support a rapid ordinary turf start; stretching arms and Spore do not shorten the dash."
+    },
+    {
+      "id": 287,
+      "fortySeconds": 17.5,
+      "reason": "Extremely slow unaided crawling and habitual inactivity dominate its standing-start dash; effort bursts are not substituted for normal movement."
+    },
+    {
+      "id": 288,
+      "fortySeconds": 4.17,
+      "reason": "Restless powerful limbs support a fast standing start and continuous pursuit, with ordinary running rather than a special power boost."
+    },
+    {
+      "id": 289,
+      "fortySeconds": 5.95,
+      "reason": "A powerful frame can stride quickly when committed, but this ordinary standing-start estimate includes habitual slow engagement and excludes a perfectly motivated burst."
+    },
+    {
+      "id": 290,
+      "fortySeconds": 7.82,
+      "reason": "Slow short-legged movement and ordinary burrowing take time over forty yards; Dig is not treated as instant travel."
+    },
+    {
+      "id": 291,
+      "fortySeconds": 2.93,
+      "reason": "Exceptional canonical ordinary flight and very high base Speed justify a rare sub-three-second short flight dash; Speed Boost and instant travel are excluded."
+    },
+    {
+      "id": 292,
+      "fortySeconds": 14.8,
+      "reason": "An almost motionless hollow shell has only very slow unaided hovering movement in this fictional estimate; Wonder Guard is not propulsion."
+    },
+    {
+      "id": 293,
+      "fortySeconds": 8.62,
+      "reason": "Short legs, low base Speed and a tentative start make this a slow ordinary turf dash; Rattled is not activated."
+    },
+    {
+      "id": 294,
+      "fortySeconds": 6.22,
+      "reason": "A stocky stomping gait and moderate-low base Speed create a slow dry-turf dash; sound waves are not used as propulsion."
+    },
+    {
+      "id": 295,
+      "fortySeconds": 5.38,
+      "reason": "Strong legs move its broad body steadily, but a heavy stomping build limits short-dash acceleration; sonic recoil is excluded."
+    },
+    {
+      "id": 296,
+      "fortySeconds": 7.14,
+      "reason": "A dense sumo build and very low base Speed favor leverage over a forty-yard sprint; no move-assisted charge is included."
+    },
+    {
+      "id": 297,
+      "fortySeconds": 7.55,
+      "reason": "Standing-start turf estimate for a 253.8 kg sumo athlete; quick palms do not equal sustained running speed."
+    },
+    {
+      "id": 298,
+      "fortySeconds": 10.65,
+      "reason": "Ordinary tail bounces over turf from rest; excludes the separate tail-hurl launch described in its lore."
+    },
+    {
+      "id": 299,
+      "fortySeconds": 23.5,
+      "reason": "Very slow purposeful turf shuffling; a battle turn or emergency drill is not a sustained forty-yard sprint."
+    },
+    {
+      "id": 300,
+      "fortySeconds": 6.35,
+      "reason": "Small feline running strides from a standing start; playful agility is stronger than straight-line acceleration."
+    },
+    {
+      "id": 301,
+      "fortySeconds": 4.9,
+      "reason": "Athletic feline stride with a measured standing start; no move-based speed boosts included."
+    },
+    {
+      "id": 302,
+      "fortySeconds": 6.25,
+      "reason": "Ordinary short-legged running from rest; Shadow Sneak and psychic repositioning are excluded from the dash."
+    },
+    {
+      "id": 303,
+      "fortySeconds": 7.35,
+      "reason": "Compact bipedal steps carrying a large rear jaw; deception does not shorten the actual running distance."
+    },
+    {
+      "id": 304,
+      "fortySeconds": 9.15,
+      "reason": "Short-legged armored running from rest; sixty kilograms and a low body limit stride length."
+    },
+    {
+      "id": 305,
+      "fortySeconds": 8.15,
+      "reason": "Heavy quadrupedal acceleration over turf; efficient straight-line charging with slower changes of direction."
+    },
+    {
+      "id": 306,
+      "fortySeconds": 7.65,
+      "reason": "Standing-start sprint for a 360 kg armored biped; patrol endurance is more impressive than acceleration."
+    },
+    {
+      "id": 307,
+      "fortySeconds": 5.9,
+      "reason": "Unboosted martial footwork over turf; psychic manipulation does not propel the runner."
+    },
+    {
+      "id": 308,
+      "fortySeconds": 4.65,
+      "reason": "Well-trained running mechanics and flexible martial footwork from rest; no psychic propulsion or teleporting."
+    },
+    {
+      "id": 309,
+      "fortySeconds": 3.95,
+      "reason": "Natural electrically stimulated leg motion, as described in its biology; excludes Agility and other temporary boosts."
+    },
+    {
+      "id": 310,
+      "fortySeconds": 3.35,
+      "reason": "Powerful unboosted canine acceleration on turf; no lightning teleportation or temporary Speed Boost effect."
+    },
+    {
+      "id": 311,
+      "fortySeconds": 5.65,
+      "reason": "Quick short strides from a standing start; high battle initiative does not erase a tiny stride length."
+    },
+    {
+      "id": 312,
+      "fortySeconds": 5.75,
+      "reason": "Short-legged unboosted running with a cautious standing start; cooperative abilities do not add free sprint speed."
+    },
+    {
+      "id": 313,
+      "fortySeconds": 4.85,
+      "reason": "Normal wing-driven flight from a stationary start; excludes Tail Glow or other battle boosts."
+    },
+    {
+      "id": 314,
+      "fortySeconds": 4.95,
+      "reason": "Ordinary hovering start into sustained wing-driven flight; swarm assistance and move boosts excluded."
+    },
+    {
+      "id": 315,
+      "fortySeconds": 8.1,
+      "reason": "Very small bipedal running stride over turf; fragrance and Grass-type typing do not supply a speed boost."
+    },
+    {
+      "id": 316,
+      "fortySeconds": 13.2,
+      "reason": "Slow gelatinous crawling on dry turf from rest; swallowed objects or Spit Up do not propel its dash."
+    },
+    {
+      "id": 317,
+      "fortySeconds": 11.3,
+      "reason": "Slow whole-body slithering across dry turf; flexible reach does not substitute for sustained locomotion."
+    },
+    {
+      "id": 318,
+      "fortySeconds": 23.8,
+      "reason": "Dry-turf flopping from rest with no water assistance; swimming speed and Speed Boost are excluded."
+    },
+    {
+      "id": 319,
+      "fortySeconds": 20.6,
+      "reason": "Slow dry-field thrashing without a water supply; the canonical seawater jet and temporary Speed Boost are not turf sprint mechanics."
+    },
+    {
+      "id": 320,
+      "fortySeconds": 13.45,
+      "reason": "Ordinary low land bounces from rest with no added-water jump amplification or external water assistance."
+    },
+    {
+      "id": 321,
+      "fortySeconds": 24.5,
+      "reason": "Very slow dry-turf body shifts from rest; ocean swimming and water-assisted leaps are excluded."
+    },
+    {
+      "id": 322,
+      "fortySeconds": 10.45,
+      "reason": "Slow camel-like turf gait from a standing start; no Simple-based setup boosts or environmental heat tricks."
+    },
+    {
+      "id": 323,
+      "fortySeconds": 9.25,
+      "reason": "Heavy quadrupedal running on ordinary turf; eruptions and external heat do not propel the runner."
+    },
+    {
+      "id": 324,
+      "fortySeconds": 16.8,
+      "reason": "Very short unboosted turtle strides over forty yards; smoke and Drought provide no physical sprint shortcut."
+    },
+    {
+      "id": 325,
+      "fortySeconds": 7.3,
+      "reason": "Repeated natural tail-spring bounces from rest; pearl-assisted ball control does not propel its body."
+    },
+    {
+      "id": 326,
+      "fortySeconds": 6.25,
+      "reason": "Unboosted bipedal running from rest with ordinary dance-like balance; psychic control adds no dash propulsion."
+    },
+    {
+      "id": 327,
+      "fortySeconds": 6.85,
+      "reason": "Ordinary wobbling footwork from rest; evasive lateral cuts are useful without being the shortest sprint path."
+    },
+    {
+      "id": 328,
+      "fortySeconds": 15.6,
+      "reason": "Very slow short-legged travel over turf from a standing start; prepared sand pits and Dig shortcuts are excluded."
+    },
+    {
+      "id": 329,
+      "fortySeconds": 6.3,
+      "reason": "Ordinary short sustained hovering flight from rest, bounded by underdeveloped wings; no wind or move boost."
+    },
+    {
+      "id": 330,
+      "fortySeconds": 3.85,
+      "reason": "Natural wing-driven flight from a stationary start; sandstorms and temporary Dragon Dance boosts excluded."
+    },
+    {
+      "id": 331,
+      "fortySeconds": 10.15,
+      "reason": "Short, slow cactus-legged running from rest; desert weather does not grant extra propulsion."
+    },
+    {
+      "id": 332,
+      "fortySeconds": 8.15,
+      "reason": "Measured bipedal running from rest; stalking endurance and sand concealment do not imply high sprint speed."
+    },
+    {
+      "id": 333,
+      "fortySeconds": 6.85,
+      "reason": "Normal wing-driven flight from rest for a very small bird; no updraft assistance or Tailwind."
+    },
+    {
+      "id": 334,
+      "fortySeconds": 4.95,
+      "reason": "Self-powered wing flight from a stationary start; favorable updrafts, Tailwind and Dragon Dance excluded."
+    },
+    {
+      "id": 335,
+      "fortySeconds": 4.15,
+      "reason": "Natural powerful feline running from rest; Quick Attack and poison-triggered bonuses are excluded from the timed dash."
+    },
+    {
+      "id": 336,
+      "fortySeconds": 6.7,
+      "reason": "Ordinary powerful slithering over turf from a stationary start; no prepared Dig shortcut or temporary setup boost."
+    },
+    {
+      "id": 337,
+      "fortySeconds": 6.15,
+      "reason": "Ordinary levitating travel from rest; future knowledge and lunar changes do not shorten the forty-yard course."
+    },
+    {
+      "id": 338,
+      "fortySeconds": 6.25,
+      "reason": "Normal levitating movement from a stationary start; solar charge and rotational attacks provide no sprint launch."
+    },
+    {
+      "id": 339,
+      "fortySeconds": 24.8,
+      "reason": "Dry-turf flopping with no mud, swimming lane or water assistance; sensitive whiskers do not add propulsion."
+    },
+    {
+      "id": 340,
+      "fortySeconds": 21.6,
+      "reason": "Slow dry-turf body shifts and flops from rest; swimming, mud and earthquake-assisted movement excluded."
+    },
+    {
+      "id": 341,
+      "fortySeconds": 8.65,
+      "reason": "Natural short-legged crustacean travel on turf from a standing start; Aqua Jet and external water excluded."
+    },
+    {
+      "id": 342,
+      "fortySeconds": 6.8,
+      "reason": "A short-legged, armored lobster needs time to accelerate on turf; swimming attacks do not shorten this dash."
+    },
+    {
+      "id": 343,
+      "fortySeconds": 6.9,
+      "reason": "Levitate permits an ordinary hovering dash, but its small spinning body has modest acceleration."
+    },
+    {
+      "id": 344,
+      "fortySeconds": 5.5,
+      "reason": "Sustained levitation and stable spinning movement offer a quick hover; teleportation is excluded."
+    },
+    {
+      "id": 345,
+      "fortySeconds": 33.0,
+      "reason": "This usually anchored fossil creeps very slowly on turf; waving tentacles do not provide a running gait."
+    },
+    {
+      "id": 346,
+      "fortySeconds": 12.4,
+      "reason": "It can move along the ground more effectively than Lileep, but suction anchoring and a heavy body slow a forty-yard advance."
+    },
+    {
+      "id": 347,
+      "fortySeconds": 7.4,
+      "reason": "Its adapted aquatic limbs can shuffle across turf, but swimming proficiency does not translate into a fast land start."
+    },
+    {
+      "id": 348,
+      "fortySeconds": 7.0,
+      "reason": "It walks upright on land with a heavy armored body; short legs and weight hold back acceleration."
+    },
+    {
+      "id": 349,
+      "fortySeconds": 38.0,
+      "reason": "Without water or a usable walking gait, Feebas can only make slow flopping progress on turf."
+    },
+    {
+      "id": 350,
+      "fortySeconds": 10.6,
+      "reason": "Milotic can pull its long body across turf with serpentine movement, but its great swimming speed is not a land sprint."
+    },
+    {
+      "id": 351,
+      "fortySeconds": 5.9,
+      "reason": "Normal-form Castform is a light floating cloud with modest forward acceleration; weather transformations and wind boosts are excluded."
+    },
+    {
+      "id": 352,
+      "fortySeconds": 6.9,
+      "reason": "Gripping feet provide controlled but deliberate movement; camouflage and Shadow Sneak do not count as straight-line speed."
+    },
+    {
+      "id": 353,
+      "fortySeconds": 6.3,
+      "reason": "Ordinary ghostly floating permits a steady dash; phasing and Phantom Force shortcuts are excluded."
+    },
+    {
+      "id": 354,
+      "fortySeconds": 5.3,
+      "reason": "A mobile ghost puppet can move briskly under its own power; teleport-like attack shortcuts are not timed."
+    },
+    {
+      "id": 355,
+      "fortySeconds": 9.2,
+      "reason": "Duskull drifts with Levitate at a deliberate pace; passing through obstacles is not a forty-yard speed boost."
+    },
+    {
+      "id": 356,
+      "fortySeconds": 10.1,
+      "reason": "Its sturdy, short-legged body advances deliberately; supernatural disappearance is excluded from the timed dash."
+    },
+    {
+      "id": 357,
+      "fortySeconds": 6.6,
+      "reason": "Large leaf wings allow ordinary flight, but the bulky body and standing start prevent a fast launch."
+    },
+    {
+      "id": 358,
+      "fortySeconds": 5.7,
+      "reason": "Levitation and a ribbon-like tail support light airborne movement; sound waves do not propel the dash."
+    },
+    {
+      "id": 359,
+      "fortySeconds": 4.55,
+      "reason": "A lean running gait and practiced evasive movement support a fast unboosted start; precognition does not remove running distance."
+    },
+    {
+      "id": 360,
+      "fortySeconds": 13.9,
+      "reason": "Short legs and a reactive fighting style produce a slow standing-start run."
+    },
+    {
+      "id": 361,
+      "fortySeconds": 7.8,
+      "reason": "Tiny feet and a cone-shaped body provide modest running balance and limited stride length."
+    },
+    {
+      "id": 362,
+      "fortySeconds": 5.8,
+      "reason": "Ordinary hovering carries its heavy spherical body steadily; no ice slide or weather assistance is included."
+    },
+    {
+      "id": 363,
+      "fortySeconds": 12.6,
+      "reason": "Spheal rolls more easily than it walks, yet its round shape and tiny flippers make starting and steering on turf slow."
+    },
+    {
+      "id": 364,
+      "fortySeconds": 10.2,
+      "reason": "It can push forward on flippers, but a bulky marine body and short turf stride limit sustained speed."
+    },
+    {
+      "id": 365,
+      "fortySeconds": 9.2,
+      "reason": "Strong flippers move its large body over land, but substantial mass and a low marine stance keep the dash slow."
+    },
+    {
+      "id": 366,
+      "fortySeconds": 58.0,
+      "reason": "A heavy clam shell has no usable walking gait and advances only in tiny, slow movements on turf."
+    },
+    {
+      "id": 367,
+      "fortySeconds": 18.4,
+      "reason": "A deep-water eel must wriggle laboriously over turf; Swift Swim and water propulsion are excluded."
+    },
+    {
+      "id": 368,
+      "fortySeconds": 19.1,
+      "reason": "An eel-like aquatic body has no land gait; psychic ball control is not assumed to provide flight or water for the dash."
+    },
+    {
+      "id": 369,
+      "fortySeconds": 25.5,
+      "reason": "A deep-sea fish with fins makes only slow dragging or flopping progress across dry turf."
+    },
+    {
+      "id": 370,
+      "fortySeconds": 41.0,
+      "reason": "High swimming speed does not supply legs or propulsion on turf; this small fish can only flop forward slowly."
+    },
+    {
+      "id": 371,
+      "fortySeconds": 7.3,
+      "reason": "Short muscular legs and a dense body offer a forceful but modest-speed standing start; imagined flight is excluded."
+    },
+    {
+      "id": 372,
+      "fortySeconds": 10.8,
+      "reason": "A heavy shell and four short legs allow only a deliberate land advance; evolutionary energy does not power this run."
+    },
+    {
+      "id": 373,
+      "fortySeconds": 3.65,
+      "reason": "Powerful ordinary wingbeats and an athletic land push create rapid acceleration; Dragon Dance is excluded."
+    },
+    {
+      "id": 374,
+      "fortySeconds": 9.5,
+      "reason": "Magnetic levitation allows forward movement, but the small iron body accelerates and redirects slowly without attack boosts."
+    },
+    {
+      "id": 375,
+      "fortySeconds": 6.15,
+      "reason": "Magnetic levitation supports a steady hover, but a dense steel body limits the standing-start dash."
+    },
+    {
+      "id": 376,
+      "fortySeconds": 4.95,
+      "reason": "Strong steel limbs and ordinary magnetic levitation move tremendous mass efficiently, but do not provide Agility or a boosted launch."
+    },
+    {
+      "id": 377,
+      "fortySeconds": 8.4,
+      "reason": "A massive assembled rock body walks under its own power but needs time to accelerate on short rigid legs."
+    },
+    {
+      "id": 378,
+      "fortySeconds": 7.9,
+      "reason": "A heavy ice body moves steadily on small points of support; ice slides and freezing the playing surface are excluded."
+    },
+    {
+      "id": 379,
+      "fortySeconds": 7.2,
+      "reason": "Flexible metal joints permit a more efficient walk than the other titans, but substantial mass still limits acceleration."
+    },
+    {
+      "id": 380,
+      "fortySeconds": 3.15,
+      "reason": "Jet-like ordinary flight offers explosive acceleration from a standstill; no psychic launch, Agility or invisibility shortcut is included."
+    },
+    {
+      "id": 381,
+      "fortySeconds": 3.0,
+      "reason": "An aerodynamic body and powerful ordinary flight provide exceptional unboosted acceleration; no Agility or psychic launch is counted."
+    },
+    {
+      "id": 382,
+      "fortySeconds": 21.5,
+      "reason": "A massive marine body and fins move poorly across dry turf; rain, swimming and water propulsion are excluded."
+    },
+    {
+      "id": 383,
+      "fortySeconds": 6.25,
+      "reason": "Powerful bipedal legs move extraordinary mass in long strides, but starting and turning are slower than its battle-speed stat suggests."
+    },
+    {
+      "id": 384,
+      "fortySeconds": 3.25,
+      "reason": "Powerful sustained ordinary flight supports an extremely fast unboosted dash; Extreme Speed is not a timed attack launch."
+    },
+    {
+      "id": 385,
+      "fortySeconds": 3.9,
+      "reason": "Light ordinary hovering and quick direction changes produce a fast dash; wishes and teleportation are excluded."
+    },
+    {
+      "id": 386,
+      "fortySeconds": 3.05,
+      "reason": "Normal-form Deoxys has outstanding natural acceleration and flexible movement; Speed Forme, teleportation and Agility are excluded."
     }
   ]
 }

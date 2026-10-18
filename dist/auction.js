@@ -3,13 +3,13 @@
   'use strict';
 
   const rosterSize = 22, startingBudget = 1000;
-  const modes = new Set(['gen1', 'gen2', 'both']);
+  const modes = new Set(['gen1', 'gen2', 'gen3', 'both']);
   const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const validTeamCount = value => Number.isInteger(value) && value >= 2 && value <= 4;
   const teamIndexes = count => Array.from({ length: count }, (_, index) => index);
   const dollars = value => Number.isInteger(value) && value >= 0 && value <= startingBudget;
-  const eligible = (id, mode) => Number.isInteger(id) && id >= 1 && id <= 251 &&
-    (mode === 'both' || (mode === 'gen1' ? id <= 151 : id >= 152));
+  const eligible = (id, mode) => Number.isInteger(id) && id >= 1 && id <= 386 &&
+    (mode === 'both' || (mode === 'gen1' ? id <= 151 : mode === 'gen2' ? id >= 152 && id <= 251 : mode === 'gen3' && id >= 252));
 
   function draw(random) {
     if (typeof random !== 'function') throw new Error('The auction needs a random number generator.');
@@ -27,7 +27,7 @@
     if (!object(value) || value.v !== 1 || !modes.has(value.mode) || !validTeamCount(teamCount) ||
         !Array.isArray(value.lots) || value.lots.length !== lotCount ||
         new Set(value.lots).size !== lotCount || !Array.from(value.lots).every(id => eligible(id, value.mode)) ||
-        !Array.isArray(skipped) || skipped.length > 251 || new Set(skipped).size !== skipped.length ||
+        !Array.isArray(skipped) || skipped.length > 386 || new Set(skipped).size !== skipped.length ||
         !Array.from(skipped).every(id => eligible(id, value.mode) && !value.lots.includes(id)) ||
         !Array.isArray(value.awards) || value.awards.length > lotCount ||
         !Number.isInteger(value.placed) || value.placed < 0 || value.placed > lotCount ||
@@ -64,7 +64,7 @@
   }
 
   function create(ids, { mode = 'both', teamCount = 2, random = Math.random } = {}) {
-    if (!modes.has(mode)) throw new Error('Choose Gen 1, Gen 2, or both before starting the auction.');
+    if (!modes.has(mode)) throw new Error('Choose Gen 1, Gen 2, Gen 3, or All before starting the auction.');
     if (!validTeamCount(teamCount)) throw new Error('Choose between 2 and 4 teams for this auction.');
     if (!Array.isArray(ids) || !Array.from(ids).every(id => eligible(id, mode)) || new Set(ids).size !== ids.length) {
       throw new Error('The auction pool must contain unique Pokémon from the selected generation.');

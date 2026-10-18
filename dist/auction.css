@@ -37,6 +37,20 @@
 .auction-bid-input input[aria-invalid="true"] { color: #a23f2e; }
 .auction-dialog .auction-tie-note { font-size: 12px; line-height: 1.3; margin: 12px 0 0; }
 .auction-dialog .dialog-actions { margin-top: 15px; }
+.auction-battle-stats { margin: 0 0 12px; }
+.auction-stat-heading { display: flex; justify-content: space-between; gap: 8px; font-size: 9px; letter-spacing: .7px; color: #718265; margin-bottom: 6px; }
+.auction-stat-heading > span:last-child { letter-spacing: 0; }
+.auction-base-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; margin: 0; }
+.auction-base-stats > div { background: #f2f5eb; border: 1px solid #e0e7d5; border-radius: 5px; padding: 6px 3px; text-align: center; min-width: 0; }
+.auction-base-stats dt { font-size: 10px; color: #6b7c5e; white-space: nowrap; }
+.auction-base-stats dd { margin: 3px 0 0; font-size: 17px; font-weight: 600; color: var(--ink); }
+.auction-scouting { margin: 0 0 14px; padding-bottom: 9px; border-bottom: 1px solid #e6ecdc; font-size: 12px; }
+.auction-scouting summary { min-height: 34px; display: flex; align-items: center; cursor: pointer; color: #526c40; font-weight: 600; }
+.auction-scouting summary:before { content: '+'; margin-right: 7px; }
+.auction-scouting[open] summary:before { content: '−'; }
+.auction-scouting p { font-size: 12px; line-height: 1.45; margin: 5px 0; color: #687a5c; }
+.auction-scouting #auction-abilities { color: #3c5730; }
+@media (max-width: 360px) { .auction-base-stats dt { font-size: 9px; } .auction-base-stats { gap: 3px; } }
 .auction-dialog .auction-skip-note { font-size: 11px; line-height: 1.3; color: #75836a; margin: 10px 0 0; }
 #auction-skip-button { color: #536847; }
 #auction-skip-button:disabled { opacity: .45; }

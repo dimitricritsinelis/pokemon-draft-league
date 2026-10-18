@@ -11,11 +11,11 @@
   const incomingSharedLink = location.hash.startsWith('#draft=');
   let auction = null, auctionActive = false, regularView = null;
   let lastMatchTeams = null, matchupAction = 'simulate';
-  const modeLabels = { gen1: 'Gen 1', gen2: 'Gen 2', both: 'Gen 1 + Gen 2' };
+  const modeLabels = { gen1: 'Gen 1', gen2: 'Gen 2', gen3: 'Gen 3', both: 'All generations' };
   const slotKeys = ['d_fs', 'd_ss', 'd_cb1', 'd_cb2', 'd_de1', 'd_dt1', 'd_dt2', 'd_de2', 'd_lb1', 'd_lb2', 'd_lb3', 'd_lb4', 'd_nb', 'd_db6', 'o_lt', 'o_lg', 'o_c', 'o_rg', 'o_rt', 'o_qb', 'o_rb1', 'o_wr1', 'o_wr2', 'o_wr3', 'o_wr4', 'o_te1', 'o_te2', 'o_rb2'];
   const samplePicks = { d_fs: 82, d_ss: 105, d_cb1: 123, d_cb2: 141, d_de1: 68, d_dt1: 143, d_de2: 67, d_lb1: 24, d_lb2: 62, d_lb3: 57, d_lb4: 28, o_lt: 9, o_lg: 76, o_c: 3, o_rg: 89, o_rt: 115, o_qb: 94, o_rb1: 112, o_wr1: 135, o_wr2: 85, o_te1: 34, o_rb2: 128 };
   const johtoSample = { d_fs: 200, d_ss: 196, d_cb1: 212, d_cb2: 227, d_de1: 214, d_dt1: 205, d_de2: 237, d_lb1: 166, d_lb2: 195, d_lb3: 207, d_lb4: 221, o_lt: 160, o_lg: 208, o_c: 154, o_rg: 242, o_rt: 217, o_qb: 199, o_rb1: 232, o_wr1: 181, o_wr2: 169, o_te1: 248, o_rb2: 241 };
-  let boards = { gen1: defaultBoard('gen1'), gen2: defaultBoard('gen2'), both: defaultBoard('both') };
+  let boards = Object.fromEntries(Object.keys(modeLabels).map(mode => [mode, defaultBoard(mode)]));
   let opponents = Object.fromEntries(Object.keys(modeLabels).map(mode => [mode, emptyBoard()]));
   let shared = false;
   let sharedCopy = null;
@@ -72,11 +72,11 @@
   const auctionTeamIndexes = () => Array.from({ length: auction.session.teamCount }, (_, i) => i);
 
   function defaultBoard(mode) {
-    return { name: '', offense: '21', defense: '3-4', picks: mode === 'gen2' ? {} : { ...samplePicks } };
+    return { name: '', offense: '21', defense: '3-4', picks: mode === 'gen2' || mode === 'gen3' ? {} : { ...samplePicks } };
   }
 
   function allowed(id, mode = state.mode) {
-    return Number.isInteger(id) && byId.has(id) && (mode === 'both' || (mode === 'gen1' ? id <= 151 : id >= 152));
+    return Number.isInteger(id) && byId.has(id) && (mode === 'both' || (mode === 'gen1' ? id <= 151 : mode === 'gen2' ? id >= 152 && id <= 251 : mode === 'gen3' && id >= 252 && id <= 386));
   }
 
   function validateBoard(value, mode) {
@@ -277,10 +277,10 @@
 
   function renderPreferences() {
     document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode)));
-    $('formation-summary').textContent = `${teamName()} · ${{ gen1: 'Gen 1', gen2: 'Gen 2', both: 'Both' }[state.mode]} · ${state.offense} OFF · ${{ '3-4': '3–4', '4-3': '4–3', nickel: 'Nickel', dime: 'Dime' }[state.defense]} DEF`;
-    $('picker-generation').textContent = { gen1: 'THE ORIGINAL 151', gen2: 'THE JOHTO 100', both: 'ALL 251 POKÉMON' }[state.mode];
-    $('catalog-generation').textContent = { gen1: 'GENERATION I', gen2: 'GENERATION II', both: 'GENERATIONS I + II' }[state.mode];
-    $('field-footer').textContent = { gen1: 'KANTO', gen2: 'JOHTO', both: 'KANTO + JOHTO' }[state.mode] + ' DRAFT LEAGUE';
+    $('formation-summary').textContent = `${teamName()} · ${{ gen1: 'Gen 1', gen2: 'Gen 2', gen3: 'Gen 3', both: 'All' }[state.mode]} · ${state.offense} OFF · ${{ '3-4': '3–4', '4-3': '4–3', nickel: 'Nickel', dime: 'Dime' }[state.defense]} DEF`;
+    $('picker-generation').textContent = { gen1: 'THE ORIGINAL 151', gen2: 'THE JOHTO 100', gen3: 'THE HOENN 135', both: 'ALL 386 POKÉMON' }[state.mode];
+    $('catalog-generation').textContent = { gen1: 'GENERATION I', gen2: 'GENERATION II', gen3: 'GENERATION III', both: 'GENERATIONS I–III' }[state.mode];
+    $('field-footer').textContent = { gen1: 'KANTO', gen2: 'JOHTO', gen3: 'HOENN', both: 'KANTO + JOHTO + HOENN' }[state.mode] + ' DRAFT LEAGUE';
     $('shared-notice').hidden = auctionActive || !sharedCopy;
     $('shared-label').textContent = shared ? 'Shared matchup · your teams are kept safe.' : 'Shared matchup saved separately';
     $('my-lineup').hidden = !shared;
@@ -623,7 +623,7 @@
     invalidateMatch();
     state.offense = '21'; state.defense = '3-4'; state.selected = null; state.picks = {};
     const used = opponentPicks();
-    const wanted = state.mode === 'gen2' || (state.mode === 'both' && state.team === 1) ? johtoSample : samplePicks;
+    const wanted = state.mode === 'gen3' ? {} : state.mode === 'gen2' || (state.mode === 'both' && state.team === 1) ? johtoSample : samplePicks;
     const current = slots(false).sort((a, b) => (a.role === 'QB' ? -1 : b.role === 'QB' ? 1 : a.side === b.side ? 0 : a.side === 'offense' ? -1 : 1));
     current.forEach(s => {
       let id = wanted[s.key];
@@ -898,6 +898,8 @@
     $('auction-pokemon').textContent = p.name; $('auction-image').src = p.image; $('auction-image').alt = p.name;
     $('auction-dex').textContent = '#' + String(p.id).padStart(3, '0'); $('auction-types').textContent = p.types.join(' / ');
     $('auction-stats').textContent = `${stats.height} · ${stats.weight} lb · ${stats.forty}s est. 40`;
+    renderAuctionFacts(p);
+    document.querySelector('.auction-dialog-body').scrollTop = 0;
     const budgets = window.DraftAuction.budgets(auction.session), counts = window.DraftAuction.counts(auction.session);
     document.querySelectorAll('[data-auction-bid]').forEach(el => { el.hidden = Number(el.dataset.auctionBid) >= auction.session.teamCount; });
     auctionTeamIndexes().forEach(i => {
@@ -911,6 +913,20 @@
     renderAuctionSkip();
     if (!$('auction-dialog').open) $('auction-dialog').showModal();
     $('auction-bid-button').focus({ preventScroll: true }); syncAuctionViewport();
+  }
+
+  function renderAuctionFacts(p) {
+    const labels = [['hp', 'HP'], ['attack', 'Attack'], ['defense', 'Defense'], ['specialAttack', 'Sp. Atk'], ['specialDefense', 'Sp. Def'], ['speed', 'Speed']];
+    $('auction-base-stats').replaceChildren(...labels.map(([key, label]) => {
+      const group = document.createElement('div'); group.dataset.stat = key;
+      const heading = document.createElement('dt'); heading.textContent = label;
+      const value = document.createElement('dd'); value.textContent = String(p.baseStats[key]);
+      group.append(heading, value); return group;
+    }));
+    $('auction-stat-total').textContent = 'Total ' + Object.values(p.baseStats).reduce((sum, value) => sum + value, 0);
+    $('auction-abilities').textContent = 'Abilities: ' + p.abilities.join(' · ');
+    $('auction-synopsis').textContent = p.synopsis;
+    $('auction-scouting').open = false;
   }
 
   function renderAuctionSkip() {
@@ -1206,7 +1222,7 @@
       { name: 'select_draft_team', title: 'Select draft team', description: 'Select an available team sharing the current Pokémon pool, including up to four auction teams.', inputSchema: { type: 'object', properties: { teamIndex: { type: 'integer', enum: [0, 1, 2, 3] } }, required: ['teamIndex'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => { if (!input || !Number.isInteger(input.teamIndex) || input.teamIndex < 0 || input.teamIndex >= teamPair().length) throw new Error('Choose an available team index'); changeTeam(input.teamIndex); return readBoard(); } },
       { name: 'read_draft_board', title: 'Read draft board', description: 'Read offense and defense personnel and all active draft positions.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: () => readBoard() },
       { name: 'configure_draft_personnel', title: 'Set personnel', description: 'Set offense and defense personnel, preserving picks in shared positions.', inputSchema: { type: 'object', properties: { offense: { type: 'string', enum: Object.keys(offenseDetails) }, defense: { type: 'string', enum: Object.keys(defenseDetails) } }, required: ['offense', 'defense'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => setPersonnel(input.offense, input.defense) },
-      { name: 'draft_pokemon_to_position', title: 'Draft Pokémon', description: 'Place a Pokémon from the selected generation into an active position. Players already drafted swap positions.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, pokemonId: { type: 'integer', minimum: 1, maximum: 251 } }, required: ['position', 'pokemonId'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => {
+      { name: 'draft_pokemon_to_position', title: 'Draft Pokémon', description: 'Place a Pokémon from the selected generation into an active position. Players already drafted swap positions.', inputSchema: { type: 'object', properties: { position: { type: 'string' }, pokemonId: { type: 'integer', minimum: 1, maximum: 386 } }, required: ['position', 'pokemonId'], additionalProperties: false }, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: input => {
         if (!input || !slots().some(s => s.key === input.position) || !allowed(input.pokemonId)) throw new Error('Use an active position key and a Pokémon from the selected generation.');
         state.selected = input.position;
         return draftPokemon(input.pokemonId);

@@ -1,0 +1,1812 @@
+{
+  "retrievedAt": "2026-10-18T00:57:59.888224+00:00",
+  "dataset": "National Dex 1–386; Generation III additions 252–386",
+  "canonicalSource": "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/",
+  "csvFiles": [
+    "pokemon.csv",
+    "pokemon_species.csv",
+    "pokemon_species_names.csv",
+    "pokemon_types.csv",
+    "types.csv",
+    "pokemon_stats.csv",
+    "stats.csv",
+    "pokemon_abilities.csv",
+    "ability_names.csv",
+    "pokemon_moves.csv",
+    "moves.csv",
+    "pokemon_species_flavor_text.csv",
+    "versions.csv",
+    "version_names.csv"
+  ],
+  "artworkSource": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png",
+  "formsPolicy": "Standard species forms only: normal Castform (#351), normal Deoxys (#386); no Mega Evolutions, Primal Reversion, regional forms, or alternate battle forms. Current canonical standard-form base stats, abilities and types. Moves are the union of documented learnsets across supported games, not one battle-legal moveset.",
+  "units": {
+    "heightMeters": "pokemon.csv height decimeters / 10",
+    "weightKg": "pokemon.csv weight hectograms / 10"
+  },
+  "flavorPolicy": "English Pokédex text deduplicated across versions; first text in flavor and all texts in flavors. Text supports designer lore research, never treated as a measured football skill.",
+  "stats": [
+    "hp",
+    "attack",
+    "defense",
+    "specialAttack",
+    "specialDefense",
+    "speed"
+  ],
+  "bulbapediaCrossCheck": {
+    "status": "complete",
+    "sources": [
+      "https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_height",
+      "https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_weight"
+    ],
+    "scope": "All 135 Generation III standard-form species; alternate Mega, Primal, Deoxys non-normal and Castform weather forms excluded.",
+    "heightMatches": 135,
+    "weightMatches": 135,
+    "mismatches": [],
+    "measuredAt": "2026-10-18T00:58:59.938772+00:00"
+  },
+  "verification": {
+    "pokemonFacts": 386,
+    "gen3Additions": 135,
+    "gen3ArtworkCount": 135,
+    "allArtwork475pxPngRgbaWithTransparentEdges": true
+  },
+  "artwork": [
+    {
+      "id": 252,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "eecfd2507ad6a4d32e074dbeaa7bdeb55938a97ff89cb878f5f13870357b9091"
+    },
+    {
+      "id": 253,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "743a3fbf0bdaeac46d08f035de3e46d6616c5a157a7e765db373bd089d7c201c"
+    },
+    {
+      "id": 254,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "f0d143504a9da150a51c88c0a8c5deb2fc7a0c95717b003fd45de27ad95f43ed"
+    },
+    {
+      "id": 255,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2725e8ffcf7bc5b2c1dc99b25817261b865c06e150bdcaa08f16007c48effb7f"
+    },
+    {
+      "id": 256,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "181995b21ba821c494ce379546d7d15e182cf7fa2326dc71002ae943591e8289"
+    },
+    {
+      "id": 257,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "56fc2d08ad58031fa04af4453f5998b95c5817d68f552f5c760682f07c99c91c"
+    },
+    {
+      "id": 258,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "9c53813ed963d5df84156ed48a023e1b9a4bddd4edae31fdd3e762c11bc89705"
+    },
+    {
+      "id": 259,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "64da6402a0c9610fee0d1fb11adc6fa4d7d0ba84e95e60092ebbe51e2d32b092"
+    },
+    {
+      "id": 260,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c812815f91ebfb092870f933d24c0c82a5bc8f0ba8fc971d68d38496640bc101"
+    },
+    {
+      "id": 261,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "873bbafdcd5dcdece62547621b29abb411f4c9125e642be05c90696e02d35b2f"
+    },
+    {
+      "id": 262,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "f904be2a76a9385433f0e84c858f8a2435ac84581cefcf138f9d536a1e40492b"
+    },
+    {
+      "id": 263,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2587bc54bd69a091a09d33f04f24dd202115fea9599c66827258afaed8287810"
+    },
+    {
+      "id": 264,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "4afba50af747202cff1327b4ae677830e02cd323aa4385818a10c2fa140effb6"
+    },
+    {
+      "id": 265,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "0b81417a4de9266c71a134fcff52ab563e580b78d5118866c2c730e88a0af1be"
+    },
+    {
+      "id": 266,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "9a8ad85d56916da36ceb1bed61818e55823b888a3ec5e37b32d6b6ec38fe37ad"
+    },
+    {
+      "id": 267,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a5081fe9c6035b63c4ec2eb4556dd05485328d5639a17e6307447c4927d7ef6e"
+    },
+    {
+      "id": 268,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "5c9b3f7056d1286b686db51f1f52da109e64327b06916850c83567db3da294ea"
+    },
+    {
+      "id": 269,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "750fa6d53f77ac75046d64070472a0ce783ffc4aab2d1e85c550583816d85c1e"
+    },
+    {
+      "id": 270,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "8378d411ee6523d109ce4cf445593eda9a19cabb3c9fd5dbd2ad5e66417f57a6"
+    },
+    {
+      "id": 271,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "ca30abe3288aaf11db91c03e75ab5ea48f30eca7ec7bf1d70c0cfbc8ece5f4bb"
+    },
+    {
+      "id": 272,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "db0a324516baeb12fced043898c5e13a6046cf3afde9ff9cc70019c807893e46"
+    },
+    {
+      "id": 273,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "839bc66a78737cba0aded34c596acd48f7f2d09fc209d1e7139027f2b7926acc"
+    },
+    {
+      "id": 274,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "8e06562f9a10c94bb36a7b8027b479177fa3df1788845ba120232913986195c9"
+    },
+    {
+      "id": 275,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "ad9e7f2fc5db93d1fad3b40f05afd8575eb13811d9e21d4189296c2c56309a16"
+    },
+    {
+      "id": 276,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "8e8947c3171eecabb477e3261ff6bdac3b5c4b7d52d4e7b23e67d57d52c9b8d0"
+    },
+    {
+      "id": 277,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "555f18276aae56f5c16f94956fc45afbc149e1f3c92a2dc73fe720257f125b13"
+    },
+    {
+      "id": 278,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "7871854a74aff9730678fdf779197ab3510b9c599f49b71dc4b50e2a80ae9683"
+    },
+    {
+      "id": 279,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "fcfd21fd7c13cae911b888cef149d2f6c76c81624efaa2db7ec00b34ade1d14e"
+    },
+    {
+      "id": 280,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "1e0887c0375c0085a56ae14bfaddf17e15b1f999f3af34ed894ed66788329112"
+    },
+    {
+      "id": 281,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "bb7f41bef577c3f4bc37fadc490a79cc3423b2415db98be2407523909f63e205"
+    },
+    {
+      "id": 282,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "ac40b3e87de95706cae9631802b975882f9830c1528253d367cfa7fd3f2957bd"
+    },
+    {
+      "id": 283,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c27a80d78a1d76fb409f6c7a7cdd7233487affdd35dcc14299536884670d0e14"
+    },
+    {
+      "id": 284,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c3eb8f234c14861289127c0eb52d861823ddd05cdd2a31dcd099d43577f46b28"
+    },
+    {
+      "id": 285,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2ae36069b07ecdc3c989780741837f93640f977fdec9abb0abc824e31d520bf0"
+    },
+    {
+      "id": 286,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "5659f40bc559caa407b3cd31a7ff248ef90070e00cd2a808aa483819514b6bba"
+    },
+    {
+      "id": 287,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "d4a40e6e3cc231f661ad2c98dad53768f4d3b5d942252d92c31e3005905c5b5c"
+    },
+    {
+      "id": 288,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "d4862bed65044d1012f436cacea4e1633fa280dc542c596d757e489c2ff5ba81"
+    },
+    {
+      "id": 289,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "69e69d22d4d42ab6f2c772773c30fef838c9cd5f998c43ac909eef4ccff92c46"
+    },
+    {
+      "id": 290,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "bb8d9184b3e45a17675618896ba7b320b113eb19c8ea23fbf0ddf8f69b5a1404"
+    },
+    {
+      "id": 291,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a424ade564e1c83a8d50e81f286e21d9322b915d72d809184d9e8441dfb0b6c5"
+    },
+    {
+      "id": 292,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "0ece4e3d340fb15c22565f87f1c4b0cc38c571bd2f240191001138309f096243"
+    },
+    {
+      "id": 293,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "b475fd7985467d235fb36dca06359f8cf0bf51844b0efcb814f3c0f03e6f3e84"
+    },
+    {
+      "id": 294,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c96b5ae3b2d36fdef8c8774f3e7e768e9ecf248fe007f7fef3d9d5b60c591de3"
+    },
+    {
+      "id": 295,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "8c2511cb20d17c18e1185006a8239dc7ae23f42a14c5c79d76c21cb8b879ab28"
+    },
+    {
+      "id": 296,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "b3a5a626610014d5d9e13e06006b678ee28937ba6e8dd8f4e88e5e68747fc48d"
+    },
+    {
+      "id": 297,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c03f745b6ce5bb737633eab420af6408d40515f6f1383d231e7493025ebc0ee7"
+    },
+    {
+      "id": 298,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "9fecd669dd7fce1808ee137440b58e9ae37a412254b2d6f4ed4ded8659aaf465"
+    },
+    {
+      "id": 299,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "ec3e58e9a6a736d307ac59a8a7d8184a4131fea577babe4219b0b4bf13047089"
+    },
+    {
+      "id": 300,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a21399f95e3eb4b712e952c851c4474b72a76a1da45013c8cae596344e443c3c"
+    },
+    {
+      "id": 301,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "1163f2a8d75a2cf28c3114c64731762d86c74cfe51d2bba4cd927a36fc899cb7"
+    },
+    {
+      "id": 302,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "69c4e511be37f3fb0a4d79e5c937a7b87d5fcf6a220755744c173b31fdc4caaf"
+    },
+    {
+      "id": 303,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c8486e58e6ab7214218307818b0943cc18e77ad97a0aef79314966e6b7ed1bdf"
+    },
+    {
+      "id": 304,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "53959466cbafc39f299491bc3ad055aea43d7b2d9f0c5620bc462f8e34960419"
+    },
+    {
+      "id": 305,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "9a1bf5ba5e86461f63f9e1a8d0afe17c1f2ffcbe7c7049812240a92915a561c8"
+    },
+    {
+      "id": 306,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "87852235e548c06e4a1c03c15813144baa4f172f4cc06813453cc7f2c7c7dcd8"
+    },
+    {
+      "id": 307,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "b72327c934e20eaede99c23121216b786729de92fa28b0c4b983cb6fbe12e117"
+    },
+    {
+      "id": 308,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "b36a23b133cd13651f216e945632e9099d643c11afd30962f7b457b2cef00940"
+    },
+    {
+      "id": 309,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "cc9d5db0f015b850ec6165ce1f92d08c717e510393370d873b7ab74a3069b452"
+    },
+    {
+      "id": 310,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "f09e58377f721f09fb02cc8b532921d911d10003ae9b515a0884fd2c6d84dfb9"
+    },
+    {
+      "id": 311,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "758059e4a0e491baa747d58fe6395dc51eba691304721060737cedc9a4e07e2f"
+    },
+    {
+      "id": 312,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c59842a7a185c6f18c360fe79cc375253239bf6295c5bd0c4b55edf488d01c92"
+    },
+    {
+      "id": 313,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a5eea4f4efa2b7576379438a01e154fe62785f9d44c7f9a660a5910deb292eef"
+    },
+    {
+      "id": 314,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "18eff6abadcf1296a889af24323413711b54cbf5354dacda38b67330735d3bba"
+    },
+    {
+      "id": 315,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "dc8e96501870f32b77410fd73414f96100a6e2c724d935467dfd98443c1ab5fc"
+    },
+    {
+      "id": 316,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a24301d69b269cdc7ca2b4e514dfbb88495f1ff456bddeacee5f54fc1a7c8b32"
+    },
+    {
+      "id": 317,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "ed0fa1f27c05e80fec2e0c7f200549a33b13a0367a183effe837262fcbee5c0c"
+    },
+    {
+      "id": 318,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "4495997d1a74e058a31d538d3094a577c3749ba6bbae864b0ccf8b6ad053e584"
+    },
+    {
+      "id": 319,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "fd36f8289de70fa69538fc7e18291402f6dc5271f79054953a8ecd925f60a3f9"
+    },
+    {
+      "id": 320,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2d70ebc4aa2a8000ba3ec8aa36a7e58e14d73c1c201ec344e672176bfe6dedeb"
+    },
+    {
+      "id": 321,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "726cb2327e83383c880135acf0da4598e9a8554b97fa19cd427b35601e3714d1"
+    },
+    {
+      "id": 322,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "07c2015cdaa7ae7e7f97ef6c88c9945f3942700b66e91c427624e8e07ba26f07"
+    },
+    {
+      "id": 323,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "abd4b65d46f47ea847119a18eb3a65e5dc8ea3f61fb95a49121c5b15c33e3229"
+    },
+    {
+      "id": 324,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "74cd3c62884521ee44ca87e24c044cdac17a4cb5fb78b064a42fdfeaf087940f"
+    },
+    {
+      "id": 325,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "42f09ac3dd3e0ca1a1ffe846290a7e65c09521faee7b83242d03e5762697501f"
+    },
+    {
+      "id": 326,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2a7b8b3cc8316eab0a938fae7dac43cd6755f19b05beadf6013310fda04965d5"
+    },
+    {
+      "id": 327,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "efc59a2a03ecc3859e5da559e29e479b58d4938d877de1935b1b08783f590546"
+    },
+    {
+      "id": 328,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "3c60bbcfd98557bc34152a99305ae678fa360fc8312358374894c7c38a1e1c2f"
+    },
+    {
+      "id": 329,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "439c762ea7dfe1712f4d9cfadd2e438273557f7b96814bf7664575d7cec12efe"
+    },
+    {
+      "id": 330,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "e6045dfd102cab11e7fc3b436451b4c5312ab580d0d7a15f4b054758bc3a4e96"
+    },
+    {
+      "id": 331,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "72e1caf764eb1c2de6540f350a8a151df4119f6394194f1a84e2baa7358574a4"
+    },
+    {
+      "id": 332,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "882441f1ceb05246cb795523cefb420eb7f8a0ecc751f49c3875d3016ba63d52"
+    },
+    {
+      "id": 333,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "3b1a2c8430d1de1c4be3b37d57e70924349a94090f244d2bf4185399bbadb26a"
+    },
+    {
+      "id": 334,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "17e156e4c200d28f93199550fa0b7e15a749f67ba71418296f519be679a28c5d"
+    },
+    {
+      "id": 335,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "17cc03af687eb1c4b8ccc43e12d1b0609ad67d8a5d9f1a9dce6534f739ce2921"
+    },
+    {
+      "id": 336,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "25692b80f80b0c57231cb68de7d4fa90fe894397a42a1323811ab1e38776b56a"
+    },
+    {
+      "id": 337,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "990f0dd9ff5910226fb4bfd3384843096875c2bc68d1e93634251f16997ed3a6"
+    },
+    {
+      "id": 338,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "13b51ea220335053a6911a9c1214f5eb8a616c2e9976abb301f562bd7db74913"
+    },
+    {
+      "id": 339,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "fcc373cd8c11ea5fbac6681d73f7b99e8533d67bb9b7b01415b6c7037e97a489"
+    },
+    {
+      "id": 340,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "7386de37c0bebcf2f6c79dc9cdec103496e5651098a4534d5e8367776ae5c58a"
+    },
+    {
+      "id": 341,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c1c78fb02d72b5310836509c8806cf3d5b4857338d11b8224981a4da374a1861"
+    },
+    {
+      "id": 342,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a8180763225d578965c35f253df5ba4f19e26faffa24862ed1c32e5f3358a6d5"
+    },
+    {
+      "id": 343,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "5af47dbf81b1f58860e76ba9b8e8d6100c5076c6174cd02084a9c5a54ebbd84d"
+    },
+    {
+      "id": 344,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "126ea31a4a4ae48acc27e7e9fd0d5d22ad63d25f694156fbae7f40b45ee9e6d5"
+    },
+    {
+      "id": 345,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "47acde18083e1502fc767332e3025f0c2c7a2461b5910d0c469f74283d337b36"
+    },
+    {
+      "id": 346,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "413f593ec103f4dbe1f4bcefcb74e810790589a0cb482ef8bd4f85eee25591cf"
+    },
+    {
+      "id": 347,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "7773ec84f88ce36237f0021b01e786f4563e7b5cd9522f7d45fc94b07d05b635"
+    },
+    {
+      "id": 348,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "0c06a92d95657c8331ecb3407c9c21a438ac646011008c9275ea59e17766e71a"
+    },
+    {
+      "id": 349,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "7325cb2030fd5fcb7ed52461db4d54b37c9d4e46dd5dfa905fa2b6a2bd1cc8cb"
+    },
+    {
+      "id": 350,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "b64a73b400ab342ecc7933992c57e67605ae717028185edf451d60a6d9bdcf2c"
+    },
+    {
+      "id": 351,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "1b8c7552ca689af4787113caaa140f3f617c50156a398c670cfa109b1828abba"
+    },
+    {
+      "id": 352,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "6ca0b843dd45275883c79fc5dd9a0dc8f62f1d2c45d50eab39e81ae9fd29e905"
+    },
+    {
+      "id": 353,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "0aef2f3dd73007a798ba0b7529cf700e2b78f0926e50a1da257a01da1ce491c1"
+    },
+    {
+      "id": 354,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "87118eb5533d59b822014f09330221a4227c632b88a4241b764c45d5ef614b40"
+    },
+    {
+      "id": 355,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "81b8641592a8b4d16aaaec3e6ba56941277e0efc5bff724cae2ec542c599e03d"
+    },
+    {
+      "id": 356,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "964c615b806be3e31c9cb95525a0b42eb2af5cf2adf8d1264cc9866839223d03"
+    },
+    {
+      "id": 357,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "71d042a0a4ba3955a319dc1621d35d0eaf8b52894ed144d9671c2e15dbd23df5"
+    },
+    {
+      "id": 358,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "5153dadd3dc75ce579909e8f6e25746b207d507b65deef4754fa826adf5f23a2"
+    },
+    {
+      "id": 359,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "19f0b71d2bdd3cba966bff5a8a6f8e00e254bfff0b0524967e45eab3d002ba87"
+    },
+    {
+      "id": 360,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "af0fd308221a9d5e522bfcdddd776f0618495fe89097368a8590f03f5aff4be2"
+    },
+    {
+      "id": 361,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "c820007a196c85bad8bda2d894d58149d750326c324ead71e3b2f1d27003c739"
+    },
+    {
+      "id": 362,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "18569123d7c5a6bbab377dead11071811024d04b88ef712dacb7ead5bfe01b58"
+    },
+    {
+      "id": 363,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "baf19f75b7bd9b0a79ace2c728d113cc89d7006d481a2af9722b13022f232d57"
+    },
+    {
+      "id": 364,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "b2a4ffd6cbc87a72ee4d78e1797f33ddbe073645b1083f44f9e96c8a1dd44e6a"
+    },
+    {
+      "id": 365,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "e7c9e34aa9a5e785f7e3527fb208a8f5c6ec0414775ad7bd2e57122789e3ea99"
+    },
+    {
+      "id": 366,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "ae3d72e46aeec43a9130678a82b43ae4a4e55bdd54ec541e03e9a23c18d54e5f"
+    },
+    {
+      "id": 367,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "8ffe335a77643611c640e36c5c3b34dc8105a5f269efb7ae1172bd77fd9b3c3e"
+    },
+    {
+      "id": 368,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "69a4dc90f81f2b5be15b69ca5a07e91ea2bd22cd420ac02b137482666b9ff32b"
+    },
+    {
+      "id": 369,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a483b39369dc313d4c9f8aa650a86b32b64a6957f60187b21ee41e6315b3ec03"
+    },
+    {
+      "id": 370,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2eac0f57d2075f5dfc1b20e4ee0087dfbb4336e98471abab9a5b6bd853810f84"
+    },
+    {
+      "id": 371,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "406d23c21e77d8f70c1dfc762fbb1bb328b1008cce14a5dfc93bc7c6af9ebf01"
+    },
+    {
+      "id": 372,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "6f126754e24d2c63001a43c70036cf0e59c569ad1b442d85bc1ff24c0f7d99b2"
+    },
+    {
+      "id": 373,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "3d9f18c1a25e998ef5e50e5a447e5f38637ee8a7f428b5f4477091a9b8192d3f"
+    },
+    {
+      "id": 374,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "f4900df265dbba1f6e6ffeac1826ffc4532b2b9c71acc03aed8a93ae017cb6d6"
+    },
+    {
+      "id": 375,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "d42429fe7214fae717f8d6f9cbc445c423a902de65028ef87681db44fe8a182c"
+    },
+    {
+      "id": 376,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a871d3272f6da2fb4df63d2304db65aac08c24a9575e8d7ba6377f2ee87535d0"
+    },
+    {
+      "id": 377,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "d896ee1fbc25a12c4794d02b6277a1d8512aba4a29b0ba38d94f6461bc2ca9b8"
+    },
+    {
+      "id": 378,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "678630852e2cc90aeb4ad92fdc94e21ffa085a3d202a31f48bc2d961122b5717"
+    },
+    {
+      "id": 379,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "07e850f34161901093e3ca44a8c8228770528308f87d61ba48f5c7f92ab8c95a"
+    },
+    {
+      "id": 380,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "2c184ea362a6c65ee6fabe756067f97f62a99aa374a69075856a0c29768b4911"
+    },
+    {
+      "id": 381,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "36410fb32ec67d3e55b80cdf957cf2a9aa2c1d829bd2618d2cdc062b70b93add"
+    },
+    {
+      "id": 382,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "a24962e9bd96fb84e69872ed7e6f1982c08b4241df60c5f64a1c0cfa7a651878"
+    },
+    {
+      "id": 383,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "bf6a4334d6a49af32396c9d155e867a1699439ff73c28bb6dad15dd4684b4461"
+    },
+    {
+      "id": 384,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "52fdacd461e20343dc7fd127b062c23429dc63dfe558c94b9aea0dc7a27be939"
+    },
+    {
+      "id": 385,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "f44127b482aeab3472b124e64c08d4fd61f13a07a750ca4bb1a96bd2895f3422"
+    },
+    {
+      "id": 386,
+      "width": 475,
+      "height": 475,
+      "format": "PNG",
+      "mode": "RGBA",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentEdges": true,
+      "sha256": "9957c0b49f1a1f5dbc084af586b6272a3ddfc54f479f1253cbc023e4cf09bd60"
+    }
+  ],
+  "attribution": "Pokémon artwork and characters © Nintendo / Creatures / GAME FREAK. PokeAPI hosts official artwork; fan game."
+}

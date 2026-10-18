@@ -21,7 +21,7 @@
     const keys = new Set(), counts = { offense: 0, defense: 0 };
     const players = team.positions.map(slot => {
       const id = slot?.pokemonId ?? slot?.pokemon?.id;
-      if (!Number.isInteger(id) || id < 1 || id > 251) throw new Error('Every position needs a Pokémon before simulating.');
+      if (!Number.isInteger(id) || id < 1 || id > 386) throw new Error('Every position needs a Pokémon before simulating.');
       if (used.has(id)) throw new Error('A Pokémon can play for only one position across the two teams.');
       if (!slot.key || keys.has(slot.key)) throw new Error('Each position must be unique.');
       const roles = slot.side === 'offense' ? offenseRoles : slot.side === 'defense' ? defenseRoles : [];

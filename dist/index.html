@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#12291e">
-  <meta name="description" content="Draft NFL teams from Gen 1 and Gen 2 Pokémon. Auction with two to four teams, $1,000 each, then choose a four-quarter matchup.">
+  <meta name="description" content="Draft NFL teams from Gen 1, Gen 2, and Gen 3 Pokémon. Auction with two to four teams, $1,000 each, then choose a four-quarter matchup.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Pokémon Draft">
@@ -12,20 +12,20 @@
   <link rel="apple-touch-icon" href="assets/app-icon.png">
   <title>Pokémon Draft League</title>
   <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
-  <link rel="stylesheet" href="styles.css?v=11">
-  <link rel="stylesheet" href="results.css?v=11">
-  <link rel="stylesheet" href="hall.css?v=11">
-  <link rel="stylesheet" href="auction.css?v=11">
-  <script src="assets/pokemon.js?v=11" defer></script>
-  <script src="field.js?v=11" defer></script>
-  <script src="export.js?v=11" defer></script>
-  <script src="ratings.js?v=11" defer></script>
-  <script src="simulation.js?v=11" defer></script>
-  <script src="career.js?v=11" defer></script>
-  <script src="results.js?v=11" defer></script>
-  <script src="hall.js?v=11" defer></script>
-  <script src="auction.js?v=11" defer></script>
-  <script src="app.js?v=11" defer></script>
+  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="results.css?v=12">
+  <link rel="stylesheet" href="hall.css?v=12">
+  <link rel="stylesheet" href="auction.css?v=12">
+  <script src="assets/pokemon.js?v=12" defer></script>
+  <script src="field.js?v=12" defer></script>
+  <script src="export.js?v=12" defer></script>
+  <script src="ratings.js?v=12" defer></script>
+  <script src="simulation.js?v=12" defer></script>
+  <script src="career.js?v=12" defer></script>
+  <script src="results.js?v=12" defer></script>
+  <script src="hall.js?v=12" defer></script>
+  <script src="auction.js?v=12" defer></script>
+  <script src="app.js?v=12" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -39,7 +39,7 @@
     <form class="team-name-form"><label for="team-name">Team name</label><div><input id="team-name" type="text" maxlength="48" placeholder="Team 1" autocomplete="off" enterkeyhint="done"><button type="button" id="save-team-name">Save</button></div></form>
     <div class="auction-mode-controls"><button type="button" id="auction-start-button" class="menu-action">Auction draft</button><button type="button" id="auction-exit-button" class="menu-action" hidden>Regular draft</button><button type="button" id="auction-new-button" class="menu-action" hidden>New auction</button></div>
     <div class="menu-controls">
-      <div class="menu-group"><span class="menu-label">Pokémon pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="both" aria-pressed="false">Both</button></div></div>
+      <div class="menu-group"><span class="menu-label">Pokémon pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="gen3" aria-pressed="false">Gen 3</button><button type="button" data-mode="both" aria-pressed="false">All</button></div></div>
         <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
         <div class="personnel-control"><span id="defense-label" class="personnel-label"><span class="team-dot defense-dot"></span>Defense</span><button id="defense" class="personnel-trigger" type="button" aria-labelledby="defense-label defense-current defense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="defense-options"><strong id="defense-current">3–4 defense</strong><span id="defense-detail">3 DL · 4 LB · 4 DB</span></button><div id="defense-options" class="personnel-options" role="listbox" aria-labelledby="defense-label" hidden></div></div>
     </div>
@@ -89,7 +89,7 @@
     <form id="auction-setup-form" novalidate>
       <div class="auction-setup-options">
         <div><label class="auction-count-label" for="auction-team-count">Teams</label><select id="auction-team-count"><option value="2" selected>2 teams</option><option value="3">3 teams</option><option value="4">4 teams</option></select></div>
-        <div><label class="auction-pool-label" for="auction-pool">Pokémon pool</label><select id="auction-pool"><option value="gen1">Gen 1 · Kanto</option><option value="gen2">Gen 2 · Johto</option><option value="both">Both · all 251</option></select></div>
+        <div><label class="auction-pool-label" for="auction-pool">Pokémon pool</label><select id="auction-pool"><option value="gen1">Gen 1 · Kanto</option><option value="gen2">Gen 2 · Johto</option><option value="gen3">Gen 3 · Hoenn</option><option value="both">All · 386 Pokémon</option></select></div>
       </div>
       <p id="auction-setup-summary" class="auction-setup-summary">44 Pokémon · $1,000 per team</p>
       <div class="auction-setup-names">
@@ -107,6 +107,11 @@
     <div class="dialog-heading"><div><span class="eyebrow" id="auction-round">POKÉMON 1 OF 44</span><h2 id="auction-title">Place your bids</h2></div><button type="button" class="icon-button" data-close="auction-dialog" aria-label="Pause auction">×</button></div>
     <div class="auction-dialog-body">
       <div class="auction-prospect"><img id="auction-image" alt=""><div><span id="auction-dex" class="eyebrow"></span><h3 id="auction-pokemon"></h3><span id="auction-types"></span><span id="auction-stats"></span></div></div>
+      <section class="auction-battle-stats" aria-label="Pokémon base battle stats">
+        <div class="auction-stat-heading"><span>BASE STATS</span><span id="auction-stat-total"></span></div>
+        <dl id="auction-base-stats" class="auction-base-stats"></dl>
+      </section>
+      <details id="auction-scouting" class="auction-scouting"><summary>Scouting notes &amp; abilities</summary><p id="auction-abilities"></p><p id="auction-synopsis"></p></details>
       <form id="auction-bid-form" novalidate>
         <div class="auction-bids">
           <div data-auction-bid="0"><label id="auction-bid-label-0" for="auction-bid-0">Team 1 bid</label><span id="auction-bid-detail-0" class="auction-bid-detail"></span><div class="auction-bid-input"><span aria-hidden="true">$</span><input type="text" id="auction-bid-0" inputmode="numeric" pattern="[0-9]*" value="0" autocomplete="off" enterkeyhint="next" aria-describedby="auction-bid-detail-0 auction-bid-error"></div></div>
@@ -179,7 +184,8 @@
     <div class="dialog-heading"><div><span class="eyebrow">THE SCOUTING REPORT</span><h2 id="stats-title">Know your prospects</h2></div><button type="button" class="icon-button" data-close="stats-dialog" aria-label="Close stats guide">×</button></div>
     <p><strong>HT</strong> is height in feet and inches. <strong>LB</strong> is weight in pounds. Both use Bulbapedia’s standard Pokémon forms. For long-bodied Pokémon, Pokédex height may represent length.</p>
     <p class="room-followup"><strong>EST 40</strong> is our estimated 40-yard dash time in seconds. Lower is faster. These game estimates assume a standing start on turf, allow ordinary flight, hovering, or burrowing, and exclude teleportation and special boosts.</p>
-    <p class="stats-sources">Sources: <a href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_height" target="_blank" rel="noreferrer">Bulbapedia heights</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_weight" target="_blank" rel="noreferrer">weights</a></p>
+    <p class="room-followup"><strong>Base stats</strong> are the standard-form Pokémon battle values: HP, Attack, Defense, Special Attack, Special Defense, and Speed. Their total is the base-stat total. Base Speed is separate from the estimated 40-yard dash. These are not football positional grades. Abilities include possible standard and hidden abilities across generations; no single ability is equipped.</p>
+    <p class="stats-sources">Sources: <a href="https://pokeapi.co/" target="_blank" rel="noreferrer">PokéAPI base stats &amp; abilities</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_height" target="_blank" rel="noreferrer">Bulbapedia heights</a> · <a href="https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_weight" target="_blank" rel="noreferrer">weights</a></p>
     <div class="dialog-actions"><button type="button" class="secondary-button" data-close="stats-dialog">Back to the draft</button></div>
   </dialog>
 </body>

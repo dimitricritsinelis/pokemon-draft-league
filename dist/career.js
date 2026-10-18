@@ -15,7 +15,7 @@
   ];
   const maxStoredChars = 2500000;
   const maxCounter = 1000000000000;
-  const validId = id => Number.isInteger(id) && id >= 1 && id <= 251;
+  const validId = id => Number.isInteger(id) && id >= 1 && id <= 386;
   const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const counter = value => Number.isInteger(value) && value >= 0 && value <= maxCounter;
   const amount = (value, key) => Number.isFinite(value) && value >= (key === 'rushingYards' ? -maxCounter : 0) && value <= maxCounter;
@@ -77,7 +77,7 @@
       const value = JSON.parse(raw);
       if (!isObject(value) || value.v !== 1 || !isObject(value.careers) || !isObject(value.hall) || !Array.isArray(value.matches) || value.matches.length > 50000 || value.matches.some(id => !validMatchId(id))) return false;
       const nextCareers = Object.create(null), nextInductees = Object.create(null);
-      for (let id = 1; id <= 251; id++) {
+      for (let id = 1; id <= 386; id++) {
         const career = parseCareer(value.careers?.[id], id);
         if (career) nextCareers[id] = career;
         const entry = value.hall?.[id];
