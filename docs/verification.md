@@ -44,3 +44,19 @@ The local SQLite database, browser test records, screenshots, credentials, and t
 - **Independent database-backed ledger verification: 96 checks passed.** A fresh HTTP read verified all 92 winning awards against permanent draft counts, purchase counts, paid totals and average prices, including the initial $40 purchase; also checked persistent match count, 386 career entries, hidden future prospects, and clean Hall removals. QA leagues are separate from player leagues.
 - **Live visual suite: 1,561 checks passed.** Rechecked all 20 formation combinations at 320px, 393px, 844px, and 1440px in Chromium and WebKit on the actual public site. Every board had 23 positions with no overlapping tiles, field clipping, horizontal overflow, or JavaScript errors. Physically clicked every position in every formation at 393px in both engines.
 - **Live export/share checks passed in both engines.** Generated and downloaded a 1600×1550 PNG through the actual Export image UI, opened the generated lineup link in another tab, and verified the imported board and sharing notice. No JavaScript errors.
+
+## Responsive interface revision
+
+The main entry is **New game**, with matching **This device** and **Online** setup views. Switching modes preserves team count, pool, and names. Online hosting and manual code joining share that entry, while invitation links still open the join form directly. Saved local auctions can be resumed from the same setup.
+
+Formation controls live beside the field. Sharing is a small board menu with matchup links and PNG exports. Clear board is a board action with explicit cancel/confirm choices and is unavailable for auction rosters. Team settings open as a fixed desktop popover or an iPhone bottom sheet; opening them keeps the board stationary. The More room control and fullscreen help were removed. Mobile controls use 44px touch targets, and setup/settings keep the focused input visible above the keyboard.
+
+Verification for this revision:
+
+- All 32 Node tests and the deployment build pass.
+- The actual public Vercel site passed **398 interface checks** in Chromium and WebKit across widths 320, 393, 560, 768, 1024, and 1440. These cover settings geometry, focus/Escape/outside clicks, toolbar controls, export, clear cancellation/current-team confirmation, setup-mode copying, and 18 simulated keyboard assertions.
+- The actual Vercel/Supabase deployment passed **499 full online checks** in 207 seconds. Completed four-team/92-player and two-team/46-player auctions and matches with separate Chromium desktop and WebKit phone clients. The desktop-host case used an invitation link; the phone-host case used the new manual four-digit join flow. Verified chat, skips, budgets, assignments, reload recovery, career draft prices, all 46 match stats and score reconciliations, and both halls. No JavaScript errors; four deliberate retired-player simulations correctly returned HTTP 409.
+- Local formation regression passed **1,561 checks**, covering every formation, every phone position selection, field clipping, and horizontal overflow after the toolbar change.
+- The actual public site passed a complete **three-team local auction** and match in iPhone-sized WebKit, including skipping, purchased-player reload recovery, 69 unique placements, 46 match stat rows, return to practice, and resuming the saved auction. The 16 checks passed without JavaScript errors. These practice/local tests do not write shared league records.
+
+Run the portable `tests/browser-interface.py` for the shell checks and `tests/browser-deployment.py` for complete online auctions. Both accept `DRAFT_QA_URL`, `DRAFT_QA_OUTPUT`, `DRAFT_CHROMIUM_PATH`, and `DRAFT_WEBKIT_PATH`. The older browser checks were updated for the same entry flow.
