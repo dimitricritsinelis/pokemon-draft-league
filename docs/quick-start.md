@@ -1,36 +1,25 @@
-# Get your game online
+# Automatic deployment through GitHub
 
-Do this on your computer. No GitHub setup is needed.
+The code is uploaded once to your private GitHub repository. After the connections below are made, changes to `main` publish automatically. No local Node installation or terminal commands are required for this route.
 
-1. **Download and unzip the game.** Keep the folder containing `package.json`.
-2. **Install [Node.js LTS](https://nodejs.org/en/download).** Accept the installer defaults.
-3. **Create accounts at [Vercel](https://vercel.com/signup) and [Supabase](https://supabase.com/dashboard/sign-up).** In Supabase, click **New project**, name it `pokemon-draft`, choose a database password, and wait for setup to finish.
-4. **Set up the database.** In Supabase, open **SQL Editor → New query**. Open the game's `supabase/001_multiplayer.sql` in Notepad, copy everything into that query, and click **Run**.
-5. **Create the Vercel project.** Open the game folder in File Explorer. Click the address bar, type `cmd`, and press Enter. In that black window, paste:
+## One-time setup
 
-   ```sh
-   npx vercel link
-   ```
+1. **Vercel:** Sign in at [Vercel](https://vercel.com/signup) using GitHub. Click **Add New → Project**, import your game repository, and keep its existing build settings. If asked, allow Vercel to access this private repository.
+2. **Database:** Open [Supabase in the Vercel Marketplace](https://vercel.com/marketplace/supabase/supabase). Click **Install**, create a database, and connect it to your game project. Review the displayed plan before creating the resource. The integration creates the Supabase account/project as needed and automatically supplies the database URL and secret key to Vercel.
+3. **Automatic database setup:** From Vercel’s **Storage** tab, open the database and choose **Open in Supabase**. Go to **Project Settings → Integrations → GitHub**, authorize GitHub, and select the same game repository. Set working directory to `.`, production branch to `main`, and turn on **Deploy to production**. The initial database migration is already in the repository; it preserves existing records if you ran the manual setup earlier. Preview database branching is optional and is not required for this setup.
+4. **Publish:** Once the migration finishes successfully, open Vercel → your project → **Deployments → Redeploy** the latest `main` deployment. Open its production website link on your PC and iPhone.
 
-   Allow the Vercel tool to install if asked. Follow the browser sign-in. Choose your account, create a new project named `pokemon-draft`, and use `.` for the folder. Keep the defaults. Leave this window open.
-6. **Connect the database.** On Vercel, open your new project → **Settings → Environment Variables**. Add these two values for **Production**:
+You do not need to copy secret keys into chat or source files.
 
-   | Name | What to paste |
-   | --- | --- |
-   | `SUPABASE_URL` | Your Supabase **Project URL**, available from its **Connect** button |
-   | `SUPABASE_SECRET_KEY` | Your Supabase **Secret key**, starting `sb_secret_`, from **Settings → API Keys** |
+## What becomes automatic
 
-   If no secret key exists, create one there. Paste the secret only into Vercel, not into this chat or the game files.
-7. **Publish.** Return to the black window and paste:
+- Pushing code to `main` triggers Vercel to run the complete test suite, check the build, and publish if those checks pass.
+- New checked-in files under `supabase/migrations/` are applied by Supabase’s GitHub integration.
+- The Marketplace integration keeps database connection variables synchronized.
+- Careers, halls, rosters, bids, and chat remain in the database when the website is updated.
 
-   ```sh
-   npx vercel --prod
-   ```
+Creating the empty GitHub repository and approving provider account connections require your account access. The current ChatGPT connection can update accessible repositories but cannot create a new repository.
 
-   When it finishes, open the `.vercel.app` website it prints. Use the same link on your PC and iPhone. Host a lobby on one device and join from the other.
+If you already created Supabase separately, connect that existing project using the integration instead of creating another one. If you prefer the manual route, use [the detailed deployment guide](deployment.md).
 
-On a Mac, use Terminal in the game folder instead of the Windows `cmd` step. If a command fails, share the error message with secret values removed.
-
-The game already includes its build settings. You do not need to pick a framework, write code, or install a database on your computer.
-
-Sources: [Vercel setup commands](https://vercel.com/docs/projects/deploy-from-cli), [Supabase API keys](https://supabase.com/docs/guides/getting-started/api-keys).
+Sources: [Vercel GitHub automatic deployments](https://vercel.com/docs/git/vercel-for-github), [Supabase Marketplace integration](https://supabase.com/docs/guides/integrations/vercel-marketplace), [Supabase GitHub migrations](https://supabase.com/docs/guides/deployment/branching/github-integration).

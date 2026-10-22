@@ -32,6 +32,10 @@ for (const match of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) {
   if (!full.startsWith(path.join(root, 'dist') + path.sep)) throw new Error(`Unsafe asset path: ${href}`);
   if (!(await stat(full).catch(() => null))?.isFile()) throw new Error(`The page references a missing file: ${href}`);
 }
+const bootstrap = await readFile(path.join(root, 'supabase/001_multiplayer.sql'), 'utf8');
+const migration = await readFile(path.join(root, 'supabase/migrations/20261022000000_multiplayer.sql'), 'utf8');
+if (bootstrap !== migration) throw new Error('The initial automatic database migration must match the manual bootstrap SQL.');
+
 const config = JSON.parse(await readFile(path.join(root, 'vercel.json'), 'utf8'));
 if (config.outputDirectory !== 'dist' || config.framework !== null) throw new Error('Vercel must serve the existing static game from dist/.');
 console.log(`Deployment files verified; ${checked} JavaScript files passed syntax checks.`);

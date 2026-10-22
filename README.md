@@ -13,7 +13,7 @@ npm run build
 npm run dev
 ```
 
-The development server serves the game and API and uses a persistent **local SQLite database** when Supabase is not configured. This is for development; production requires Supabase. Start with [simple setup steps](docs/quick-start.md), or see [deployment instructions](docs/deployment.md) for the database migration, server credentials, and Vercel configuration. No frontend framework or runtime npm dependencies are required.
+The development server serves the game and API and uses a persistent **local SQLite database** when Supabase is not configured. This is for development; production requires Supabase. Start with [automatic GitHub deployment setup](docs/quick-start.md), or see [deployment instructions](docs/deployment.md) for the database migration, server credentials, and Vercel configuration. No frontend framework or runtime npm dependencies are required. Once connected, Vercel tests and publishes each update to `main`, and Supabase’s GitHub integration applies checked-in migrations.
 
 The existing ChatGPT Sites publication remains a separate, earlier static release. Preparing this repository does not deploy the multiplayer release or provision a Vercel/Supabase account.
 

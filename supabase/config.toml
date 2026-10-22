@@ -1,0 +1,8 @@
+# Local repository identifier; the dashboard integration selects the hosted project.
+project_id = "pokemon-draft-league"
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false

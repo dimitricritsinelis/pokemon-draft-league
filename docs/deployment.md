@@ -4,13 +4,13 @@ The multiplayer release uses the existing HTML/CSS/JavaScript game on Vercel and
 
 The current ChatGPT Sites deployment is a separate static release. It does not gain online play until this server-backed release has been deployed with its database configured.
 
-For the shortest Windows-friendly path without GitHub, follow [Quick setup](quick-start.md).
+For the recommended automatic GitHub deployment path, follow [Quick setup](quick-start.md). The detailed manual route below remains available.
 
 ## 1. Create the accounts and database
 
 Create a Vercel account and a Supabase account under the person who will own the game. Create a Supabase project and retain its database password in your password manager. Choose a database region near your players, then choose a matching Vercel Function region when configuring your Vercel project.
 
-Run `supabase/001_multiplayer.sql` in the Supabase SQL Editor. Apply any future migrations in filename order. The SQL creates the persistent state and atomic update functions, and restricts access to server-side credentials. Do not expose the state table directly to browser clients or weaken its access controls.
+For automatic setup, connect the repository in Supabase Project Settings → Integrations → GitHub, set working directory to `.`, production branch to `main`, and enable Deploy to production. Supabase applies `supabase/migrations/20261022000000_multiplayer.sql`. Alternatively, run `supabase/001_multiplayer.sql` once in the SQL Editor. These initial scripts are identical and preserve existing records. Add future database changes as new timestamped files under `supabase/migrations/`. The SQL creates the persistent state and atomic update functions, and restricts access to server-side credentials. Do not expose the state table directly to browser clients or weaken its access controls.
 
 From the Supabase project settings, obtain the project URL and the server-side secret key. These belong only in the Vercel project's environment variables:
 
@@ -30,14 +30,14 @@ Put this source in a private GitHub repository owned by you, then import that re
 Select the repository root as the project root. `vercel.json` supplies these settings:
 
 - Framework preset: **Other**.
-- Build command: `npm run build`.
+- Build command: `npm test && npm run build` (tests must pass before publication).
 - Output directory: `dist`.
 - Node.js: **22.x**, as pinned in `package.json`.
 - API routes: `api/index.mjs` and `api/[...path].mjs`.
 
 The Function bundle explicitly includes the Pokémon catalog and game engines loaded by the server. Artwork stays in the static deployment rather than being added to the Function bundle.
 
-Add the two Supabase environment variables before deploying. Deploy the project, then run:
+The Supabase Vercel Marketplace integration can provision the database and synchronize these variables automatically. If using an independently created project, add the two server-only variables manually before deployment. Deploy the project, then run:
 
 ```sh
 npm run verify:deployment -- https://your-game.vercel.app
