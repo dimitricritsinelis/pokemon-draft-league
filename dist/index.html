@@ -30,10 +30,10 @@
   <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="favicon.ico?v=2">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32-v2.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16-v2.png">
-  <link rel="stylesheet" href="styles.css?v=15">
+  <link rel="stylesheet" href="styles.css?v=16">
   <link rel="stylesheet" href="results.css?v=14">
   <link rel="stylesheet" href="hall.css?v=14">
-  <link rel="stylesheet" href="auction.css?v=14">
+  <link rel="stylesheet" href="auction.css?v=16">
   <script src="assets/pokemon.js?v=14" defer></script>
   <script src="field.js?v=14" defer></script>
   <script src="export.js?v=14" defer></script>
@@ -41,38 +41,38 @@
   <script src="simulation.js?v=14" defer></script>
   <script src="career.js?v=14" defer></script>
   <script src="results.js?v=14" defer></script>
-  <script src="hall.js?v=14" defer></script>
+  <script src="hall.js?v=16" defer></script>
   <script src="auction.js?v=14" defer></script>
-  <link rel="stylesheet" href="online.css?v=14">
-  <script src="online.js?v=14" defer></script>
-  <script src="app.js?v=14" defer></script>
+  <link rel="stylesheet" href="online.css?v=16">
+  <link rel="stylesheet" href="interface.css?v=16">
+  <script src="online.js?v=16" defer></script>
+  <script src="app.js?v=16" defer></script>
 </head>
 <body>
   <header class="masthead">
-    <div class="brand"><span class="brand-mark" aria-hidden="true"><img src="assets/apple-touch-icon-v2.png" alt="" width="32" height="32"></span><div><h1>Pokémon Draft League</h1><div id="team-tabs" class="team-tabs" role="tablist" aria-label="Draft team"><button type="button" role="tab" id="team-tab-0" data-team="0" aria-selected="true" aria-controls="draft-board"><span id="team-label-0">Team 1</span> <small id="team-count-0">23/23</small></button><button type="button" role="tab" id="team-tab-1" data-team="1" aria-selected="false" aria-controls="draft-board" tabindex="-1"><span id="team-label-1">Team 2</span> <small id="team-count-1">0/23</small></button></div><select id="team-switcher" aria-label="Draft team" hidden></select></div></div>
-    <button type="button" id="simulate-match" class="simulate-button" aria-label="Simulate Match" aria-disabled="true">Simulate<br>Match</button>
-    <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Open draft options" aria-expanded="false" aria-controls="draft-menu"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
-  </header>
-  <nav class="draft-tools" id="draft-menu" aria-label="Draft options" hidden>
-    <div class="menu-heading"><strong>Draft options</strong><span id="save-status" class="save-status" role="status">Autosaved</span></div>
-    <p class="menu-context"><span id="formation-summary">Team 1 · Gen 1 · 21 OFF · 3–4 DEF</span> · <span id="draft-count">23/23</span></p>
-    <form class="team-name-form"><label for="team-name">Team name</label><div><input id="team-name" type="text" maxlength="48" placeholder="Team 1" autocomplete="off" enterkeyhint="done"><button type="button" id="save-team-name">Save</button></div></form>
-    <div class="auction-mode-controls"><button type="button" id="auction-start-button" class="menu-action">Auction draft</button><button type="button" id="auction-exit-button" class="menu-action" hidden>Regular draft</button><button type="button" id="auction-new-button" class="menu-action" hidden>New auction</button></div>
-    <div class="menu-controls">
-      <div class="menu-group"><span class="menu-label">Pokémon pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="gen3" aria-pressed="false">Gen 3</button><button type="button" data-mode="both" aria-pressed="false">All</button></div></div>
-        <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
-        <div class="personnel-control"><span id="defense-label" class="personnel-label"><span class="team-dot defense-dot"></span>Defense</span><button id="defense" class="personnel-trigger" type="button" aria-labelledby="defense-label defense-current defense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="defense-options"><strong id="defense-current">3–4 defense</strong><span id="defense-detail">3 DL · 4 LB · 4 DB</span></button><div id="defense-options" class="personnel-options" role="listbox" aria-labelledby="defense-label" hidden></div></div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><img src="assets/apple-touch-icon-v2.png" alt="" width="32" height="32"></span><div><h1 aria-label="Pokémon Draft League"><span class="desktop-brand-title">Pokémon Draft League</span><span class="mobile-brand-title">Pokémon Draft</span></h1><div id="team-tabs" class="team-tabs" role="tablist" aria-label="Draft team"><button type="button" role="tab" id="team-tab-0" data-team="0" aria-selected="true" aria-controls="draft-board"><span id="team-label-0">Team 1</span> <small id="team-count-0">23/23</small></button><button type="button" role="tab" id="team-tab-1" data-team="1" aria-selected="false" aria-controls="draft-board" tabindex="-1"><span id="team-label-1">Team 2</span> <small id="team-count-1">0/23</small></button></div><select id="team-switcher" aria-label="Draft team" hidden></select></div></div>
+    <div class="header-actions">
+      <button type="button" id="new-game-button" class="new-game-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="new-game-label">New game</span></button>
+      <button type="button" id="simulate-match" class="simulate-button" aria-label="Simulate Match" aria-disabled="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7Z"/></svg><span>Play match</span></button>
+      <button type="button" id="menu-toggle" class="menu-toggle" aria-label="Open team settings" aria-expanded="false" aria-controls="draft-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h9m4 0h3M4 17h3m4 0h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
     </div>
-    <div class="menu-actions">
-      <button type="button" id="export-button" class="menu-action">Export image</button>
-      <button type="button" id="share-link" class="menu-action">Share link</button>
-      <button type="button" id="sample-button" class="menu-action">Sample lineup</button>
-      <button type="button" id="clear-button" class="menu-action danger-action">Clear board</button>
-      <button type="button" id="stats-help" class="menu-action">Stats guide</button>
-      <button type="button" id="hall-button" class="menu-action">Hall of Fame</button>
-      <button type="button" id="room-button" class="menu-action">More room</button>
+  </header>
+  <button type="button" id="menu-backdrop" class="menu-backdrop" aria-label="Close team settings" tabindex="-1" hidden></button>
+  <nav class="draft-tools" id="draft-menu" aria-labelledby="settings-title" hidden>
+    <div class="menu-heading"><div><span class="eyebrow">YOUR PLAYBOOK</span><h2 id="settings-title">Team settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close team settings">×</button></div>
+    <p class="menu-context"><span id="formation-summary">Team 1 · Gen 1 · 21 OFF · 3–4 DEF</span> · <span id="draft-count">23/23</span></p>
+    <form class="team-name-form"><label for="team-name">Team name</label><div><input id="team-name" type="text" maxlength="24" placeholder="Team 1" autocomplete="off" enterkeyhint="done"><button type="submit" id="save-team-name">Save</button></div></form>
+    <div class="practice-settings">
+      <span class="menu-label">Practice pool</span><div class="generation-switch" role="group" aria-label="Pokémon generation"><button type="button" data-mode="gen1" aria-pressed="true">Gen 1</button><button type="button" data-mode="gen2" aria-pressed="false">Gen 2</button><button type="button" data-mode="gen3" aria-pressed="false">Gen 3</button><button type="button" data-mode="both" aria-pressed="false">All</button></div>
+      <button type="button" id="sample-button" class="settings-text-action">Use a sample lineup <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="settings-links">
+      <button type="button" id="hall-button" class="settings-link"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v6a4 4 0 0 1-8 0ZM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4m-4 1v5m-4 3h8m-10 0h12"/></svg>Halls &amp; careers</span><span aria-hidden="true">›</span></button>
+      <button type="button" id="stats-help" class="settings-link"><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg>Scouting guide</span><span aria-hidden="true">›</span></button>
+      <button type="button" id="auction-exit-button" class="settings-link" hidden><span>Back to practice</span><span aria-hidden="true">›</span></button>
     </div>
     <div id="shared-notice" class="shared-notice" hidden><span id="shared-label">Shared lineup</span><div class="shared-actions"><button type="button" id="my-lineup" class="text-button">My teams</button><button type="button" id="keep-shared" class="text-button">Keep matchup</button></div></div>
+    <div class="settings-footer"><i aria-hidden="true"></i><span id="save-status" class="save-status" role="status">Autosaved</span><span>Your lineup, ready when you are.</span></div>
   </nav>
   <section id="auction-strip" class="auction-strip" aria-label="Auction progress" hidden>
     <div class="auction-wallets">
@@ -85,6 +85,19 @@
   </section>
   <main class="game">
     <section id="draft-board" class="board-panel" role="tabpanel" aria-labelledby="team-tab-0" aria-label="Team 1 football draft board">
+      <div class="board-toolbar">
+        <span id="board-mode-label" class="board-mode-label">Practice · Gen 1</span>
+        <div class="board-formations">
+          <div class="personnel-control"><span id="offense-label" class="personnel-label"><span class="team-dot offense-dot"></span>Offense</span><button id="offense" class="personnel-trigger" type="button" aria-labelledby="offense-label offense-current offense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="offense-options"><strong id="offense-current">21 personnel</strong><span id="offense-detail">1 TE · 2 RB · 2 WR</span></button><div id="offense-options" class="personnel-options" role="listbox" aria-labelledby="offense-label" hidden></div></div>
+        <div class="personnel-control"><span id="defense-label" class="personnel-label"><span class="team-dot defense-dot"></span>Defense</span><button id="defense" class="personnel-trigger" type="button" aria-labelledby="defense-label defense-current defense-detail" aria-haspopup="listbox" aria-expanded="false" aria-controls="defense-options"><strong id="defense-current">3–4 defense</strong><span id="defense-detail">3 DL · 4 LB · 4 DB</span></button><div id="defense-options" class="personnel-options" role="listbox" aria-labelledby="defense-label" hidden></div></div>
+        </div>
+        <div class="board-actions">
+          <div class="board-share"><button type="button" id="board-share-toggle" class="board-icon-button" aria-label="Share lineup" aria-expanded="false" aria-controls="board-share-actions" title="Share lineup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m-4 4 4-4 4 4M6 11H4v10h16V11h-2"/></svg></button>
+            <div id="board-share-actions" class="board-share-actions" hidden><span class="popover-label">SHARE YOUR LINEUP</span><button type="button" id="share-link"><strong>Share matchup</strong><span>Send both teams with a link</span></button><button type="button" id="export-button"><strong>Save board image</strong><span>Download a full-resolution PNG</span></button></div>
+          </div>
+          <button type="button" id="clear-button" class="board-icon-button clear-board-button" aria-label="Clear board" title="Clear board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg></button>
+        </div>
+      </div>
       <div class="field" id="field">
         <svg id="field-surface" class="field-surface" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
         <div id="positions"></div>
@@ -103,9 +116,11 @@
   </main>
   <div class="picker-backdrop" id="picker-backdrop" hidden></div>
   <div class="live-message" id="live-message" role="status" aria-live="polite"></div>
-  <dialog id="auction-setup-dialog" class="auction-setup-dialog" aria-labelledby="auction-setup-title">
-    <div class="dialog-heading"><div><span class="eyebrow">BUILD THROUGH THE BIDDING</span><h2 id="auction-setup-title">Auction draft</h2></div><button type="button" class="icon-button" data-close="auction-setup-dialog" aria-label="Close auction setup">×</button></div>
-    <p id="auction-rules" class="auction-rules">$1,000 each. 46 random Pokémon, revealed one at a time. Highest bid wins; all ties, including $0–$0, are settled randomly. Each team gets exactly 23 players, including a kicker.</p>
+  <dialog id="auction-setup-dialog" class="auction-setup-dialog play-setup-dialog" aria-labelledby="auction-setup-title">
+    <div class="dialog-heading"><div><span class="eyebrow">THE NEXT GREAT LINEUP</span><h2 id="auction-setup-title">New game</h2></div><button type="button" class="icon-button" data-close="auction-setup-dialog" aria-label="Close game setup">×</button></div>
+    <div class="play-mode-switch" role="group" aria-label="Where to play"><button type="button" id="local-mode-tab" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>This device</button><button type="button" id="online-lobby-button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m2-16a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 4v2"/></svg>Online</button></div>
+    <p id="auction-rules" class="play-mode-help">Pass one screen around. Bid, build your teams, then play a match.</p>
+    <button type="button" id="auction-start-button" class="resume-auction-button" hidden><span>Resume saved auction</span><span aria-hidden="true">→</span></button>
     <form id="auction-setup-form" novalidate>
       <div class="auction-setup-options">
         <div><label class="auction-count-label" for="auction-team-count">Teams</label><select id="auction-team-count"><option value="2" selected>2 teams</option><option value="3">3 teams</option><option value="4">4 teams</option></select></div>
@@ -118,10 +133,11 @@
         <label data-auction-name="2" hidden>Team 3 name<input id="auction-name-2" type="text" maxlength="48" placeholder="Team 3" autocomplete="off" enterkeyhint="next"></label>
         <label data-auction-name="3" hidden>Team 4 name<input id="auction-name-3" type="text" maxlength="48" placeholder="Team 4" autocomplete="off" enterkeyhint="done"></label>
       </div>
-      <p class="auction-save-note" id="auction-setup-note">Your regular drafts are kept separately. Hall of Fame Pokémon stay retired.</p>
+      <p class="auction-save-note" id="auction-setup-note">Your practice lineup stays saved. Retired Pokémon sit this one out.</p>
       <p id="auction-setup-error" class="auction-error" role="alert" hidden></p>
-      <div class="dialog-actions"><button type="submit" id="auction-create-button" class="primary-button">Start auction</button></div>
+      <div class="dialog-actions"><button type="submit" id="auction-create-button" class="primary-button">Start local auction</button></div>
     </form>
+    <button type="button" id="practice-mode-button" class="practice-mode-button">Just build a lineup <span aria-hidden="true">→</span></button>
   </dialog>
   <dialog id="auction-dialog" class="auction-dialog" aria-labelledby="auction-title">
     <div class="dialog-heading"><div><span class="eyebrow" id="auction-round">POKÉMON 1 OF 46</span><h2 id="auction-title">Place your bids</h2></div><button type="button" class="icon-button" data-close="auction-dialog" aria-label="Pause auction">×</button></div>
@@ -179,9 +195,9 @@
     <div id="hall-list" class="hall-list"></div>
     <p id="hall-storage" class="hall-storage">Careers and the Hall of Fame are saved on this device.</p>
   </dialog>
-  <dialog id="clear-dialog"><form method="dialog"><span class="eyebrow">NEW DRAFT</span><h2>Clear your lineup?</h2><p>This team’s positions will be emptied. The other team and your personnel choices will stay the same.</p><div class="dialog-actions"><button value="cancel" class="secondary-button">Keep lineup</button><button value="clear" class="primary-button">Clear board</button></div></form></dialog>
+  <dialog id="clear-dialog" aria-labelledby="clear-title"><form method="dialog"><span class="eyebrow">START WITH A CLEAN FIELD</span><h2 id="clear-title">Clear this lineup?</h2><p>This team’s positions will be emptied. The other team and your personnel choices will stay the same.</p><div class="dialog-actions"><button value="cancel" class="secondary-button">Keep lineup</button><button value="clear" class="primary-button">Clear board</button></div></form></dialog>
   <dialog id="export-dialog" class="export-dialog" aria-labelledby="export-title">
-    <div class="dialog-heading"><div><span class="eyebrow">YOUR ALL 22</span><h2 id="export-title">Share your lineup</h2></div><button type="button" class="icon-button" data-close="export-dialog" aria-label="Close image preview">×</button></div>
+    <div class="dialog-heading"><div><span class="eyebrow">YOUR STARTING LINEUP</span><h2 id="export-title">Share your lineup</h2></div><button type="button" class="icon-button" data-close="export-dialog" aria-label="Close image preview">×</button></div>
     <p id="export-status" role="status">Preparing your image…</p>
     <img id="export-preview" class="export-preview" alt="Your complete Pokémon offense and defense" hidden>
     <div class="dialog-actions"><a id="save-image" class="secondary-button" hidden>Save image</a><button type="button" id="share-image" class="primary-button" disabled hidden>Share image</button></div>
@@ -193,13 +209,6 @@
     <label class="link-label" for="lineup-url">Matchup link</label><input id="lineup-url" class="lineup-url" type="text" readonly>
     <div class="dialog-actions"><button type="button" id="copy-link" class="primary-button">Copy link</button><button type="button" id="send-link" class="secondary-button" hidden>Send link</button></div>
     <p id="link-status" class="dialog-hint" role="status"></p>
-  </dialog>
-  <dialog id="room-dialog" aria-labelledby="room-title">
-    <div class="dialog-heading"><div><span class="eyebrow">MORE FIELD. MORE ROOM.</span><h2 id="room-title">Play with more space</h2></div><button type="button" class="icon-button" data-close="room-dialog" aria-label="Close screen space help">×</button></div>
-    <div id="safari-help"><p>In iPhone Safari, open the page menu beside the address bar, then choose <strong>Hide Toolbar</strong>. Depending on your iOS version, it may be under <strong>More</strong>.</p><p class="room-followup">For an app view without Safari’s address bar, tap <strong>Share → Add to Home Screen</strong>. Turn on <strong>Open as Web App</strong> if shown, then tap <strong>Add</strong> and open the new icon.</p></div>
-    <p id="standalone-help" hidden>You’re already in the Home Screen app view. Safari’s toolbar is hidden.</p>
-    <button type="button" id="fullscreen-button" class="primary-button fullscreen-button" hidden>Enter fullscreen</button>
-    <div class="dialog-actions"><button type="button" class="secondary-button" data-close="room-dialog">Got it</button></div>
   </dialog>
   <dialog id="stats-dialog" aria-labelledby="stats-title">
     <div class="dialog-heading"><div><span class="eyebrow">THE SCOUTING REPORT</span><h2 id="stats-title">Know your prospects</h2></div><button type="button" class="icon-button" data-close="stats-dialog" aria-label="Close stats guide">×</button></div>

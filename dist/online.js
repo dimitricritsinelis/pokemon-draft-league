@@ -108,6 +108,7 @@
   }
   function open() {
     if (!initialized) return;
+    adapter.beforeOpen?.();
     $('online-dialog').showModal(); roomOpen = true; render();
     requestAnimationFrame(() => { (active() ? $('online-room-close') : $('online-dismiss')).focus({ preventScroll: true }); syncViewport(); });
   }
@@ -145,7 +146,6 @@
   function renderStatus() {
     const joined = active();
     document.querySelectorAll('[data-online-chat]').forEach(button => { button.hidden = !joined; });
-    $('online-lobby-button').textContent = joined ? `Room ${current.lobby.code}` : 'Online lobby';
     $('online-live-bar').hidden = !joined;
     $('online-chat-button').hidden = !joined;
     if (!joined) return;
@@ -169,6 +169,8 @@
   }
   function renderRoom() {
     const joined = active(); $('online-setup').hidden = joined; $('online-room').hidden = !joined;
+    $('online-play-modes').hidden = joined;
+    $('online-title').textContent = joined ? 'Draft room' : 'New game';
     if (!joined) return;
     const lobby = current.lobby;
     $('online-room-code').textContent = lobby.code;
@@ -257,19 +259,19 @@
   }
   function init(options = {}) {
     adapter = options; if (initialized) { render(); return; } initialized = true;
-    const menuButton = node('button', 'menu-action', 'Online lobby'); menuButton.type = 'button'; menuButton.id = 'online-lobby-button';
-    (document.querySelector('.menu-actions') || $('draft-menu') || document.body).append(menuButton);
+    const menuButton = $('online-lobby-button');
     const bar = node('div', 'online-live-bar'); bar.id = 'online-live-bar'; bar.hidden = true;
     bar.innerHTML = '<button type="button" id="online-live-room"><i id="online-live-dot" aria-hidden="true"></i><span>ROOM <strong id="online-live-code"></strong></span><span id="online-live-role"></span></button><button type="button" id="online-chat-button" aria-expanded="false" aria-controls="online-side-panel">Chat <span id="online-unread" hidden>0</span></button>';
     (document.querySelector('main.game') || document.querySelector('main')).before(bar);
-    const dialog = node('dialog', 'online-dialog'); dialog.id = 'online-dialog'; dialog.setAttribute('aria-labelledby', 'online-title');
-    dialog.innerHTML = `<div class="dialog-heading"><div><span class="eyebrow">DRAFT TOGETHER</span><h2 id="online-title">Online lobby</h2></div><button type="button" id="online-dismiss" class="icon-button" aria-label="Close lobby">×</button></div>
+    const dialog = node('dialog', 'online-dialog play-setup-dialog'); dialog.id = 'online-dialog'; dialog.setAttribute('aria-labelledby', 'online-title');
+    dialog.innerHTML = `<div class="dialog-heading"><div><span class="eyebrow">THE NEXT GREAT LINEUP</span><h2 id="online-title">New game</h2></div><button type="button" id="online-dismiss" class="icon-button" aria-label="Close lobby">×</button></div>
+      <div id="online-play-modes" class="play-mode-switch" role="group" aria-label="Where to play"><button type="button" id="online-local-mode" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>This device</button><button type="button" id="online-mode-current" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3m2-16a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 4v2"/></svg>Online</button></div>
       <p id="online-error" class="online-error" role="alert" hidden></p>
-      <div id="online-setup"><div class="online-setup-tabs" role="group" aria-label="Lobby action"><button type="button" id="online-host-tab" aria-pressed="true">Host a lobby</button><button type="button" id="online-join-tab" aria-pressed="false">Join friends</button></div>
+      <div id="online-setup"><div class="online-setup-tabs" role="group" aria-label="Lobby action"><button type="button" id="online-host-tab" aria-pressed="true">Host a room</button><button type="button" id="online-join-tab" aria-pressed="false">Join a room</button></div>
       <form id="online-host-form"><label class="online-label" for="online-nickname">Your display name</label><input id="online-nickname" class="online-input" maxlength="24" placeholder="Your name" autocomplete="nickname">
       <div class="online-setup-options"><label>Teams<select id="online-team-count"><option value="2">2 teams</option><option value="3">3 teams</option><option value="4">4 teams</option></select></label><label>Pokémon pool<select id="online-pool"><option value="gen1">Gen 1 · Kanto</option><option value="gen2">Gen 2 · Johto</option><option value="gen3">Gen 3 · Hoenn</option><option value="both" selected>All · 386 Pokémon</option></select></label></div><p class="online-help" id="online-setup-total">46 Pokémon · 23 per team, including a kicker</p>
       <div class="online-team-names">${Array.from({length:4},(_,i)=>`<label data-online-name="${i}"${i>1?' hidden':''}>Team ${i+1}<input id="online-name-${i}" class="online-input" maxlength="24" placeholder="Team ${i+1}" autocomplete="off"></label>`).join('')}</div>
-      <p class="online-help">You control the auction and games. Your friends can view teams and chat from their own devices.</p><button type="submit" id="online-create-button" class="primary-button online-wide">Create lobby</button></form>
+      <p class="online-help">You run the draft. Friends join on their own devices to follow along and chat.</p><button type="submit" id="online-create-button" class="primary-button online-wide">Create online room</button></form>
       <form id="online-join-form" hidden><label class="online-label" for="online-code">Four-digit room code</label><input id="online-code" class="online-input online-code-input" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="0000" autocomplete="off"><label class="online-label" for="online-join-nickname">Your display name</label><input id="online-join-nickname" class="online-input" maxlength="24" placeholder="Your name" autocomplete="nickname"><p class="online-help">Join the live draft, browse every roster, and talk in the room chat.</p><button type="submit" id="online-join-button" class="primary-button online-wide">Join lobby</button></form></div>
       <div id="online-room" hidden><div class="online-code-block"><span>INVITE CODE</span><strong id="online-room-code"></strong><p id="online-room-summary"></p></div><div class="online-room-actions"><button type="button" id="online-invite-button" class="secondary-button">Invite friends</button><button type="button" id="online-room-chat" class="secondary-button">Open chat</button></div><input id="online-share-url" class="online-input" readonly hidden aria-label="Lobby invitation link"><p id="online-room-phase" class="online-room-phase"></p><div id="online-members" class="online-members"></div><p id="online-host-note" class="online-help"></p><p class="online-help online-expiry-note">Room expires after one hour without a draft action or chat message. Career records stay saved.</p><p id="online-room-error" class="online-error" role="alert" hidden></p><button type="button" id="online-start-button" class="primary-button online-wide">Start auction</button><div class="online-room-footer"><button type="button" id="online-room-close" class="text-button">Back to field</button><button type="button" id="online-leave-button" class="text-button">Leave lobby</button></div></div>`;
     const panel = node('aside', 'online-side-panel'); panel.id = 'online-side-panel'; panel.hidden = true; panel.setAttribute('aria-labelledby', 'online-chat-title');
@@ -283,6 +285,7 @@
       modal.addEventListener('close', () => { if (modal.contains(panel)) document.body.append(panel); });
     });
     $('online-nickname').value = saved.nickname || ''; $('online-join-nickname').value = saved.nickname || '';
+    $('online-local-mode').addEventListener('click', () => { close(); adapter.onLocalSetup?.(); });
     menuButton.addEventListener('click', open); $('online-live-room').addEventListener('click', open); $('online-dismiss').addEventListener('click', close); $('online-room-close').addEventListener('click', close);
     $('online-leave-button').addEventListener('click', leave); $('online-invite-button').addEventListener('click', shareRoom);
     $('online-chat-button').addEventListener('click', () => togglePanel()); $('online-panel-close').addEventListener('click', () => togglePanel(false)); $('online-room-chat').addEventListener('click', () => { close(); togglePanel(true); });
@@ -291,7 +294,7 @@
     function setTab(join) { $('online-host-tab').setAttribute('aria-pressed', String(!join)); $('online-join-tab').setAttribute('aria-pressed', String(join)); $('online-host-form').hidden = join; $('online-join-form').hidden = !join; showError(''); }
     $('online-host-tab').addEventListener('click', () => setTab(false)); $('online-join-tab').addEventListener('click', () => setTab(true));
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && panelOpen && !dialog.open) togglePanel(false); });
-    dialog.addEventListener('close', () => { roomOpen = false; });
+    dialog.addEventListener('close', () => { roomOpen = false; if (!document.querySelector('dialog[open]')) $('new-game-button').focus({ preventScroll: true }); });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { stopPoll(); poll(); } });
     window.addEventListener('online', () => { stopPoll(); poll(); }); window.visualViewport?.addEventListener('resize', syncViewport); window.visualViewport?.addEventListener('scroll', syncViewport);
     window.addEventListener('resize', syncViewport);

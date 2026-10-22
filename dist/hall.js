@@ -10,7 +10,6 @@
   $('hall-view').after(shameView);
   $('career-view').textContent = 'All careers';
   $('hall-title').textContent = 'Halls & careers';
-  $('hall-button').textContent = 'Halls & careers';
   $('hall-dialog').querySelector('.eyebrow').textContent = 'LEAGUE LEGACIES';
   $('hall-dialog').querySelector('.hall-intro').textContent = 'Celebrate the greats or immortalize the worst. Either hall locks a Pokémon’s career, reveals its positional values, and retires it until removed.';
   const node = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text !== undefined) e.textContent = text; return e; };

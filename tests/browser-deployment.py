@@ -57,7 +57,11 @@ def state(page):return page.evaluate('DraftOnline.state()')
 def phase(page,p):page.wait_for_function('(p)=>DraftOnline.state()?.lobby?.phase===p',arg=p,timeout=45000)
 def menu(page):
  if not page.locator('#draft-menu').is_visible():page.locator('#menu-toggle').click()
-def open_room(page):menu(page);page.locator('#online-lobby-button').click()
+def open_room(page):
+ page.locator('#new-game-button').click()
+ page.wait_for_selector('#auction-setup-dialog[open]')
+ page.locator('#online-lobby-button').click()
+ page.wait_for_selector('#online-dialog[open]')
 def close_dialogs(page):page.evaluate("document.querySelectorAll('dialog[open]').forEach(d=>d.close())")
 def open_chat(page):
  close_dialogs(page)
@@ -95,7 +99,6 @@ def complete(page):
 def reproduction(browsers):
  for label,browser,viewport in browsers:
   ctx=browser.new_context(viewport=viewport,has_touch=label=='webkit');page=ctx.new_page();boot(page)
-  menu(page);check(label+' generation options',page.locator('.generation-switch button').count()==4)
   open_room(page);page.locator('#online-nickname').fill('QA deploy probe')
   check(label+' team options',page.locator('#online-team-count option').count()==3)
   check(label+' pool options',page.locator('#online-pool option').count()==4)
@@ -118,7 +121,12 @@ def scenario(host_browser,guest_browser,host_view,guest_view,count,pool,label):
  for n in [2,3,4,count]:
   h.evaluate('(n)=>DraftOnline.request("configure",{teamCount:n})',n);check(label+' configured '+str(n)+' teams',state(h)['lobby']['teamCount']==n)
  h.evaluate('(mode)=>DraftOnline.request("configure",{mode})',pool)
- code=state(h)['lobby']['code'];g.goto(BASE+'/?lobby='+code,wait_until='networkidle');g.locator('#online-join-nickname').fill('QA Guest '+label);g.locator('#online-join-button').click();g.wait_for_function('DraftOnline.active()&&!DraftOnline.isHost()',timeout=45000)
+ code=state(h)['lobby']['code']
+ if label=='phone-host':
+  open_room(g);g.locator('#online-join-tab').click();g.locator('#online-code').fill(code)
+  check(label+' manual four-digit join code',g.locator('#online-code').input_value()==code)
+ else:g.goto(BASE+'/?lobby='+code,wait_until='networkidle')
+ g.locator('#online-join-nickname').fill('QA Guest '+label);g.locator('#online-join-button').click();g.wait_for_function('DraftOnline.active()&&!DraftOnline.isHost()',timeout=45000)
  check(label+' guest cannot start',g.locator('#online-start-button').is_hidden())
  check(label+' host command rejected for guest',g.evaluate("DraftOnline.request('start').then(()=>false,e=>/host/i.test(e.message))"))
  probe='QA '+label+' <img src=x onerror="window.__chatXss=true">'

@@ -12,8 +12,10 @@ def boot(p):
  p.goto(BASE,wait_until='networkidle')
  p.wait_for_function('!!window.DraftOnline')
 def menu(p):
- if not p.locator('#draft-menu').is_visible():p.locator('#menu-toggle').click()
- menu_button=p.locator('#online-lobby-button');menu_button.click()
+ p.locator('#new-game-button').click()
+ p.wait_for_selector('#auction-setup-dialog[open]')
+ p.locator('#online-lobby-button').click()
+ p.wait_for_selector('#online-dialog[open]')
 def run(b,engine):
  hc=b.new_context(viewport={'width':393,'height':730});gc=b.new_context(viewport={'width':393,'height':730});h=hc.new_page();g=gc.new_page();boot(h);boot(g)
  menu(h);h.locator('#online-nickname').fill('Coach');h.locator('#online-create-button').click();h.wait_for_function('DraftOnline.isHost()');code=h.evaluate('DraftOnline.state().lobby.code')

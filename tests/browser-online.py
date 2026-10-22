@@ -23,8 +23,10 @@ def menu(page):
     if not page.locator('#draft-menu').is_visible(): page.locator('#menu-toggle').click()
 
 def open_room(page):
-    menu(page)
+    page.locator('#new-game-button').click()
+    page.wait_for_selector('#auction-setup-dialog[open]')
     page.locator('#online-lobby-button').click()
+    page.wait_for_selector('#online-dialog[open]')
 
 def snapshot(page):
     return page.evaluate('DraftOnline.state()')

@@ -158,7 +158,6 @@ dialog .dialog-hint { margin-top: 12px; font-size: 12px; }
 .link-label { display: block; margin-top: 18px; font-size: 13px; font-weight: 600; }
 .lineup-url { width: 100%; margin-top: 8px; padding: 12px 10px; font-size: 16px; border: 1px solid #d6ddce; border-radius: 6px; color: #53644b; background: #f8faf4; }
 .room-followup { margin-top: 18px; }
-.fullscreen-button { min-height: 44px; border: 0; border-radius: 6px; padding: 12px 16px; margin-top: 18px; width: 100%; font-weight: 600; }
 :fullscreen { overflow-y: auto; background: #f3f4ee; }
 @media (max-width: 1150px) {
   .draft-tools { padding: 0 18px 14px; }
@@ -254,10 +253,6 @@ h1 { font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; t
 .personnel-trigger:after { border-color: #567048; }
 .personnel-trigger[aria-expanded="true"] { background: #eef3e6; border-color: #a8bb94; }
 .personnel-options { top: calc(100% + 5px); }
-.menu-actions { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e8ecdf; }
-.menu-action { min-height: 44px; padding: 7px 9px; border: 1px solid #dce2d3; border-radius: 6px; background: #f9fbf5; font-size: 12px; font-weight: 600; color: #455e37; }
-.menu-action:hover { background: #edf3e5; border-color: #b7c7a7; }
-.danger-action { color: #975d46; }
 .shared-notice { margin-top: 12px; }
 .game { padding-top: 0; margin-bottom: 0; }
 .board-panel { overflow: hidden; }
@@ -270,7 +265,6 @@ h1 { font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; t
   .game { padding: 0 4px; }
   .board-panel { border-radius: 8px; }
   .field { border-radius: 7px; }
-  .menu-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .picker-panel { top: var(--picker-top, 8px); height: var(--picker-height, calc(100dvh - 16px)); min-height: 0; }
 }
 @media (max-width: 560px) {
@@ -278,7 +272,6 @@ h1 { font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; t
   .draft-tools { width: calc(100% - 16px); padding: 12px; }
   .menu-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .menu-group { grid-column: 1 / -1; }
-  .menu-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .personnel-trigger strong { font-size: 13px; }
   .personnel-trigger > span { font-size: 10px; }
   .position { width: clamp(40px, 12.3vw, 49px); }

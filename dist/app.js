@@ -45,7 +45,6 @@
   let catalogCards;
   let emptyResult;
   let viewportFrame;
-  let menuScrollY = 0;
   const offenseDetails = { '10': '0 TE · 1 RB · 4 WR', '11': '1 TE · 1 RB · 3 WR', '12': '2 TE · 1 RB · 2 WR', '21': '1 TE · 2 RB · 2 WR', '22': '2 TE · 2 RB · 1 WR' };
   const defenseDetails = { '3-4': '3 DL · 4 LB · 4 DB', '4-3': '4 DL · 3 LB · 4 DB', nickel: '4 DL · 2 LB · 5 DB', dime: '4 DL · 1 LB · 6 DB' };
   const offenseLabels = { '10': '10 personnel', '11': '11 personnel', '12': '12 personnel', '21': '21 personnel', '22': '22 personnel' };
@@ -261,9 +260,9 @@
 
   function filledCount(board) { return slots(false, board).filter(s => byId.has(board.picks[s.key])).length; }
   function renderTeams() {
-    const pair = teamPair(), many = pair.length > 2;
-    $('team-tabs').hidden = many;
-    $('team-switcher').hidden = !many;
+    const pair = teamPair(), many = pair.length > 2, switcher = many || phone.matches;
+    $('team-tabs').hidden = switcher;
+    $('team-switcher').hidden = !switcher;
     pair.forEach((board, index) => {
       const count = filledCount(index === state.team ? snapshot() : board);
       const button = document.querySelector(`[data-team="${index}"]`);
@@ -276,7 +275,7 @@
         $('team-count-' + index).textContent = `${count}/${rosterSize()}`;
       }
     });
-    if (many) {
+    if (switcher) {
       $('team-switcher').replaceChildren(...pair.map((board, index) => {
         const option = document.createElement('option'); option.value = String(index);
         option.textContent = `${teamName(index)} · ${filledCount(index === state.team ? snapshot() : board)}/${rosterSize()}`;
@@ -288,10 +287,12 @@
     $('simulate-match').setAttribute('aria-disabled', String(!ready || !editable()));
     $('simulate-match').disabled = !editable();
     $('simulate-match').title = ready ? many ? 'Choose two teams for a four-quarter game' : 'Play a four-quarter game' : 'Fill every position, including a kicker, on every team';
+    $('new-game-button').querySelector('.new-game-label').textContent = online() ? 'Draft room' : 'New game';
+    $('new-game-button').classList.toggle('in-room', online());
     const board = document.querySelector('.board-panel');
     board.setAttribute('aria-label', `${teamName()} football draft board`);
-    board.setAttribute('role', many ? 'region' : 'tabpanel');
-    if (many) board.removeAttribute('aria-labelledby');
+    board.setAttribute('role', switcher ? 'region' : 'tabpanel');
+    if (switcher) board.removeAttribute('aria-labelledby');
     else board.setAttribute('aria-labelledby', `team-tab-${state.team}`);
   }
 
@@ -301,6 +302,9 @@
     ['team-name', 'save-team-name', 'offense', 'defense'].forEach(id => { $(id).disabled = !editable(); });
     document.querySelectorAll('[data-mode]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode)));
     $('formation-summary').textContent = `${teamName()} · ${{ gen1: 'Gen 1', gen2: 'Gen 2', gen3: 'Gen 3', both: 'All' }[state.mode]} · ${state.offense} OFF · ${{ '3-4': '3–4', '4-3': '4–3', nickel: 'Nickel', dime: 'Dime' }[state.defense]} DEF`;
+    $('board-mode-label').textContent = `${online() ? 'Online auction' : auctionActive ? 'Local auction' : 'Practice'} · ${modeLabels[state.mode]}`;
+    $('clear-button').hidden = auctionActive;
+    document.querySelector('.practice-settings').hidden = auctionActive;
     $('picker-generation').textContent = { gen1: 'THE ORIGINAL 151', gen2: 'THE JOHTO 100', gen3: 'THE HOENN 135', both: 'ALL 386 POKÉMON' }[state.mode];
     $('catalog-generation').textContent = { gen1: 'GENERATION I', gen2: 'GENERATION II', gen3: 'GENERATION III', both: 'GENERATIONS I–III' }[state.mode];
     $('field-footer').textContent = { gen1: 'KANTO', gen2: 'JOHTO', gen3: 'HOENN', both: 'KANTO + JOHTO + HOENN' }[state.mode] + ' DRAFT LEAGUE';
@@ -535,20 +539,45 @@
     });
   }
 
+  function setShareOpen(open, restoreFocus = false) {
+    $('board-share-actions').hidden = !open;
+    $('board-share-toggle').setAttribute('aria-expanded', String(open));
+    if (open) { setMenuOpen(false); closePersonnelMenus(); $('share-link').focus({ preventScroll: true }); }
+    else if (restoreFocus) $('board-share-toggle').focus({ preventScroll: true });
+  }
+
+  function syncInterfaceViewport() {
+    const viewport = window.visualViewport;
+    const height = viewport?.height || innerHeight;
+    const keyboard = height < innerHeight * .82 && /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName);
+    document.documentElement.style.setProperty('--interface-view-top', `${(viewport?.offsetTop || 0) + 8}px`);
+    document.documentElement.style.setProperty('--interface-view-height', `${Math.max(180, height - 16)}px`);
+    document.querySelectorAll('.play-setup-dialog, #draft-menu').forEach(panel => panel.classList.toggle('keyboard-open', keyboard && panel.contains(document.activeElement)));
+    if (keyboard) {
+      const input = document.activeElement, panel = input.closest('.play-setup-dialog, #draft-menu');
+      if (panel) requestAnimationFrame(() => {
+        if (document.activeElement !== input) return;
+        const field = input.getBoundingClientRect(), bounds = panel.getBoundingClientRect();
+        if (field.bottom > bounds.bottom - 12) panel.scrollTop += field.bottom - bounds.bottom + 12;
+        else if (field.top < bounds.top + 12) panel.scrollTop += field.top - bounds.top - 12;
+      });
+    }
+  }
+
   function setMenuOpen(open, restoreFocus = false) {
     const menu = $('draft-menu');
     if (open === !menu.hidden) return;
-    if (open) menuScrollY = window.scrollY;
     closePersonnelMenus();
+    if (open) setShareOpen(false);
     menu.hidden = !open;
+    $('menu-backdrop').hidden = !open;
+    document.body.classList.toggle('settings-open', open);
+    menu.setAttribute('role', 'dialog');
+    menu.setAttribute('aria-modal', String(open && phone.matches));
     $('menu-toggle').setAttribute('aria-expanded', String(open));
-    $('menu-toggle').setAttribute('aria-label', open ? 'Close draft options' : 'Open draft options');
-    if (open) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-    } else {
-      if (restoreFocus || menu.contains(document.activeElement)) $('menu-toggle').focus({ preventScroll: true });
-      window.scrollTo({ top: menuScrollY, behavior: 'instant' });
-    }
+    $('menu-toggle').setAttribute('aria-label', open ? 'Close team settings' : 'Open team settings');
+    if (open) { $('settings-close').focus({ preventScroll: true }); syncInterfaceViewport(); }
+    else if (restoreFocus || menu.contains(document.activeElement)) $('menu-toggle').focus({ preventScroll: true });
   }
 
   function openPersonnelMenu(side) {
@@ -877,17 +906,20 @@
     if (shared) state.mode = sharedCopy.mode;
     applyBoard(teamPair()[state.team]); saveDraft(); saveAuction(); renderBoard(); renderCatalog();
     setMenuOpen(false, true);
-    if (announce) message('Regular drafts restored. Your auction is saved separately.');
+    if (announce) message('Back to practice. Your auction is saved for later.');
   }
 
   function openAuctionSetup() {
     if (online()) { window.DraftOnline.open(); return; }
-    closePicker(false); setMenuOpen(false, true); saveDraft();
+    closePicker(false); setShareOpen(false); setMenuOpen(false); saveDraft();
     [0, 1, 2, 3].forEach(i => { $('auction-name-' + i).value = teamPair()[i] ? teamName(i) : 'Team ' + (i + 1); });
     $('auction-team-count').value = String(auction?.session.teamCount || 2);
     renderAuctionSetup();
     $('auction-pool').value = state.mode;
-    $('auction-setup-note').textContent = auction ? 'Starting a new auction replaces your saved auction. Your regular drafts and careers are kept.' : 'Your regular drafts are kept separately. Hall of Fame Pokémon stay retired.';
+    $('auction-start-button').hidden = !auction;
+    $('auction-start-button').textContent = auction ? `Resume ${auction.session.teamCount}-team auction →` : 'Resume saved auction';
+    $('auction-setup-note').textContent = auction ? 'Starting fresh replaces your saved local auction. Your practice lineup and careers stay saved.' : 'Your practice lineup stays saved. Retired Pokémon sit this one out.';
+    $('auction-create-button').textContent = auction ? 'Start a new local auction' : 'Start local auction';
     $('auction-setup-error').hidden = true;
     $('auction-setup-dialog').showModal();
     // Focus a button so Safari does not cover the setup with its keyboard.
@@ -917,10 +949,10 @@
     document.body.dataset.auctionTeams = String(auctionActive ? auction.session.teamCount : 2);
     $('auction-strip').hidden = !auctionActive;
     $('auction-exit-button').hidden = !auctionActive;
-    $('auction-new-button').hidden = !auction;
-    $('auction-start-button').textContent = auctionActive ? 'Auction room' : auction ? 'Resume auction' : 'Auction draft';
-    document.querySelectorAll('[data-mode]').forEach(b => { b.disabled = auctionActive; b.title = auctionActive ? 'Return to Regular draft to change the pool' : ''; });
-    ['sample-button', 'clear-button'].forEach(id => { $(id).disabled = auctionActive; $(id).title = auctionActive ? 'Auction players belong to their winning team. Use New auction to restart.' : ''; });
+    $('auction-start-button').hidden = !auction;
+    $('auction-start-button').textContent = auction ? `Resume ${auction.session.teamCount}-team auction →` : 'Resume saved auction';
+    document.querySelectorAll('[data-mode]').forEach(b => { b.disabled = auctionActive; b.title = auctionActive ? 'Return to practice to change the pool' : ''; });
+    ['sample-button', 'clear-button'].forEach(id => { $(id).disabled = auctionActive; $(id).title = auctionActive ? 'Auction players belong to their winning team. Start a new game to restart.' : id === 'clear-button' ? 'Clear board' : 'Use a sample lineup'; });
     if (!auctionActive) return;
     const remaining = auctionBudgets(), phase = auctionPhase();
     if (phase === 'bidding') renderAuctionSkip();
@@ -1077,8 +1109,8 @@
   function renderAuctionSetup() {
     const count = Number($('auction-team-count').value);
     document.querySelectorAll('[data-auction-name]').forEach(el => { el.hidden = Number(el.dataset.auctionName) >= count; });
-    $('auction-rules').textContent = `$1,000 each. ${count * 23} random Pokémon, revealed one at a time. Highest bid wins; ties, including all $0 bids, are settled randomly among teams with room left. Each team gets 23 players, including a kicker.`;
-    $('auction-setup-summary').textContent = `${count} teams · ${count * 23} Pokémon · $1,000 per team`;
+    $('auction-rules').textContent = 'Pass one screen around. Bid for Pokémon, build your teams, then play a match.';
+    $('auction-setup-summary').textContent = `${count * 23} Pokémon · $1,000 each · 23-player rosters`;
     $('auction-setup-error').hidden = true;
   }
 
@@ -1125,9 +1157,10 @@
     else simulateMatch(indices);
   });
 
-  $('auction-start-button').addEventListener('click', () => auction ? enterAuction() : openAuctionSetup());
+  $('new-game-button').addEventListener('click', openAuctionSetup);
+  $('auction-start-button').addEventListener('click', () => { $('auction-setup-dialog').close(); if (auction) enterAuction(); });
+  $('practice-mode-button').addEventListener('click', () => { $('auction-setup-dialog').close(); if (auctionActive) exitAuction(); });
   $('auction-exit-button').addEventListener('click', () => exitAuction());
-  $('auction-new-button').addEventListener('click', openAuctionSetup);
   $('auction-resume-button').addEventListener('click', openAuctionRound);
   $('auction-setup-form').addEventListener('submit', event => { event.preventDefault(); startAuction(); });
   $('auction-bid-form').addEventListener('submit', event => { event.preventDefault(); resolveAuctionBid(); });
@@ -1149,6 +1182,7 @@
   window.visualViewport?.addEventListener('scroll', syncAuctionViewport);
   window.addEventListener('resize', syncAuctionViewport);
   $('auction-dialog').addEventListener('close', syncAuctionViewport);
+  $('auction-setup-dialog').addEventListener('close', () => { if (!document.querySelector('dialog[open]')) $('new-game-button').focus({ preventScroll: true }); });
 
   document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => changeMode(button.dataset.mode)));
   function renameTeam() {
@@ -1156,7 +1190,6 @@
     state.name = cleanName($('team-name').value); invalidateMatch(); saveDraft(); renderBoard();
     message(`${teamName()} is ready`);
   }
-  $('save-team-name').addEventListener('click', renameTeam);
   document.querySelector('.team-name-form').addEventListener('submit', e => { e.preventDefault(); renameTeam(); });
   $('team-name').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); renameTeam(); } });
   $('hall-button').addEventListener('click', () => {
@@ -1164,14 +1197,29 @@
     if (window.DraftCareers.isRemote()) window.DraftOnline.refreshLeague().then(() => window.DraftHall.refresh()).catch(error => message(error.message || 'League records could not refresh.'));
   });
   $('menu-toggle').addEventListener('click', () => setMenuOpen($('draft-menu').hidden, true));
+  $('settings-close').addEventListener('click', () => setMenuOpen(false, true));
+  $('menu-backdrop').addEventListener('click', () => setMenuOpen(false, true));
+  $('board-share-toggle').addEventListener('click', () => setShareOpen($('board-share-actions').hidden));
+  ['share-link', 'export-button'].forEach(id => $(id).addEventListener('click', () => setShareOpen(false)));
   document.addEventListener('click', event => {
     if (!event.target.closest('#draft-menu, #menu-toggle, dialog')) setMenuOpen(false);
+    if (!event.target.closest('.board-share')) setShareOpen(false);
   });
   document.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || event.defaultPrevented || $('draft-menu').hidden || document.querySelector('dialog[open]')) return;
-    if (['offense', 'defense'].some(side => !$(side + '-options').hidden)) closePersonnelMenus(true);
-    else setMenuOpen(false, true);
-    event.preventDefault();
+    if (event.defaultPrevented || document.querySelector('dialog[open]')) return;
+    if (event.key === 'Escape') {
+      if (['offense', 'defense'].some(side => !$(side + '-options').hidden)) closePersonnelMenus(true);
+      else if (!$('board-share-actions').hidden) setShareOpen(false, true);
+      else if (!$('draft-menu').hidden) setMenuOpen(false, true);
+      else return;
+      event.preventDefault();
+    }
+    if (event.key === 'Tab' && !$('draft-menu').hidden) {
+      const items = [...$('draft-menu').querySelectorAll('button:not(:disabled),input:not(:disabled),a')].filter(el => el.getClientRects().length);
+      const first = items[0], last = items.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
   });
   $('team-switcher').addEventListener('change', event => changeTeam(Number(event.target.value)));
   document.querySelectorAll('[data-team]').forEach(button => button.addEventListener('click', () => changeTeam(Number(button.dataset.team))));
@@ -1204,7 +1252,8 @@
   });
   $('export-button').addEventListener('click', prepareExport);
   $('stats-help').addEventListener('click', () => { setMenuOpen(false, true); $('stats-dialog').showModal(); });
-  $('export-dialog').addEventListener('close', () => { exportRun++; });
+  $('export-dialog').addEventListener('close', () => { exportRun++; $('board-share-toggle').focus({ preventScroll: true }); });
+  $('link-dialog').addEventListener('close', () => $('board-share-toggle').focus({ preventScroll: true }));
   $('share-image').addEventListener('click', () => {
     if (!exportFile || !navigator.share) return;
     // PNG is already prepared: this fresh tap retains Safari's share activation.
@@ -1231,29 +1280,16 @@
     });
   });
   document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
-  $('room-button').addEventListener('click', () => {
-    setMenuOpen(false, true);
-    const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-    $('safari-help').hidden = !!standalone;
-    $('standalone-help').hidden = !standalone;
-    $('fullscreen-button').hidden = !document.fullscreenEnabled || !!standalone;
-    $('fullscreen-button').textContent = document.fullscreenElement ? 'Exit fullscreen' : 'Enter fullscreen';
-    $('room-dialog').showModal();
-  });
-  $('fullscreen-button').addEventListener('click', async () => {
-    try {
-      $('room-dialog').close();
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await document.documentElement.requestFullscreen();
-    } catch (_) { message('Use your browser’s screen controls for more room.'); }
-  });
-
   $('pokemon-search').addEventListener('input', renderCatalog);
   $('pokemon-search').addEventListener('focus', schedulePickerViewport);
   $('pokemon-search').addEventListener('blur', schedulePickerViewport);
   $('pokemon-search').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
   window.visualViewport?.addEventListener('resize', schedulePickerViewport);
   window.visualViewport?.addEventListener('scroll', schedulePickerViewport);
+  window.visualViewport?.addEventListener('resize', syncInterfaceViewport);
+  window.visualViewport?.addEventListener('scroll', syncInterfaceViewport);
+  document.addEventListener('focusin', syncInterfaceViewport);
+  document.addEventListener('focusout', () => requestAnimationFrame(syncInterfaceViewport));
   window.addEventListener('resize', schedulePickerViewport);
   $('close-picker').addEventListener('click', () => closePicker());
   $('picker-backdrop').addEventListener('click', () => closePicker());
@@ -1282,7 +1318,7 @@
     }
   });
   narrow.addEventListener('change', () => closePicker(false));
-  phone.addEventListener('change', renderBoard);
+  phone.addEventListener('change', () => { setMenuOpen(false); renderBoard(); });
 
   window.DraftField.mount($('field-surface'));
   window.DraftHall.configure({ onChange: hallChanged });
@@ -1298,8 +1334,8 @@
     document.body.classList.toggle('online-viewer', !editable());
     document.body.dataset.auctionTeams = String(lobby.teamCount);
     $('auction-strip').hidden = false; $('auction-strip').dataset.phase = lobby.phase;
-    $('auction-exit-button').hidden = false; $('auction-exit-button').textContent = 'Leave online lobby';
-    $('auction-new-button').hidden = true; $('auction-start-button').textContent = 'Online lobby';
+    $('auction-exit-button').hidden = true;
+    $('auction-start-button').hidden = true;
     document.querySelectorAll('[data-mode]').forEach(b => { b.disabled = true; b.title = 'The host selects the pool in lobby setup.'; });
     ['sample-button', 'clear-button'].forEach(id => { $(id).disabled = true; });
     document.querySelectorAll('[data-auction-wallet]').forEach(el => { el.hidden = Number(el.dataset.auctionWallet) >= lobby.teamCount; });
@@ -1350,7 +1386,7 @@
     closePicker(false); invalidateMatch(); $('auction-dialog').close();
     if (restore) { state.mode = restore.mode; state.team = restore.team; shared = restore.shared; auction = restore.auction; auctionActive = restore.auctionActive; regularView = restore.regularView; }
     else { auction = null; auctionActive = false; state.mode = 'gen1'; state.team = 0; }
-    applyBoard(teamPair()[state.team]); $('auction-exit-button').textContent = 'Regular draft'; $('rerun-match').hidden = false;
+    applyBoard(teamPair()[state.team]); $('auction-exit-button').textContent = 'Back to practice'; $('rerun-match').hidden = false;
     renderBoard(); renderCatalog(); window.DraftHall.refresh();
   }
   function applySavedLeague(league) {
@@ -1364,7 +1400,17 @@
     if (auction) reconcileAuctionRetirees();
     saveDraft(); renderBoard(); renderCatalog(); window.DraftHall.refresh();
   }
+  function copyPlaySetup(from, to) {
+    ['team-count', 'pool'].forEach(key => { $(to + '-' + key).value = $(from + '-' + key).value; });
+    [0, 1, 2, 3].forEach(i => { $(to + '-name-' + i).value = $(from + '-name-' + i).value; });
+    $(to + '-team-count').dispatchEvent(new Event('change'));
+  }
   window.DraftOnline.init({ onSnapshot: applyOnlineSnapshot, onExit: leaveOnlineView,
+    beforeOpen: () => {
+      if ($('auction-setup-dialog').open) copyPlaySetup('auction', 'online');
+      setMenuOpen(false); setShareOpen(false); closePicker(false); $('auction-setup-dialog').close();
+    },
+    onLocalSetup: () => { openAuctionSetup(); copyPlaySetup('online', 'auction'); },
     onLeague: applySavedLeague,
     getTeamIndex: () => state.team, onTeamSelect: changeTeam,
     getNeeds: index => { const board = teamPair()[index]; if (!board) return []; const groups = {}; slots(false, board).filter(s => !board.picks[s.key]).forEach(s => { groups[s.role] = (groups[s.role] || 0) + 1; }); return Object.entries(groups).map(([role, count]) => ({ role, count })); }
