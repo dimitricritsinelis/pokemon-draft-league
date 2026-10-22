@@ -1,4 +1,5 @@
 import { OFFENSES, DEFENSES, MODES, ROSTER_SIZE, eligible, slots, cleanName } from './formations.mjs';
+import { DatabaseError } from './supabase-store.mjs';
 
 const HOUR = 60 * 60 * 1000;
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -335,6 +336,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
       fail(404,'NOT_FOUND','This API route was not found.');
     }catch(error){
       if(error instanceof Problem)return response({error:error.message,code:error.code},error.status);
+      if(error instanceof DatabaseError)return response({error:error.message,code:error.code},503);
       if(error?.name==='SyntaxError'||error?.name==='RangeError'||/auction|Pokémon|bid|position|roster|formation|random/i.test(error?.message||''))return response({error:error.message,code:'INVALID_GAME_ACTION'},400);
       console.error('Multiplayer request failed:',error?.name||'Error',error?.message||'Unknown error');
       return response({error:'The game server could not save this update. Please try again.',code:'SERVER_ERROR'},503);

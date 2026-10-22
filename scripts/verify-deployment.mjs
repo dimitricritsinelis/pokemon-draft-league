@@ -4,12 +4,15 @@ const base = new URL(input);
 if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password) throw new Error('Supply the public HTTP(S) site URL without credentials.');
 for (const route of ['/', '/api/health']) {
   const response = await fetch(new URL(route, base), { redirect: 'follow', signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new Error(`${route} returned HTTP ${response.status}.`);
+  if (!response.ok) {
+    const details = await response.json().catch(() => null);
+    throw new Error(`${route} returned HTTP ${response.status}.${details?.code ? ' ' + details.code + ':' : ''}${details?.error ? ' ' + details.error : ''}`);
+  }
   if (route === '/') {
     if (!(await response.text()).includes('Pokémon Draft League')) throw new Error('The URL does not serve the expected game.');
   } else {
     const payload = await response.json();
-    if (payload.ok === false || payload.configured === false) throw new Error('The multiplayer API reports that its database is not ready.');
+    if (payload.ok !== true || payload.persistence !== 'supabase' || payload.rosterSize !== 23) throw new Error('The multiplayer API did not confirm a working Supabase database and 23-player rosters.');
   }
   console.log(`${route} is reachable.`);
 }
