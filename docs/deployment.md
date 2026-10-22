@@ -25,7 +25,7 @@ Never put the secret key in `dist/`, browser JavaScript, a share link, a commit,
 
 ## 2. Create the Vercel project
 
-Put this source in a private GitHub repository owned by you, then import that repository in Vercel. Keep the existing Sites Git remote if you want to retain the old deployment; add a separate GitHub remote instead of replacing it.
+Put this source in a GitHub repository owned by you, then import that repository in Vercel. The owner has approved public source code; secret keys and live game records must remain outside the repository. Keep the existing Sites Git remote if you want to retain the old deployment; add a separate GitHub remote instead of replacing it.
 
 Select the repository root as the project root. `vercel.json` supplies these settings:
 

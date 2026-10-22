@@ -1,5 +1,7 @@
 # Pokémon Draft League
 
+Production source: [dimitricritsinelis/pokemon-draft-league](https://github.com/dimitricritsinelis/pokemon-draft-league). Vercel deployment and Supabase integration require the owner’s one-time account connections.
+
 A responsive HTML/CSS/JavaScript football draft game featuring all 386 Pokémon from generations 1–3. Build two practice teams or host an online auction for 2–4 players, each with a $1,000 budget and a 23-player roster: 11 offense, 11 defense, and one kicker.
 
 ## Run locally
