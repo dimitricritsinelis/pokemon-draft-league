@@ -9,8 +9,8 @@ import { loadEngines } from './engines.mjs';
 const root=fileURLToPath(new URL('../dist',import.meta.url));
 const argIndex=process.argv.indexOf('--port');
 const port=Number(argIndex>=0?process.argv[argIndex+1]:process.env.PORT||3000);
-const configured=Boolean(process.env.SUPABASE_URL&&process.env.SUPABASE_SERVICE_ROLE_KEY);
-const store=configured?createSupabaseStore({url:process.env.SUPABASE_URL,serviceRoleKey:process.env.SUPABASE_SERVICE_ROLE_KEY}):createSQLiteStore(process.env.DRAFT_LOCAL_DB||fileURLToPath(new URL('../.local/draft.sqlite',import.meta.url)));
+const configured=Boolean(process.env.SUPABASE_URL&&(process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY));
+const store=configured?createSupabaseStore({url:process.env.SUPABASE_URL,secretKey:process.env.SUPABASE_SECRET_KEY,serviceRoleKey:process.env.SUPABASE_SERVICE_ROLE_KEY}):createSQLiteStore(process.env.DRAFT_LOCAL_DB||fileURLToPath(new URL('../.local/draft.sqlite',import.meta.url)));
 const service=createService({store,engines:loadEngines()});
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.svg':'image/svg+xml','.webp':'image/webp','.woff2':'font/woff2','.jpg':'image/jpeg','.jpeg':'image/jpeg'};
 const server=http.createServer(async(req,res)=>{

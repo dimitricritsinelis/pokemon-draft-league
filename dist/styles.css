@@ -315,6 +315,12 @@ h1 { font-size: 22px; line-height: 1.1; white-space: nowrap; overflow: hidden; t
 }
 
 /* Two rosters and the match action share the compact header. */
+@media (min-width: 1001px) {
+  .field { container-type: size; height: clamp(540px, calc(100dvh - 84px), 900px); min-height: 0; max-height: 900px; aspect-ratio: auto; }
+  .auction-active:not(.online-active) .field { height: clamp(540px, calc(100dvh - 142px - var(--auction-wallet-extra)), 900px); }
+  .online-active.auction-active .field { height: clamp(540px, calc(100dvh - 198px - var(--auction-wallet-extra)), 900px); }
+  .position { --player-width: clamp(46px, min(8cqw, 14cqh), 100px); --sprite-height: clamp(42px, min(8cqw, 9cqh), 92px); }
+}
 .masthead { height: calc(68px + env(safe-area-inset-top)); gap: 8px; }
 .masthead h1 { font-size: 20px; }
 .team-tabs { display: flex; gap: 3px; margin-top: 4px; }

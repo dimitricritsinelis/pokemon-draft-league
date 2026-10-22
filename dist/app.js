@@ -961,7 +961,7 @@
     renderAuctionFacts(p);
     document.querySelector('.auction-dialog-body').scrollTop = 0;
     const budgets = auctionBudgets(), counts = auctionCounts();
-    document.querySelectorAll('[data-auction-bid]').forEach(el => { el.hidden = Number(el.dataset.auctionBid) >= auction.session.teamCount; });
+    document.querySelectorAll('[data-auction-bid]').forEach(el => { el.hidden = Number(el.dataset.auctionBid) >= teamPair().length; });
     auctionTeamIndexes().forEach(i => {
       $('auction-bid-label-' + i).textContent = teamName(i) + ' bid';
       $('auction-bid-detail-' + i).textContent = `${counts[i]}/${rosterSize()} · $${budgets[i].toLocaleString('en-US')} left${counts[i] === rosterSize() ? ' · Roster full' : ''}`;

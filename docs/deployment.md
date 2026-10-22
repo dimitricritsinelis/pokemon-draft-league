@@ -4,22 +4,24 @@ The multiplayer release uses the existing HTML/CSS/JavaScript game on Vercel and
 
 The current ChatGPT Sites deployment is a separate static release. It does not gain online play until this server-backed release has been deployed with its database configured.
 
+For the shortest Windows-friendly path without GitHub, follow [Quick setup](quick-start.md).
+
 ## 1. Create the accounts and database
 
 Create a Vercel account and a Supabase account under the person who will own the game. Create a Supabase project and retain its database password in your password manager. Choose a database region near your players, then choose a matching Vercel Function region when configuring your Vercel project.
 
 Run `supabase/001_multiplayer.sql` in the Supabase SQL Editor. Apply any future migrations in filename order. The SQL creates the persistent state and atomic update functions, and restricts access to server-side credentials. Do not expose the state table directly to browser clients or weaken its access controls.
 
-From the Supabase project settings, obtain the project URL and the server-side service-role key. These belong only in the Vercel project's environment variables:
+From the Supabase project settings, obtain the project URL and the server-side secret key. These belong only in the Vercel project's environment variables:
 
 | Variable | Value |
 | --- | --- |
 | `SUPABASE_URL` | Your project's HTTPS URL, such as `https://your-project.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Your server-only service-role key |
+| `SUPABASE_SECRET_KEY` | Your server-only secret key |
 
 Set both variables for the deployment environments you intend to use. Preview deployments should ideally use a separate Supabase project so that testing never modifies production career records.
 
-Never put the service-role key in `dist/`, browser JavaScript, a share link, a commit, or a public-prefixed environment variable. No Supabase key is required in the frontend.
+Never put the secret key in `dist/`, browser JavaScript, a share link, a commit, or a public-prefixed environment variable. No Supabase key is required in the frontend. Prefer the current `sb_secret_...` key from Settings > API Keys. The server also accepts the older `SUPABASE_SERVICE_ROLE_KEY` variable for existing installations.
 
 ## 2. Create the Vercel project
 

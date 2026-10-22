@@ -19,6 +19,10 @@ The checked-in Python Playwright checks use local Chromium and WebKit. Their bro
 
 These are mobile browser-engine and viewport tests, not a claim of testing on physical iPhone hardware. The first production deployment should follow the two-device Safari checklist in `docs/deployment.md`.
 
+## Additional phone and PC verification
+
+The final device-fit pass completed 103 checks in Chromium and WebKit at 320×568, 393×852, 430×932, 844×390, 1366×768, and 1920×1080. It checked picker behavior, full stat dialogs, active-team bid counts, and desktop field height. A separate 321-check pass rechecked all 20 formation combinations at both desktop sizes after height-based scaling was added. No JavaScript errors or position overlaps were found.
+
 ## Production acceptance still required
 
 1. Apply `supabase/001_multiplayer.sql` to the selected Supabase project.

@@ -3,12 +3,12 @@ import { createSupabaseStore } from '../server/supabase-store.mjs';
 import { loadEngines } from '../server/engines.mjs';
 let service;
 export default async function handler(req,res) {
-  if(!process.env.SUPABASE_URL||!process.env.SUPABASE_SERVICE_ROLE_KEY){
+  if(!process.env.SUPABASE_URL||!(process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY)){
     res.statusCode=503;res.setHeader('content-type','application/json');res.setHeader('cache-control','no-store');
     res.end(JSON.stringify({error:'Online play is not configured yet. Connect Supabase and apply the database migration to enable lobbies, chat, and shared records.',code:'BACKEND_NOT_CONFIGURED'}));return;
   }
   try {
-    service ||= createService({store:createSupabaseStore({url:process.env.SUPABASE_URL,serviceRoleKey:process.env.SUPABASE_SERVICE_ROLE_KEY}),engines:loadEngines()});
+    service ||= createService({store:createSupabaseStore({url:process.env.SUPABASE_URL,secretKey:process.env.SUPABASE_SECRET_KEY,serviceRoleKey:process.env.SUPABASE_SERVICE_ROLE_KEY}),engines:loadEngines()});
     const host=req.headers['x-forwarded-host']||req.headers.host||'localhost';
     const protocol=req.headers['x-forwarded-proto']||'https';
     let body;
