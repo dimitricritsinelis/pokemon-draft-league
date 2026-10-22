@@ -11,6 +11,18 @@ The code is uploaded once to your GitHub repository. After the connections below
 
 You do not need to copy secret keys into chat or source files.
 
+## If the database is connected but lobbies fail
+
+Creating or connecting a Supabase database does not create the game's tables. If the live game reports `DATABASE_SETUP_REQUIRED`, initialize them once:
+
+1. In Vercel, open your game project → **Storage** → your Supabase database → **Open in Supabase**.
+2. In Supabase's left sidebar, choose **SQL Editor**, then **New query**.
+3. Open [the setup script](https://raw.githubusercontent.com/dimitricritsinelis/pokemon-draft-league/main/supabase/001_multiplayer.sql), copy all its text, and paste it into the query editor.
+4. Click **Run**. A successful run may say **Success. No rows returned**. The script preserves existing game records if run again.
+5. Open your game's `/api/health` URL. Online play is ready for a browser playtest when it returns `{"ok":true,"persistence":"supabase","rosterSize":23}`. A website loading successfully does not establish that lobbies work.
+
+If the response is `DATABASE_ACCESS_DENIED`, check that the integration supplied a server-only secret key and that the setup script's permissions were applied. `DATABASE_UNREACHABLE` means the server could not reach the configured Supabase project. Keep keys in provider settings, never in browser code or chat.
+
 ## What becomes automatic
 
 - Pushing code to `main` triggers Vercel to run the complete test suite, check the build, and publish if those checks pass.
