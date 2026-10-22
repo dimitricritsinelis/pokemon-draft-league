@@ -1,0 +1,15 @@
+{
+  "name": "pokemon-draft-league",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "22.x" },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env.local server/dev.mjs",
+    "start": "node --env-file-if-exists=.env.local server/dev.mjs",
+    "build": "node scripts/check.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test",
+    "verify:deployment": "node scripts/verify-deployment.mjs"
+  }
+}

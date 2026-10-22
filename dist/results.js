@@ -7,12 +7,14 @@
     passingAttempts: 'Pass attempts', passingCompletions: 'Completions', passingYards: 'Pass yards', passingTD: 'Pass TD', interceptionsThrown: 'INT thrown',
     carries: 'Carries', rushingYards: 'Rush yards', rushingTD: 'Rush TD', targets: 'Targets', receptions: 'Catches', receivingYards: 'Receiving yards', receivingTD: 'Receiving TD',
     tackles: 'Tackles', sacks: 'Sacks', sackYards: 'Sack yards', sackYardsLost: 'Sack yards lost', interceptions: 'Interceptions', passesDefended: 'Pass breakups', forcedFumbles: 'Forced fumbles', fumblesLost: 'Fumbles lost', fumbleRecoveries: 'Fumble recoveries',
-    passBlockSnaps: 'Pass-block snaps', runBlockSnaps: 'Run-block snaps', blocks: 'Successful blocks', pressuresAllowed: 'Pressures allowed', sacksAllowed: 'Sacks allowed', pancakes: 'Pancake blocks', pressures: 'QB pressures', offensiveSnaps: 'Offensive snaps', defensiveSnaps: 'Defensive snaps'
+    passBlockSnaps: 'Pass-block snaps', runBlockSnaps: 'Run-block snaps', blocks: 'Successful blocks', pressuresAllowed: 'Pressures allowed', sacksAllowed: 'Sacks allowed', pancakes: 'Pancake blocks', pressures: 'QB pressures', offensiveSnaps: 'Offensive snaps', defensiveSnaps: 'Defensive snaps',
+    fieldGoalAttempts: 'FG attempts', fieldGoalsMade: 'Field goals made', longestFieldGoal: 'Longest FG (yards)', extraPointAttempts: 'XP attempts', extraPointsMade: 'Extra points made', kickingPoints: 'Kicking points', specialTeamsSnaps: 'Special teams snaps'
   };
   const node = (tag, className, text) => { const e = document.createElement(tag); if (className) e.className = className; if (text !== undefined) e.textContent = text; return e; };
   const s = (player, key) => player.stats[key] || 0;
   function portrait(id, size = 40) { const img = node('img'); img.src = catalog.get(id).image; img.alt = ''; img.width = size; img.height = size; img.loading = 'lazy'; return img; }
   function summary(player) {
+    if (player.role === 'K') return `${s(player,'fieldGoalsMade')}/${s(player,'fieldGoalAttempts')} FG · ${s(player,'extraPointsMade')}/${s(player,'extraPointAttempts')} XP · ${s(player,'longestFieldGoal')} long · ${s(player,'kickingPoints')} pts`;
     if (player.side === 'defense') return `${s(player,'tackles')} TKL · ${s(player,'sacks')} SK · ${s(player,'interceptions')} INT · ${s(player,'pressures')} pressures`;
     if (player.role === 'QB') return `${s(player,'passingCompletions')}/${s(player,'passingAttempts')} · ${s(player,'passingYards')} pass yds · ${s(player,'passingTD')} TD · ${s(player,'interceptionsThrown')} INT`;
     if (lineRoles.includes(player.role)) return `${s(player,'blocks')} blocks · ${s(player,'pancakes')} pancakes · ${s(player,'sacksAllowed')} sacks allowed`;
@@ -20,7 +22,7 @@
     return `${s(player,'receptions')}/${s(player,'targets')} catches · ${s(player,'receivingYards')} yds · ${s(player,'receivingTD')} TD · ${s(player,'blocks')} blocks`;
   }
   function playerStats(player) {
-    const keys = new Set(player.side === 'defense' ? ['defensiveSnaps','tackles','sacks','sackYards','interceptions','passesDefended','pressures','forcedFumbles','fumbleRecoveries'] : player.role === 'QB' ? ['offensiveSnaps','passingCompletions','passingAttempts','passingYards','passingTD','interceptionsThrown','sackYardsLost','carries','rushingYards','rushingTD','fumblesLost'] : lineRoles.includes(player.role) ? ['offensiveSnaps','passBlockSnaps','runBlockSnaps','blocks','pancakes','pressuresAllowed','sacksAllowed'] : ['offensiveSnaps','targets','receptions','receivingYards','receivingTD','carries','rushingYards','rushingTD','blocks','fumblesLost']);
+    const keys = new Set(player.role === 'K' ? ['specialTeamsSnaps','fieldGoalsMade','fieldGoalAttempts','longestFieldGoal','extraPointsMade','extraPointAttempts','kickingPoints'] : player.side === 'defense' ? ['defensiveSnaps','tackles','sacks','sackYards','interceptions','passesDefended','pressures','forcedFumbles','fumbleRecoveries'] : player.role === 'QB' ? ['offensiveSnaps','passingCompletions','passingAttempts','passingYards','passingTD','interceptionsThrown','sackYardsLost','carries','rushingYards','rushingTD','fumblesLost'] : lineRoles.includes(player.role) ? ['offensiveSnaps','passBlockSnaps','runBlockSnaps','blocks','pancakes','pressuresAllowed','sacksAllowed'] : ['offensiveSnaps','targets','receptions','receivingYards','receivingTD','carries','rushingYards','rushingTD','blocks','fumblesLost']);
     Object.keys(labels).forEach(key => { if (s(player, key) !== 0) keys.add(key); });
     const dl = node('dl', 'player-stat-grid');
     [...keys].forEach(key => { const group = node('div'); group.append(node('dt', '', labels[key]), node('dd', '', String(s(player, key)))); dl.append(group); });
@@ -54,12 +56,14 @@
       const section = node('section', 'team-boxscore'); section.append(node('h3', '', team.name));
       const total = team.players.reduce((a,p) => ({ yards: a.yards+s(p,'passingYards')+s(p,'rushingYards'), sacks: a.sacks+s(p,'sacks') }), {yards:0,sacks:0});
       section.append(node('p', 'team-game-totals', `${team.totals?.totalYards ?? total.yards} total yds · ${team.turnovers} turnovers · ${team.fieldGoals} FG · ${total.sacks} sacks`));
-      for (const side of ['offense','defense']) {
-        section.append(node('h4', 'unit-heading', side === 'offense' ? 'Offense' : 'Defense'));
+      for (const side of ['offense','defense','special']) {
+        section.append(node('h4', 'unit-heading', side === 'offense' ? 'Offense' : side === 'defense' ? 'Defense' : 'Special teams'));
         team.players.filter(player => player.side === side).forEach(player => section.append(row(player)));
       }
       return section;
     }));
+    const boxscoreCount = document.querySelector('.boxscore-heading > span');
+    if (boxscoreCount) boxscoreCount.textContent = `All ${result.teams.reduce((n, team) => n + team.players.length, 0)} Pokémon · tap for details`;
     $('match-career-status').textContent = window.DraftCareers.persisted() ? 'Career stats saved on this device. Visit the Hall of Fame in Draft options.' : 'Career stats could not be saved by this browser. They will last for this session.';
     $('match-dialog').scrollTop = 0;
   }

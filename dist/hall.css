@@ -67,3 +67,25 @@
  .career-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
  .hall-card-heading button { padding-left: 7px; padding-right: 7px; }
 }
+.hall-views { position: sticky; top: -1px; z-index: 2; }
+.hall-views button { min-width: 0; }
+.hall-card.shame { background: #fcf0ed; border-color: #e8bdb3; }
+.hall-card.shame .hall-inducted-date, .hall-card.shame .hall-best, .hall-card.shame .hall-grade-reason { color: #8a4e43; }
+.hall-card.shame .hall-scouting { border-color: #e8c7be; }
+.hall-card.shame .hall-grade[aria-pressed="true"] { background: #f3d1c7; border-color: #c88d7d; }
+.hall-card-heading .hall-card-actions { display: flex; flex: 0 0 auto; gap: 4px; }
+.hall-card-heading button { min-width: 46px; }
+.hall-induct-shame { background: #f8e9e4; color: #8a4638; border-color: #e6b7ac !important; }
+.hall-card-heading button:disabled { opacity: .55; cursor: wait; }
+.hall-card-info .hall-kind-badge { font-size: 10px; font-weight: 600; color: #8b7236; }
+.hall-card.shame .hall-kind-badge { color: #9c5345; }
+.hall-card-info .career-market { font-variant-numeric: tabular-nums; font-size: 10px; }
+@media (max-width: 400px) {
+ .hall-dialog { width: calc(100% - 16px); padding: 14px; }
+ .hall-card-heading { gap: 5px; }
+ .hall-card-heading img { width: 38px; height: 38px; }
+ .hall-card-heading .hall-card-actions { flex-direction: column; }
+ .hall-card-heading button { min-height: 36px; padding: 4px 8px; }
+ .hall-views button { font-size: 12px; }
+ .hall-views span { margin-left: 2px; }
+}

@@ -792,7 +792,7 @@
     [386, "tentacles", 100, 100, {"QB": 100, "HB": 91, "FB": 45, "WR": 100, "TE": 79, "OL": 36, "C": 76, "DE": 96, "DT": 32, "NT": 18, "FS": 100, "SS": 84, "CB": 100, "LB": 83}, 0.83, "Normal Deoxys can reconfigure flexible tentacles into hands, use Psychic for precision and analyze opponents with its crystalline brain; bounded Teleport recovery and limb feints aid coverage, but it does not borrow Defense Forme armor or Speed Forme statistics."],
   ];
 
-  const roles = Object.freeze(['LT', 'LG', 'C', 'RG', 'RT', 'QB', 'HB', 'FB', 'WR', 'TE', 'FS', 'SS', 'CB', 'DE', 'NT', 'DT', 'ILB', 'OLB', 'MLB', 'WLB', 'SLB', 'LB', 'NB', 'DB']);
+  const roles = Object.freeze(['LT', 'LG', 'C', 'RG', 'RT', 'QB', 'HB', 'FB', 'WR', 'TE', 'FS', 'SS', 'CB', 'DE', 'NT', 'DT', 'ILB', 'OLB', 'MLB', 'WLB', 'SLB', 'LB', 'NB', 'DB', 'K']);
   const catalog = window.POKEMON;
   if (!Array.isArray(catalog) || catalog.length !== 386) throw new Error('Draft ratings require the complete 386-Pokémon catalog.');
   const catalogById = new Map(catalog.map(p => [p.id, p]));
@@ -831,8 +831,50 @@
     OLB: 'Outside linebacker blends edge pursuit, lateral recovery and coverage reads.',
     WLB: 'Weakside linebacker emphasizes pursuit, recovery and changes of direction.',
     SLB: 'Strongside linebacker combines tight-end coverage, block leverage and pursuit.',
-    LB: 'Linebacker blends anticipation, pursuit, contact tackling and underneath coverage.'
+    LB: 'Linebacker blends anticipation, pursuit, contact tackling and underneath coverage.',
+    K: 'Kicking weighs a feasible strike or controlled power-assisted launch, repeatable aim, leg power, balance and pressure composure; speed alone does not make a kicker.'
   });
+
+  // Reviewed kicking mechanisms: actual kicking moves and feet matter more than
+  // weight or raw speed. Psychic placement and Blastoise's documented cannon
+  // release are allowed fantasy alternatives, with the same bounded accuracy.
+  const kickingFits = new Map([
+    [6,84],[9,96],[25,69],[26,82],[35,62],[36,77],[39,33],[40,51],
+    [54,31],[55,84],[56,74],[57,86],[61,52],[62,86],[63,76],[64,89],[65,97],
+    [66,76],[67,86],[68,95],[77,81],[78,91],[83,72],[84,86],[85,97],
+    [95,8],[96,83],[97,92],[98,26],[99,37],[102,11],[103,51],
+    [104,53],[105,73],[106,100],[107,88],[108,62],[113,57],[115,94],
+    [122,93],[123,57],[124,82],[125,88],[126,84],[127,43],[128,72],
+    [137,89],[143,42],[144,56],[145,63],[146,65],[149,91],[150,98],[151,98],
+    [153,41],[154,59],[156,70],[157,88],[159,74],[160,89],[161,31],[162,57],
+    [163,42],[164,59],[165,19],[166,45],[175,25],[176,59],[177,63],[178,89],
+    [179,25],[180,54],[181,83],[183,41],[184,79],[185,41],[186,84],
+    [190,75],[192,41],[196,92],[197,72],[198,51],[199,95],[200,79],
+    [201,5],[202,25],[203,77],[207,57],[208,11],[209,53],[210,83],
+    [212,75],[214,88],[215,91],[216,49],[217,84],[225,64],[227,67],
+    [230,18],[233,93],[234,83],[235,83],[236,77],[237,99],[238,51],
+    [239,57],[240,61],[241,82],[242,68],[243,86],[244,82],[245,89],
+    [248,88],[249,84],[250,83],[251,94],[252,57],[253,83],[254,94],
+    [255,49],[256,95],[257,100],[258,42],[259,73],[260,89],[271,54],[272,88],
+    [274,64],[275,90],[280,63],[281,84],[282,97],[286,97],[287,37],[288,87],
+    [289,45],[296,69],[297,90],[298,25],[302,65],[303,69],[306,82],
+    [307,78],[308,99],[309,61],[310,84],[311,60],[312,60],[313,45],[314,45],
+    [315,67],[322,23],[323,43],[325,62],[326,81],[327,51],[328,17],[329,41],[330,84],
+    [331,31],[332,74],[333,21],[334,67],[335,88],[338,52],[342,43],
+    [343,66],[344,85],[347,11],[348,48],[350,49],[351,43],[352,75],[353,62],
+    [354,83],[355,41],[356,79],[357,67],[358,59],[359,91],[360,13],
+    [361,37],[362,43],[363,15],[364,29],[365,48],[371,48],[372,9],[373,86],
+    [374,7],[375,46],[376,95],[377,57],[378,53],[379,84],[380,94],[381,96],
+    [382,12],[383,89],[384,83],[385,94],[386,98]
+  ]);
+  const noKickingBase = new Set([10,11,13,14,23,24,41,42,46,47,48,49,50,51,69,70,71,72,73,81,82,88,89,90,91,92,93,100,101,109,110,116,117,118,119,120,121,129,130,138,139,140,147,148,167,168,170,171,187,188,189,191,193,194,195,204,205,206,211,213,218,219,220,221,222,223,224,226,247,265,266,268,269,283,284,290,291,292,299,300,301,304,305,316,317,318,319,320,321,324,336,337,339,340,341,345,346,349,366,367,368,369,370]);
+  function kickProfile(id, method, physical) {
+    if (kickingFits.has(id)) return kickingFits.get(id);
+    if (['psychic','digital','transform','launcher'].includes(method)) return Math.min(94, physical.accuracy * .57 + physical.awareness * .30 + physical.power * .13);
+    if (noKickingBase.has(id) || method === 'none') return Math.min(28, physical.mobility * .14 + physical.power * .09 + physical.accuracy * .08);
+    const leverage = Math.min(1, .35 + physical.height / 1.3);
+    return (physical.power * .28 + physical.mobility * .22 + physical.awareness * .24 + physical.accuracy * .26) * leverage;
+  }
 
   for (const [id, originalControl, awareness, strength, durability, mobility, originalAccuracy] of profiles) {
     const p = catalogById.get(id), lore = loreById.get(id);
@@ -882,7 +924,8 @@
       HB: hb, FB: fb, WR: wr, TE: te, FS: fs, SS: ss, CB: cb,
       DE: de, DT: dt, NT: nt, ILB: inside, OLB: outside, MLB: inside,
       WLB: outside * .70 + linebacker * .30, SLB: inside * .45 + outside * .55,
-      LB: linebacker, NB: cb * .70 + ss * .30, DB: cb * .55 + fs * .45
+      LB: linebacker, NB: cb * .70 + ss * .30, DB: cb * .55 + fs * .45,
+      K: kickProfile(id, method, { power, mobility: movement, awareness, accuracy, height: p.heightMeters })
     };
     const openFieldMobility = .55 + .45 * Math.min(1, mobility / 50);
     for (const role of ['HB', 'FB', 'WR', 'TE', 'FS', 'SS', 'CB', 'ILB', 'OLB', 'MLB', 'WLB', 'SLB', 'LB', 'NB', 'DB']) grades[role] *= openFieldMobility;
@@ -931,6 +974,6 @@
     roles,
     rate(id, role) { validate(id, role); return matrix.get(id)[role]; },
     factor(id, role) { validate(id, role); return factors.get(id)[role]; },
-    explain(id, role) { validate(id, role); return loreById.get(id)[6] + ' ' + roleTasks[role]; }
+    explain(id, role) { validate(id, role); const method = loreById.get(id)[1]; const kickerNote = role === 'K' ? (id === 106 ? ' Elastic legs and dedicated kicking mastery create extraordinary range and repeatable striking angles.' : id === 237 ? ' Spinning balance and Triple Kick timing support a repeatable, accurate football strike.' : id === 257 ? ' Powerful trained legs and Blaze Kick mechanics generate elite range with controlled follow-through.' : id === 9 ? ' Its precision cannons can launch the football through the uprights, with fantasy kicking accuracy graded rather than guaranteed.' : ['psychic','digital','transform'].includes(method) ? ' Reviewed controlled ball manipulation offers a power-assisted kick substitute; concentration and aim still limit consistency.' : noKickingBase.has(id) || method === 'none' ? ' Limited striking anatomy and no reviewed reliable launch mechanism sharply cap this species as a kicker.' : ' Its individual stance, limb strength and reviewed football balance determine how repeatable a strike can be.') : ''; return loreById.get(id)[6] + kickerNote + ' ' + roleTasks[role]; }
   });
 })();

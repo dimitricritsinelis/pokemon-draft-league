@@ -2,7 +2,7 @@
 (() => {
   'use strict';
 
-  const rosterSize = 22, startingBudget = 1000;
+  const rosterSize = 23, startingBudget = 1000;
   const modes = new Set(['gen1', 'gen2', 'gen3', 'both']);
   const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const validTeamCount = value => Number.isInteger(value) && value >= 2 && value <= 4;
@@ -19,12 +19,13 @@
   }
 
   // Replay every award rather than trusting totals saved by the browser.
-  // A team reaching 22 players leaves the bidding pool for later lots.
+  // A team reaching its roster limit leaves the bidding pool for later lots.
   function validate(value) {
     const teamCount = object(value) && value.teamCount === undefined ? 2 : value?.teamCount;
-    const lotCount = validTeamCount(teamCount) ? teamCount * rosterSize : 0;
+    const size = object(value) && value.rosterSize === undefined ? 22 : value?.rosterSize;
+    const lotCount = validTeamCount(teamCount) && [22, rosterSize].includes(size) ? teamCount * size : 0;
     const skipped = object(value) && value.skipped === undefined ? [] : value?.skipped;
-    if (!object(value) || value.v !== 1 || !modes.has(value.mode) || !validTeamCount(teamCount) ||
+    if (!object(value) || value.v !== 1 || !modes.has(value.mode) || !validTeamCount(teamCount) || ![22, rosterSize].includes(size) ||
         !Array.isArray(value.lots) || value.lots.length !== lotCount ||
         new Set(value.lots).size !== lotCount || !Array.from(value.lots).every(id => eligible(id, value.mode)) ||
         !Array.isArray(skipped) || skipped.length > 386 || new Set(skipped).size !== skipped.length ||
@@ -41,10 +42,10 @@
           !Number.isInteger(award.team) || award.team < 0 || award.team >= teamCount || !dollars(award.amount) ||
           !Array.isArray(award.bids) || award.bids.length !== teamCount ||
           !Array.from(award.bids).every(dollars) || typeof award.tied !== 'boolean') return null;
-      const open = teams.filter(team => counts[team] < rosterSize);
+      const open = teams.filter(team => counts[team] < size);
       if (!open.includes(award.team)) return null;
       for (const team of teams) {
-        if (award.bids[team] > budgets[team] || (counts[team] === rosterSize && award.bids[team] !== 0)) return null;
+        if (award.bids[team] > budgets[team] || (counts[team] === size && award.bids[team] !== 0)) return null;
       }
       const maximum = Math.max(...open.map(team => award.bids[team]));
       const contenders = open.filter(team => award.bids[team] === maximum);
@@ -54,7 +55,7 @@
       awards.push({ pokemonId: award.pokemonId, team: award.team, amount: award.amount,
         bids: award.bids.slice(), tied: award.tied });
     }
-    return { v: 1, mode: value.mode, teamCount, lots: value.lots.slice(), skipped: skipped.slice(), awards, placed: value.placed };
+    return { v: 1, mode: value.mode, teamCount, rosterSize: size, lots: value.lots.slice(), skipped: skipped.slice(), awards, placed: value.placed };
   }
 
   function requireSession(value) {
@@ -76,7 +77,7 @@
       const other = Math.floor(draw(random) * (index + 1));
       [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
     }
-    return { v: 1, mode, teamCount, lots: shuffled.slice(0, lotCount), skipped: [], awards: [], placed: 0 };
+    return { v: 1, mode, teamCount, rosterSize, lots: shuffled.slice(0, lotCount), skipped: [], awards: [], placed: 0 };
   }
 
   function phase(value) {
@@ -120,9 +121,9 @@
     const teams = teamIndexes(session.teamCount);
     for (const team of teams) {
       if (submitted[team] > remaining[team]) throw new Error(`Team ${team + 1} cannot bid more than its remaining budget.`);
-      if (totals[team] === rosterSize && submitted[team] !== 0) throw new Error(`Team ${team + 1} already has 22 Pokémon.`);
+      if (totals[team] === session.rosterSize && submitted[team] !== 0) throw new Error(`Team ${team + 1} already has ${session.rosterSize} Pokémon.`);
     }
-    const open = teams.filter(team => totals[team] < rosterSize);
+    const open = teams.filter(team => totals[team] < session.rosterSize);
     const amount = Math.max(...open.map(team => submitted[team]));
     const contenders = open.filter(team => submitted[team] === amount);
     const team = contenders.length === 1 ? contenders[0] : contenders[Math.floor(draw(random) * contenders.length)];
@@ -154,5 +155,5 @@
     return session;
   }
 
-  window.DraftAuction = Object.freeze({ create, validate, current, bid, place, phase, budgets, counts, owned, skip });
+  window.DraftAuction = Object.freeze({ rosterSize, create, validate, current, bid, place, phase, budgets, counts, owned, skip });
 })();

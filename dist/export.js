@@ -61,7 +61,7 @@
         ctx.fillStyle = '#ffffff'; ctx.fillText(name, x, plateY + 22);
       }
       ctx.font = '700 22px "Barlow Condensed", sans-serif';
-      ctx.fillStyle = s.side === 'offense' ? yellow : blue;
+      ctx.fillStyle = s.side === 'defense' ? blue : yellow;
       ctx.fillText(s.role, x, plateY + (image ? 43 : 23));
       if (image && s.stats) {
         ctx.font = '500 14px "Barlow Condensed", sans-serif'; ctx.fillStyle = '#c1d0bb';

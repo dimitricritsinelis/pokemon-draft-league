@@ -10,21 +10,22 @@
     'carries', 'rushingYards', 'rushingTD', 'targets', 'receptions', 'receivingYards', 'receivingTD',
     'tackles', 'sacks', 'sackYards', 'sackYardsLost', 'interceptions', 'passesDefended', 'forcedFumbles', 'fumblesLost', 'fumbleRecoveries',
     'passBlockSnaps', 'runBlockSnaps', 'blocks', 'pressuresAllowed', 'sacksAllowed', 'pancakes', 'pressures',
-    'offensiveSnaps', 'defensiveSnaps'
+    'offensiveSnaps', 'defensiveSnaps',
+    'fieldGoalAttempts', 'fieldGoalsMade', 'longestFieldGoal', 'extraPointAttempts', 'extraPointsMade', 'kickingPoints', 'specialTeamsSnaps'
   ]);
   const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
   const mean = (list, fallback = 45) => list.length ? list.reduce((sum, p) => sum + p.rating, 0) / list.length : fallback;
   let sequence = 0;
 
   function validate(team, used) {
-    if (!team || !Array.isArray(team.positions) || team.positions.length !== 22) throw new Error('Fill all 22 positions on both teams before simulating.');
-    const keys = new Set(), counts = { offense: 0, defense: 0 };
+    if (!team || !Array.isArray(team.positions) || team.positions.length !== 23) throw new Error('Fill all 23 positions, including a kicker, on both teams before simulating.');
+    const keys = new Set(), counts = { offense: 0, defense: 0, special: 0 };
     const players = team.positions.map(slot => {
       const id = slot?.pokemonId ?? slot?.pokemon?.id;
       if (!Number.isInteger(id) || id < 1 || id > 386) throw new Error('Every position needs a Pokémon before simulating.');
       if (used.has(id)) throw new Error('A Pokémon can play for only one position across the two teams.');
       if (!slot.key || keys.has(slot.key)) throw new Error('Each position must be unique.');
-      const roles = slot.side === 'offense' ? offenseRoles : slot.side === 'defense' ? defenseRoles : [];
+      const roles = slot.side === 'offense' ? offenseRoles : slot.side === 'defense' ? defenseRoles : slot.side === 'special' ? ['K'] : [];
       if (!roles.includes(slot.role)) throw new Error('The lineup contains an unsupported football position.');
       const rating = window.DraftRatings.rate(id, slot.role);
       if (!Number.isFinite(rating) || rating < 0 || rating > 100) throw new Error('A player rating could not be calculated.');
@@ -35,17 +36,17 @@
       const record = { pokemonId: id, name: pokemon?.name || `Pokémon #${id}`, role: slot.role, side: slot.side, stats: Object.fromEntries(statKeys.map(key => [key, 0])) };
       return { id, role: slot.role, side: slot.side, name: record.name, rating, catchRating: slot.side === 'defense' ? window.DraftRatings.rate(id, 'WR') : rating, factor: clamp(rawFactor, 0, 1), record, stats: record.stats };
     });
-    if (counts.offense !== 11 || counts.defense !== 11 || players.filter(p => p.role === 'QB').length !== 1 || players.filter(p => p.role === 'HB').length !== 1 || lineRoles.some(role => players.filter(p => p.role === role).length !== 1)) throw new Error('Each team needs a full offensive and defensive formation.');
+    if (counts.offense !== 11 || counts.defense !== 11 || counts.special !== 1 || players.filter(p => p.role === 'K').length !== 1 || players.filter(p => p.role === 'QB').length !== 1 || players.filter(p => p.role === 'HB').length !== 1 || lineRoles.some(role => players.filter(p => p.role === role).length !== 1)) throw new Error('Each team needs 11 offensive players, 11 defensive players and a dedicated kicker.');
     const offense = players.filter(p => p.side === 'offense'), defense = players.filter(p => p.side === 'defense');
     const front = defense.filter(p => frontRoles.includes(p.role)), secondary = defense.filter(p => secondaryRoles.includes(p.role));
     if (!front.length || !secondary.length) throw new Error('Each defense needs a defensive front and coverage players.');
     return {
-      players, offense, defense, front, secondary,
+      players, offense, defense, front, secondary, kicker: players.find(p => p.role === 'K'),
       linebackers: defense.filter(p => !frontRoles.includes(p.role) && !secondaryRoles.includes(p.role)),
       line: lineRoles.map(role => offense.find(p => p.role === role)), qb: offense.find(p => p.role === 'QB'),
       hb: offense.find(p => p.role === 'HB'), fb: offense.filter(p => p.role === 'FB'),
       receivers: offense.filter(p => ['WR', 'TE', 'HB', 'FB'].includes(p.role)),
-      result: { name: String(team.name || 'Team').slice(0, 40), score: 0, quarters: [0, 0, 0, 0], fieldGoals: 0, turnovers: 0, fumblesLost: 0, players: players.map(p => p.record), biggestPlay: null },
+      result: { name: String(team.name || 'Team').slice(0, 40), score: 0, quarters: [0, 0, 0, 0], fieldGoals: 0, fieldGoalAttempts: 0, extraPoints: 0, extraPointAttempts: 0, turnovers: 0, fumblesLost: 0, players: players.map(p => p.record), biggestPlay: null },
       firstDowns: 0, biggestWeight: -Infinity
     };
   }
@@ -78,6 +79,36 @@
       team.result.biggestPlay = { quarter: quarter + 1, pokemonId: player.id, name: player.name, role: player.role, type, text, yards, points };
     };
     const score = (team, points, quarter) => { team.result.score += points; team.result.quarters[quarter] += points; };
+    // A drafted specialist owns every kicking attempt. Grades dominate the
+    // make probability; distance, pass protection and a bounded random draw add
+    // football uncertainty without inventing points that no player produced.
+    const attemptKick = (attacking, defending, quarter, distance, extraPoint = false) => {
+      const kicker = attacking.kicker, stats = kicker.stats;
+      stats.specialTeamsSnaps++;
+      const blockEdge = mean(attacking.line) - mean(defending.front);
+      const chance = extraPoint ? clamp(.08 + .0095 * kicker.rating + .00015 * blockEdge, .04, .997) :
+        clamp(.06 + .0095 * kicker.rating - .0015 * Math.max(0, distance - 20) - .00035 * Math.max(0, distance - 35) ** 2 + .00025 * blockEdge, .015, .985);
+      stats[extraPoint ? 'extraPointAttempts' : 'fieldGoalAttempts']++;
+      attacking.result[extraPoint ? 'extraPointAttempts' : 'fieldGoalAttempts']++;
+      const made = random() < chance;
+      if (made) {
+        stats[extraPoint ? 'extraPointsMade' : 'fieldGoalsMade']++;
+        const points = extraPoint ? 1 : 3;
+        stats.kickingPoints += points; score(attacking, points, quarter);
+        if (extraPoint) attacking.result.extraPoints++;
+        else {
+          stats.longestFieldGoal = Math.max(stats.longestFieldGoal, distance);
+          attacking.result.fieldGoals++;
+          const lateLead = quarter === 3 && attacking.result.score > defending.result.score && attacking.result.score - defending.result.score <= 3;
+          note(attacking, kicker, quarter, 'field-goal', `${kicker.name} drills a ${distance}-yard field goal${lateLead ? ' to take the fourth-quarter lead' : ''}.`, distance, 3, lateLead ? 165 : 60 + distance * .35);
+        }
+      } else if (!extraPoint) note(attacking, kicker, quarter, 'missed-field-goal', `${kicker.name} misses a ${distance}-yard field goal attempt.`, distance, 0, 3);
+      return made;
+    };
+    const touchdown = (attacking, defending, quarter) => {
+      score(attacking, 6, quarter);
+      return 6 + (attemptKick(attacking, defending, quarter, 33, true) ? 1 : 0);
+    };
     const snap = (attacking, defending) => {
       attacking.offense.forEach(p => p.stats.offensiveSnaps++);
       defending.defense.forEach(p => p.stats.defensiveSnaps++);
@@ -181,8 +212,8 @@
       receiver.stats.receptions++; receiver.stats.receivingYards += yards;
       ball += yards;
       if (ball >= 100) {
-        qb.stats.passingTD++; receiver.stats.receivingTD++; score(attacking, 7, quarter);
-        note(attacking, receiver, quarter, 'passing-touchdown', `${qb.name} finds ${receiver.name} for a ${yards}-yard touchdown.`, yards, 7, 110 + yards + (quarter === 3 ? 8 : 0));
+        qb.stats.passingTD++; receiver.stats.receivingTD++; const points = touchdown(attacking, defending, quarter);
+        note(attacking, receiver, quarter, 'passing-touchdown', `${qb.name} finds ${receiver.name} for a ${yards}-yard touchdown.`, yards, points, 110 + yards + (quarter === 3 ? 8 : 0));
         return { yards, ball, touchdown: true };
       }
       note(attacking, receiver, quarter, 'reception', `${receiver.name} hauls in ${qb.name}'s pass for ${yards} yards.`, yards, 0, 10 + yards);
@@ -205,8 +236,8 @@
       yards = clamp(yards, -(ball - 1), 100 - ball);
       runner.stats.carries++; runner.stats.rushingYards += yards; ball += yards;
       if (ball >= 100) {
-        runner.stats.rushingTD++; score(attacking, 7, quarter);
-        note(attacking, runner, quarter, 'rushing-touchdown', `${runner.name} bursts through the defense for a ${yards}-yard rushing touchdown.`, yards, 7, 110 + yards + (quarter === 3 ? 8 : 0));
+        runner.stats.rushingTD++; const points = touchdown(attacking, defending, quarter);
+        note(attacking, runner, quarter, 'rushing-touchdown', `${runner.name} bursts through the defense for a ${yards}-yard rushing touchdown.`, yards, points, 110 + yards + (quarter === 3 ? 8 : 0));
         return { yards, ball, touchdown: true };
       }
       note(attacking, runner, quarter, 'rush', yards > 0 ? `${runner.name} breaks loose for ${yards} rushing yards.` : yards < 0 ? `${runner.name} is stopped for a ${-yards}-yard loss.` : `${runner.name} is held to no gain.`, yards, 0, 10 + yards);
@@ -236,12 +267,7 @@
       }
       if (ball >= 62) {
         const distance = 117 - ball;
-        if (random() < clamp(.98 - .012 * (distance - 25), .52, .98)) {
-          attacking.result.fieldGoals++; score(attacking, 3, quarter);
-          // No kicker is drafted. Attribute the highlight to the QB who led the drive, not a fictional player.
-          note(attacking, attacking.qb, quarter, 'field-goal-drive', `${attacking.qb.name} leads a drive that ends with a ${distance}-yard field goal.`, 0, 3, 55 + (quarter === 3 ? 5 : 0));
-          return 25;
-        }
+        if (attemptKick(attacking, defending, quarter, distance)) return 25;
         return clamp(100 - ball, 20, 60);
       }
       const landing = ball + integer(35, 50);
@@ -263,13 +289,15 @@
       team.result.totals = {
         passingYards: sums('passingYards'), netPassingYards: sums('passingYards') - sums('sackYardsLost'),
         rushingYards: sums('rushingYards'), totalYards: sums('passingYards') - sums('sackYardsLost') + sums('rushingYards'),
-        plays: team.qb.stats.offensiveSnaps, firstDowns: team.firstDowns, sacksAllowed: sums('sacksAllowed')
+        plays: team.qb.stats.offensiveSnaps, firstDowns: team.firstDowns, sacksAllowed: sums('sacksAllowed'),
+        fieldGoalsMade: sums('fieldGoalsMade'), fieldGoalAttempts: sums('fieldGoalAttempts'), extraPointsMade: sums('extraPointsMade'), extraPointAttempts: sums('extraPointAttempts'), kickingPoints: sums('kickingPoints')
       };
       // These lightweight aliases preserve old callers; the full per-player box score is authoritative.
       const identity = p => ({ pokemonId: p.id, name: p.name, role: p.role });
       team.result.passing = { ...identity(team.qb), completions: team.qb.stats.passingCompletions, attempts: team.qb.stats.passingAttempts, yards: team.qb.stats.passingYards, touchdowns: team.qb.stats.passingTD, interceptions: team.qb.stats.interceptionsThrown };
       team.result.rushing = team.offense.filter(p => ['QB', 'HB', 'FB'].includes(p.role)).map(p => ({ ...identity(p), carries: p.stats.carries, yards: p.stats.rushingYards, touchdowns: p.stats.rushingTD }));
       team.result.receiving = team.receivers.map(p => ({ ...identity(p), receptions: p.stats.receptions, yards: p.stats.receivingYards, touchdowns: p.stats.receivingTD }));
+      team.result.kicking = { ...identity(team.kicker), fieldGoalsMade: team.kicker.stats.fieldGoalsMade, fieldGoalAttempts: team.kicker.stats.fieldGoalAttempts, longestFieldGoal: team.kicker.stats.longestFieldGoal, extraPointsMade: team.kicker.stats.extraPointsMade, extraPointAttempts: team.kicker.stats.extraPointAttempts, points: team.kicker.stats.kickingPoints };
       team.result.defense = team.defense.map(p => ({ ...identity(p), tackles: p.stats.tackles, sacks: p.stats.sacks, interceptions: p.stats.interceptions }));
       if (!team.result.biggestPlay) note(team, team.qb, 0, 'drive', `${team.qb.name} leads ${team.result.name}'s offense.`, 0, 0, 0);
     }
