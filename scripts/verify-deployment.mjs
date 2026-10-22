@@ -16,4 +16,11 @@ for (const route of ['/', '/api/health']) {
   }
   console.log(`${route} is reachable.`);
 }
+// These must reach the game service, rather than a static Vercel 404 page.
+for (const route of ['/api/lobbies/0000','/api/leagues/00000000-0000-0000-0000-000000000000']) {
+  const response = await fetch(new URL(route, base), { signal: AbortSignal.timeout(15000) });
+  const payload = await response.json().catch(() => null);
+  if (!payload?.code || ![403,404,410].includes(response.status)) throw new Error(`${route} did not reach the multiplayer API. Check the Vercel rewrites.`);
+  console.log(`${route} reaches the multiplayer API.`);
+}
 console.log('Public-page and API checks passed. Run the two-device lobby checklist in docs/deployment.md before sharing widely.');
