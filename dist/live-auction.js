@@ -20,8 +20,8 @@
     controls = make('form', 'player-controls'); controls.id = 'player-bid-form'; controls.noValidate = true; controls.hidden = true;
     controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div><div class="live-clock"><strong id="player-countdown"></strong><span>remaining</span></div></div><div class="live-clock-track"><i id="player-time-bar"></i></div><p id="player-bid-context"></p><details id="player-custom-bid"><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="submit" class="primary-button" id="player-bid-submit">Bid $1</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
     error = controls.querySelector('#player-bid-error'); panel.append(controls);
-    launcher = make('button', 'live-auction-launch', 'View live auction'); launcher.id = 'live-auction-launch'; launcher.type = 'button'; launcher.hidden = true; document.body.append(launcher);
-    launcher.addEventListener('click', open);
+    launcher = make('button', 'live-auction-launch', 'View live auction'); launcher.id = 'live-auction-launch'; launcher.type = 'button'; launcher.hidden = true; const footer = make('div', 'online-dashboard-footer'); footer.append(status, launcher); dashboard.append(footer);
+    launcher.addEventListener('click', () => { if (snapshot?.lobby.phase === 'complete' && window.DraftOnline.isHost()) adapter.playMatch(); else open(); });
     controls.addEventListener('submit', submit);
     $('player-bid-input').addEventListener('input', updateBidButton);
     $('player-custom-bid').addEventListener('toggle', updateBidButton);
@@ -191,8 +191,8 @@
   function renderLauncher() {
     if (!snapshot) { launcher.hidden = true; return; }
     const { lobby } = snapshot;
-    launcher.hidden = desktop.matches || panel.open || lobby.phase === 'waiting' || (lobby.phase === 'placement' && lobby.auction.pendingAward.team === own());
-    launcher.textContent = lobby.phase === 'bidding' ? `Live auction · ${pokemon.get(lobby.auction.currentPokemonId)?.name}` : lobby.phase === 'complete' ? window.DraftOnline.isHost() ? 'Draft complete · Play match' : 'View draft summary' : 'View winning pick';
+    launcher.hidden = desktop.matches || panel.open || lobby.phase === 'waiting' || lobby.phase === 'placement' || (lobby.phase === 'complete' && !window.DraftOnline.isHost());
+    launcher.textContent = lobby.phase === 'bidding' ? `Live auction · ${pokemon.get(lobby.auction.currentPokemonId)?.name}` : lobby.phase === 'complete' ? window.DraftOnline.isHost() ? 'Play match' : 'Draft complete' : 'View winning pick';
   }
   function open() { if (!snapshot) return; dismissed = null; adapter.closePicker(false); present(true, true); renderLauncher(); }
   function stop() {

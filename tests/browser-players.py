@@ -212,6 +212,8 @@ def full_case(browsers,count,label,pool):
   p.locator('#field').screenshot(path=str(OUT/(label+'-full-roster-'+str(i)+'.png')))
   overlaps=p.locator('#field .position').evaluate_all('''els=>{const out=[];for(let i=0;i<els.length;i++)for(let j=i+1;j<els.length;j++){const a=els[i].getBoundingClientRect(),b=els[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)out.push([els[i].dataset.slot,els[j].dataset.slot]);}return out;}''')
   check(label+' full roster tiles do not overlap '+str(i),not overlaps,overlaps)
+  obstructed=p.evaluate('''()=>{const launcher=document.getElementById('live-auction-launch');if(!launcher||launcher.hidden)return[];const b=launcher.getBoundingClientRect();return[...document.querySelectorAll('#field .position')].filter(el=>{const a=el.getBoundingClientRect();return Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;}).map(el=>el.dataset.slot);}''')
+  check(label+' launcher does not cover roster '+str(i),not obstructed,obstructed)
  for i,ctx in enumerate(contexts):
   private=OUT/(label+'-player-'+str(i)+'-private.json');ctx.storage_state(path=str(private));private.chmod(0o600)
  for ctx in contexts:ctx.close()

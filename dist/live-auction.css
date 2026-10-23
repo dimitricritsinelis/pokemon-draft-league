@@ -61,7 +61,10 @@
 .player-stage .player-stage-help { font-size: 12px; color: #829075; margin: 12px 0 24px; }
 .player-winner-image { width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 8px 7px #19392418); }
 .player-stage > button { display: block; width: 100%; min-height: 46px; margin-top: 10px; border-radius: 9px; }
-.live-auction-launch { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 30; border: 1px solid #31573b; border-radius: 30px; padding: 13px 22px; background: #163b29; color: #fff; font-size: 13px; box-shadow: 0 5px 20px #102d2330; max-width: calc(100vw - 32px); white-space: nowrap; }
+.online-dashboard-footer { display: flex; align-items: center; gap: 8px; }
+.online-dashboard-footer .online-draft-status { flex: 1; min-width: 0; }
+.live-auction-launch { flex-shrink: 0; border: 1px solid #d6dfcf; border-radius: 7px; padding: 7px 10px; min-height: 40px; margin-top: 5px; background: #fff; color: #355137; font-size: 11px; max-width: 50%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 @media(min-width:1001px) {
  .players-online .game { grid-template-columns: minmax(0,1fr) 352px; align-items: start; }
  .players-online #picker { display: none; }
