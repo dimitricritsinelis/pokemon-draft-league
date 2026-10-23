@@ -78,3 +78,14 @@ Local validation for this change:
 WebKit at an iPhone viewport is browser-engine coverage; it is not a test on a physical iPhone. Countdown expiry is settled by authenticated polling or a game action, rather than a background scheduled job.
 
 Final handoff review also verified custom-bid validation before submission, visible reconnect state with bidding disabled, retained typed bids after reconnect, and the phone’s inline auction action reopening bidding. The phone action lives above the field; completed guest rosters have no redundant summary overlay. Before a first win, tapping the field shows next-step guidance rather than an empty catalog. Opening a new live round clears any underlying roster picker.
+
+### Vercel and Supabase acceptance
+
+The public game at https://pokemon-draft-league-jade.vercel.app/ served the final versioned assets and confirmed Supabase-backed 23-player rosters. Nested lobby and league routes reached the live API.
+
+- A full four-coach production auction completed all 92 purchases and owner placements, then a physical PC “Play match” flow, shared results, reconciled 46-player statistics, career prices, and both hall operations. This validated the player/live protocol in `f14cf6b`.
+- The final `6db9c47` release completed a fresh two-coach production auction through all 46 purchases, the physical phone “Play match” flow, saved results/careers, and hall operations. Its 210 acceptance checks passed without runtime errors; deliberate unauthorized/starter requests were rejected as expected.
+- A separate three-coach production probe exercised real timed public raises, late extensions, automatic awards, custom bids, chat preservation, and keyboard-sized WebKit layouts.
+- Final handoff checks covered the empty-team hint, returning from roster editing to a new bidding round, and closing the old phone auction before match results appear. Completed boards were visually reviewed as well as checked for tile and control overlap.
+
+The first combined production run exposed a race in the browser test: it assumed a placement phase identified a particular prospect. Consecutive free awards can remain in that phase. The harness now waits for the exact nominee and pending award on the winning device before acting. The original failure evidence was retained, and the fresh two-coach run passed. Production QA used isolated test leagues, not the user’s room.

@@ -137,7 +137,8 @@ def submit(page,amount,pokemon_id,physical=False):
 
 def place(pages,room,physical=False):
  winner=room['auction']['pendingAward']['team'];award=room['auction']['pendingAward'];p=pages[winner]
- wait_phase(p,'placement');key=first_empty_key(room['teams'][winner])
+ p.wait_for_function('(id)=>DraftOnline.state()?.lobby?.phase==="placement"&&DraftOnline.state().lobby.auction.pendingAward?.pokemonId===id',arg=award['pokemonId'],timeout=60000)
+ key=first_empty_key(room['teams'][winner])
  if physical:
   p.wait_for_function("!document.querySelector('#auction-dialog').matches(':modal')")
   p.locator('[data-slot="'+key+'"]').click()
@@ -155,8 +156,9 @@ def full_case(browsers,count,label,pool):
  capture(h,label+'-initial')
  # Every coach spends their actual budget once: highest possible bids legitimately
  # settle immediately, so the rest of this full lifecycle needs no fake timer.
+ next_id=state(h)['lobby']['auction']['currentPokemonId']
  for i in range(count):
-  wait_phase(pages[i],'bidding');id=state(pages[i])['lobby']['auction']['currentPokemonId']
+  wait_round(pages[i],next_id);wait_phase(pages[i],'bidding');id=next_id
   pages[i].evaluate('(idx)=>DraftOnline.selectTeam(idx)',(i+1)%count)
   action(pages[i],'bid',{'amount':1000,'pokemonId':id});wait_phase(pages[i],'placement');room=state(pages[i])['lobby']
   check(label+' all-in awarded coach '+str(i),room['auction']['pendingAward']['team']==i and room['auction']['budgets'][i]==0)
@@ -164,7 +166,8 @@ def full_case(browsers,count,label,pool):
   if i==0:
    capture(pages[i],label+'-winner-placement')
    capture(pages[1],label+'-nonwinner-wait')
-  place(pages,room,True)
+  placed_page=place(pages,room,True)
+  next_id=state(placed_page)['lobby']['auction']['currentPokemonId']
  placed=count;seen=set()
  while placed<count*23:
   # All wallets are now empty; free awards are automatic and only their owner
