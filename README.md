@@ -21,11 +21,13 @@ The existing ChatGPT Sites publication remains a separate, earlier static releas
 
 ## Online play
 
-Open **Online lobby** from the hamburger menu. The host chooses 2–4 teams, team names, and Gen 1, Gen 2, Gen 3, or all generations, then starts the auction. Friends join using a four-digit code or invitation link. Separate strong credentials preserve host/viewer permissions across reloads; the short code is not a host password.
+Open **New game → Online**. The host chooses 2–4 coaches and a Pokémon generation pool. Friends join by four-digit code or invitation link, name their own teams, and bid from their own devices. Every coach must join before the host can start. Strong session credentials preserve each coach’s team ownership across reloads; the short code does not grant host control.
 
-The host submits all teams’ bids, skips prospects, assigns Pokémon, changes personnel, and simulates matches. Guests can view all teams and owned Pokémon and use room chat. The chat and team panel include position needs, inventories, unread messages, and reconnect status. Chat remains usable from the bidding dialog and adapts to the iPhone keyboard.
+Online auctions use public, ascending live bids. Each coach sees the leader and current price, with one **Bid $…** button and an optional higher amount. Each prospect starts with 20 seconds; late bids leave at least 8 seconds for a response. The highest bidder wins automatically and only that team pays. An unbeatable bid settles immediately. If nobody bids, a random eligible team receives the Pokémon free; when every eligible budget is empty, free awards happen immediately. A full roster stops bidding.
 
-A new auction reveals 46, 69, or 92 unique Pokémon one at a time. Only the winning team pays; ties, including all-zero bids, resolve randomly among teams with open roster spots. A skipped Pokémon stays out for the rest of that draft. Skipping is disabled when replacements are exhausted. A team with 23 players stops bidding. Each purchase must be placed before the next bid. Owned players can swap positions, and scheme changes preserve purchases by moving displaced players into active slots. After every roster is complete, the host chooses any two teams to play.
+The winning coach taps an empty field position; placing the pick automatically opens the next round. Each coach can rearrange their own purchased Pokémon, rename their team, and change formations. All coaches can inspect the other teams and chat. The host controls starting, skipping prospects before any bid, match simulations, and the league halls. Skipped Pokémon remain excluded for the draft. Auctions contain 46, 69, or 92 unique purchases. After every roster is complete, the host chooses any two teams to play.
+
+On PC the live auction sits beside the field. On phones bidding opens as a compact dialog and closes for the winner’s placement; **View field** and the floating live-auction button allow switching at any time. A single row shows team budgets and roster progress. The Room button holds invitations and session controls. Leaving preserves a **Resume room** option for the same saved seat. Same-device local auctions retain their shared multi-team bid form.
 
 The database is authoritative for bids, budgets, ownership, schemes, chat, match results, and career updates. Atomic revision checks and action IDs prevent duplicate charges and double-counted games. Clients poll for updates while open; unchanged responses use ETags instead of repeatedly downloading the full state. Routine polling does not extend a lobby’s one-hour inactivity limit. Chat and actual game actions do. League records remain after the session expires, with persistent owner/read access for returning devices.
 
@@ -47,13 +49,13 @@ All 386 species have physical and lore-based football scouting across 25 roles. 
 
 ## Local practice and sharing
 
-Without an online lobby, both practice teams use one Pokémon pool with no duplicates. Tap a position and choose a Pokémon; selecting an existing teammate swaps or moves it. Generation modes remember their teams. The hamburger menu holds personnel, names, sample/clear, export, sharing, halls, and Safari guidance, keeping the board prominent.
+Without an online lobby, both practice teams use one Pokémon pool with no duplicates. Tap a position and choose a Pokémon; selecting an existing teammate swaps or moves it. Generation modes remember their teams. Formations sit on the board toolbar; team settings hold names, sample lineups, and halls. Clear board requires confirmation, and sharing/export sit behind the board’s share icon.
 
 Practice drafts and same-device auctions retain browser saves separately from online lobbies. Existing 22-player auctions are upgraded with one additional eligible prospect per team when the remaining pool permits it. Otherwise their old roster remains readable and a new auction is needed for kicker-enabled matches. Local practice matches do not alter authoritative league career statistics. When a saved online league is available, the halls display its database records; otherwise solo career records are explicitly device-local.
 
 **Export image** creates a 1600×1550 PNG of the selected team’s board, personnel, names, and public scouting measurements. **Share link** copies two lineup snapshots rather than creating a live multiplayer session; use an online invitation for live play. Older share links and browser saves remain readable. Native sharing and clipboard features require browser support and HTTPS.
 
-**More room** explains Safari’s Hide Toolbar option and adding the game to the Home Screen. Fullscreen appears where supported. The field uses a local turf texture with a shallow perspective and upright players. Tight ends are staggered on narrow screens, and the kicker has a separate position.
+On iPhone, Safari’s Hide Toolbar option or adding the game to the Home Screen gives more room. The field uses a local turf texture with a shallow perspective and upright players. Tight ends are staggered on narrow screens, and the kicker has a separate position.
 
 ## Pokémon data and attribution
 

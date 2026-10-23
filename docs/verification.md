@@ -60,3 +60,19 @@ Verification for this revision:
 - The actual public site passed a complete **three-team local auction** and match in iPhone-sized WebKit, including skipping, purchased-player reload recovery, 69 unique placements, 46 match stat rows, return to practice, and resuming the saved auction. The 16 checks passed without JavaScript errors. These practice/local tests do not write shared league records.
 
 Run the portable `tests/browser-interface.py` for the shell checks and `tests/browser-deployment.py` for complete online auctions. Both accept `DRAFT_QA_URL`, `DRAFT_QA_OUTPUT`, `DRAFT_CHROMIUM_PATH`, and `DRAFT_WEBKIT_PATH`. The older browser checks were updated for the same entry flow.
+
+## Live per-player auction redesign
+
+The older host/viewer browser reports above describe the previous host-operated auction. They do not verify the new live-bidding interaction. `tests/browser-players.py` is the acceptance harness for the current player-operated protocol; host-only fixtures in the Node suite are explicitly marked legacy.
+
+Each coach now owns one team, bids from their own device, receives a visible public leader/price and countdown, and places their own winning picks. Desktop uses a nonmodal auction beside the field; phones receive bidding automatically and return to the field for placement. Default bids do not open a numeric keyboard. Local same-device auctions keep the multi-team bid form.
+
+Local validation for this change:
+
+- 46 Node tests passed, including independent complete 2/3/4-coach drafts, concurrent raises, late extensions, automatic expiry, stale commands, ownership, same-seat recovery, and coherent match/career ledgers.
+- 398 shell checks passed across Chromium and WebKit at widths 320–1440, including settings, local/online setup, sharing/export, clear confirmation, and simulated keyboard space.
+- All twenty formations passed online field geometry checks at 320, 393, 768, 1024, and 1440 pixels (23 positions, no overlap, every tile in the field, no horizontal overflow).
+- Actual local browser gameplay passed complete two-player (46 purchases) and four-player (92 purchases) auctions using independent Chromium PC and WebKit phone contexts. Each award was placed by its actual owner; tests covered budgets, free awards, protected rosters, reload/reconnect, coherent 46-player match stats, career prices, and shared halls. No JavaScript errors.
+- A separate three-coach browser probe used real timed $1 → $2 → $3 outbids and late extension, plus custom amounts, Enter submission, skip/stale controls, and chat draft preservation. A reduced visualViewport checked the custom input and bid action above simulated keyboard space.
+
+WebKit at an iPhone viewport is browser-engine coverage; it is not a test on a physical iPhone. Countdown expiry is settled by authenticated polling or a game action, rather than a background scheduled job.

@@ -33,7 +33,7 @@ def keyboard_probes(browser,engine):
   if mode=='settings':p.locator('#menu-toggle').click();panel='#draft-menu';target='#team-name'
   else:
    p.locator('#new-game-button').click();p.locator('#auction-team-count').select_option('4')
-   if mode=='online':p.locator('#online-lobby-button').click();panel='#online-dialog';target='#online-name-3'
+   if mode=='online':p.locator('#online-lobby-button').click();panel='#online-dialog';target='#online-name-0'
    else:panel='#auction-setup-dialog';target='#auction-name-3'
   p.locator(target).fill('Keyboard Probe')
   p.evaluate("""()=>{const old=visualViewport;const v=new EventTarget();Object.assign(v,{height:310,offsetTop:8});Object.defineProperty(window,'visualViewport',{value:v,configurable:true});window.dispatchEvent(new Event('resize'));old?.dispatchEvent(new Event('resize'));v.dispatchEvent(new Event('resize'))}""")

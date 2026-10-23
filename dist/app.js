@@ -12,7 +12,9 @@
   let auction = null, auctionActive = false, regularView = null;
   let onlineSnapshot = null, localViewBackup = null, remoteBoardKey = '', remoteLeagueKey = '', remoteMatchId = null;
   const online = () => Boolean(onlineSnapshot);
-  const editable = () => !online() || window.DraftOnline.isHost();
+  const playersOnline = () => online() && onlineSnapshot.lobby.controlMode !== 'host';
+  const editable = () => !online() || (playersOnline() ? window.DraftOnline.ownsTeam(state.team) : window.DraftOnline.isHost());
+  const hostControls = () => !online() || window.DraftOnline.isHost();
   const auctionPhase = () => online() ? onlineSnapshot.lobby.phase : window.DraftAuction.phase(auction.session);
   const auctionCurrent = () => online() ? onlineSnapshot.lobby.auction?.currentPokemonId : window.DraftAuction.current(auction.session);
   const auctionBudgets = () => online() ? onlineSnapshot.lobby.auction?.budgets || Array(teamPair().length).fill(1000) : window.DraftAuction.budgets(auction.session);
@@ -21,7 +23,7 @@
   const auctionTotal = () => online() ? onlineSnapshot.lobby.auction?.total || teamPair().length * 23 : auction.session.lots.length;
   const rosterSize = () => auctionActive && !online() ? auction.session.rosterSize || 22 : 23;
   async function sendOnline(type, payload) {
-    if (!editable()) { message('The host controls the draft. You can browse teams and chat.'); return null; }
+    if (!window.DraftOnline.can(type, payload)) { message('Choose your own team to make changes. Room controls belong to the host.'); return null; }
     if (window.DraftOnline.pending()) return null;
     if (type === 'simulate') { $('simulate-match').disabled = true; $('rerun-match').disabled = true; }
     try { return await window.DraftOnline.request(type, payload); }
@@ -256,6 +258,7 @@
     state.team = index; applyBoard(teamPair()[index]);
     $('pokemon-search').value = ''; lastFieldButton = null;
     saveDraft(); renderBoard(); renderCatalog();
+    if (playersOnline()) window.DraftLiveAuction.refresh();
   }
 
   function filledCount(board) { return slots(false, board).filter(s => byId.has(board.picks[s.key])).length; }
@@ -284,10 +287,10 @@
       $('team-switcher').value = String(state.team);
     }
     const ready = rosterSize() === 23 && (!auctionActive || auctionPhase() === 'complete') && pair.every((b, i) => filledCount(i === state.team ? snapshot() : b) === rosterSize());
-    $('simulate-match').setAttribute('aria-disabled', String(!ready || !editable()));
-    $('simulate-match').disabled = !editable();
+    $('simulate-match').setAttribute('aria-disabled', String(!ready || !hostControls()));
+    $('simulate-match').disabled = !hostControls();
     $('simulate-match').title = ready ? many ? 'Choose two teams for a four-quarter game' : 'Play a four-quarter game' : 'Fill every position, including a kicker, on every team';
-    $('new-game-button').querySelector('.new-game-label').textContent = online() ? 'Draft room' : 'New game';
+    $('new-game-button').querySelector('.new-game-label').textContent = online() ? 'Room' : 'New game';
     $('new-game-button').classList.toggle('in-room', online());
     const board = document.querySelector('.board-panel');
     board.setAttribute('aria-label', `${teamName()} football draft board`);
@@ -390,7 +393,7 @@
     $('selection-title').textContent = selected ? selected.name : 'Select a position';
     $('selection-description').textContent = picked ? `Replacing ${picked.name}` : selected ? 'Choose your Pokémon' : 'Tap a player on the field to draft.';
     $('remove-pick').hidden = auctionActive || !picked;
-    if (online() && !editable()) { $('selection-description').textContent = 'Viewing roster · the host controls placements'; $('picker-heading').textContent = 'Team Pokémon'; } else $('picker-heading').textContent = 'Make your pick';
+    if (online() && !editable()) { $('selection-description').textContent = 'Viewing another coach’s roster'; $('picker-heading').textContent = 'Team Pokémon'; } else $('picker-heading').textContent = 'Make your pick';
     if (auctionActive && editable()) $('selection-description').textContent = selected ? 'Swap with a Pokémon you already own.' : 'Tap a player on the field to change its position.';
   }
 
@@ -476,7 +479,9 @@
 
   function selectPosition(key) {
     if (!slots().some(s => s.key === key)) throw new Error('Unknown position.');
-    if (auctionActive && auctionPhase() === 'placement') { placeAuctionPokemon(key); return; }
+    if (auctionActive && auctionPhase() === 'placement' && (!playersOnline() || (onlineSnapshot.lobby.auction.pendingAward?.team === onlineSnapshot.member.teamIndex && editable()))) { placeAuctionPokemon(key); return; }
+    if (playersOnline() && !editable()) { message('You’re viewing another coach’s roster. Select your team to make changes.'); return; }
+    if (playersOnline()) document.body.classList.add('online-roster-open');
     setMenuOpen(false);
     state.selected = key;
     $('pokemon-search').value = '';
@@ -504,7 +509,7 @@
     $('picker').removeAttribute('role');
     $('picker').removeAttribute('aria-modal');
     $('picker-backdrop').hidden = true;
-    document.body.classList.remove('picker-open');
+    document.body.classList.remove('picker-open', 'online-roster-open');
     $('picker').classList.remove('keyboard-open');
     $('picker').style.removeProperty('--picker-top');
     $('picker').style.removeProperty('--picker-height');
@@ -628,7 +633,7 @@
 
   function draftPokemon(id) {
     if (online()) {
-      if (!editable()) { message('Only the host can place Pokémon. Browse your roster in the lobby panel.'); return { drafted: false }; }
+      if (!editable()) { message('You can arrange your own team. Select your team above.'); return { drafted: false }; }
       if (!state.selected) { message('Select a position first.'); return { drafted: false }; }
       const key = state.selected;
       sendOnline('place', { teamIndex: state.team, slotKey: key, pokemonId: id }).then(result => { if (result && narrow.matches) closePicker(); });
@@ -709,7 +714,7 @@
   }
 
   function simulateMatch(indices) {
-    if (online() && !editable()) { message('The host runs match simulations. Results appear for everyone.'); return null; }
+    if (online() && !hostControls()) { message('The host runs match simulations. Results appear for everyone.'); return null; }
     if (rosterSize() === 22) { message('This older auction has no kicker slots. Start a new auction to play with kickers.'); return null; }
     if (auctionActive && auctionPhase() !== 'complete') { message(`Finish all ${auctionTotal()} auction picks before simulating the match.`); return null; }
     if (!Array.isArray(indices)) {
@@ -969,6 +974,7 @@
 
   function openAuctionRound() {
     if (!auctionActive) return;
+    if (playersOnline()) { window.DraftLiveAuction.open(); return; }
     if (online() && (auctionPhase() === 'waiting' || (!editable() && auctionPhase() !== 'bidding'))) { window.DraftOnline.open(); return; }
     $('auction-bid-form').hidden = !editable();
     $('auction-viewer-note').hidden = editable();
@@ -1078,7 +1084,7 @@
 
   function placeAuctionPokemon(key) {
     if (online()) {
-      if (!editable()) { message('The host places Pokémon.'); return { drafted: false }; }
+      if (!editable()) { message('Select your own team to place Pokémon.'); return { drafted: false }; }
       const award = onlineSnapshot.lobby.auction?.pendingAward;
       if (!award) return { drafted: false };
       if (state.team !== award.team) { changeTeam(award.team); message(`Choose a position on ${teamName(award.team)}.`); return { drafted: false }; }
@@ -1102,7 +1108,7 @@
     dialog.style.setProperty('--auction-top', `${(viewport?.offsetTop || 0) + 8}px`);
     dialog.style.setProperty('--auction-height', `${Math.max(0, height - 16)}px`);
     dialog.classList.toggle('keyboard-open', !!keyboard);
-    $('auction-title').textContent = keyboard ? $('auction-pokemon').textContent : 'Place your bids';
+    if (!playersOnline()) $('auction-title').textContent = keyboard ? $('auction-pokemon').textContent : 'Place your bids';
   }
 
 
@@ -1331,6 +1337,7 @@
   function renderOnlineAuction() {
     const lobby = onlineSnapshot.lobby, sale = lobby.auction;
     document.body.classList.add('auction-active', 'online-active');
+    document.body.classList.toggle('players-online', playersOnline());
     document.body.classList.toggle('online-viewer', !editable());
     document.body.dataset.auctionTeams = String(lobby.teamCount);
     $('auction-strip').hidden = false; $('auction-strip').dataset.phase = lobby.phase;
@@ -1351,7 +1358,7 @@
     const first = !online();
     const previousProspect = onlineSnapshot?.lobby?.auction?.currentPokemonId;
     if (first) { saveDraft(); localViewBackup = { mode: state.mode, team: state.team, shared, auction, auctionActive, regularView }; closePicker(false); closePersonnelMenus(); invalidateMatch(); }
-    const boardKey = JSON.stringify([next.lobby.code, next.lobby.mode, next.lobby.phase, next.lobby.teams, next.lobby.auction]);
+    const boardKey = JSON.stringify([next.lobby.code, next.lobby.mode, next.lobby.phase, next.lobby.teams, next.lobby.auction?.counts, next.lobby.auction?.pendingAward]);
     const boardChanged = boardKey !== remoteBoardKey;
     onlineSnapshot = next;
     auctionActive = true; auction = { session: next.lobby.auction || {}, teams: next.lobby.teams, team: state.team };
@@ -1368,21 +1375,23 @@
       const selected = state.selected; applyBoard(next.lobby.teams[state.team]);
       if (selected && slots().some(s => s.key === selected)) state.selected = selected;
       remoteBoardKey = boardKey; renderBoard(); renderCatalog();
-      if ($('auction-dialog').open && next.lobby.phase !== 'bidding') $('auction-dialog').close();
-      else if ($('auction-dialog').open && previousProspect !== next.lobby.auction?.currentPokemonId) openAuctionRound();
+      if (!playersOnline() && $('auction-dialog').open && next.lobby.phase !== 'bidding') $('auction-dialog').close();
+      else if (!playersOnline() && $('auction-dialog').open && previousProspect !== next.lobby.auction?.currentPokemonId) openAuctionRound();
     }
     if (next.lobby.match && next.lobby.match.matchId !== remoteMatchId) {
       remoteMatchId = next.lobby.match.matchId; renderMatch(next.lobby.match);
       $('match-career-status').textContent = 'Career stats saved to your league database.';
-      $('rerun-match').hidden = !editable(); lastMatchTeams = next.lobby.matches?.at(-1)?.teamIndexes || [0, 1];
+      $('rerun-match').hidden = !hostControls(); lastMatchTeams = next.lobby.matches?.at(-1)?.teamIndexes || [0, 1];
       if (!$('match-dialog').open) $('match-dialog').showModal();
     }
     window.DraftOnline.refreshNeeds();
+    if (playersOnline()) window.DraftLiveAuction.render(next);
   }
   function leaveOnlineView() {
+    window.DraftLiveAuction.stop();
     const restore = localViewBackup; onlineSnapshot = null; localViewBackup = null;
     remoteBoardKey = ''; remoteLeagueKey = ''; remoteMatchId = null;
-    window.DraftCareers.clearRemote(); document.body.classList.remove('online-active', 'online-viewer');
+    window.DraftCareers.clearRemote(); document.body.classList.remove('online-active', 'online-viewer', 'players-online');
     closePicker(false); invalidateMatch(); $('auction-dialog').close();
     if (restore) { state.mode = restore.mode; state.team = restore.team; shared = restore.shared; auction = restore.auction; auctionActive = restore.auctionActive; regularView = restore.regularView; }
     else { auction = null; auctionActive = false; state.mode = 'gen1'; state.team = 0; }
@@ -1405,6 +1414,14 @@
     [0, 1, 2, 3].forEach(i => { $(to + '-name-' + i).value = $(from + '-name-' + i).value; });
     $(to + '-team-count').dispatchEvent(new Event('change'));
   }
+  function getTeamNeeds(index) {
+    const board = teamPair()[index]; if (!board) return [];
+    const groups = {}; slots(false, board).filter(s => !board.picks[s.key]).forEach(s => { groups[s.role] = (groups[s.role] || 0) + 1; });
+    return Object.entries(groups).map(([role, count]) => ({ role, count }));
+  }
+  window.DraftLiveAuction.init({ scoutingStats, renderAuctionFacts, selectTeam: changeTeam,
+    getTeamIndex: () => state.team, getNeeds: getTeamNeeds, closePicker, notify: message,
+    playMatch: () => simulateMatch() });
   window.DraftOnline.init({ onSnapshot: applyOnlineSnapshot, onExit: leaveOnlineView,
     beforeOpen: () => {
       if ($('auction-setup-dialog').open) copyPlaySetup('auction', 'online');

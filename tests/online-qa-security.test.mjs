@@ -21,8 +21,9 @@ function fixture() {
     }));
     return {status:response.status, body:await response.json()};
   }
+  // This suite retains legacy host-authority checks; player auctions have dedicated coverage.
   async function create(extra = {}) {
-    const response = await api('/api/lobbies', {body:{teamCount:2,mode:'both',names:Array.from({length:extra.teamCount||2},(_,i)=>'Team '+(i+1)),nickname:'Host',...extra}});
+    const response = await api('/api/lobbies', {body:{controlMode:'host',teamCount:2,mode:'both',names:Array.from({length:extra.teamCount||2},(_,i)=>'Team '+(i+1)),nickname:'Host',...extra}});
     assert.equal(response.status,201,JSON.stringify(response)); return response.body;
   }
   const actionId = () => 'qa-action-'+(++counter);
@@ -32,7 +33,7 @@ function fixture() {
   return {api,create,action,actionId,store,peek:()=>({revision,state:copy(state)}),advance:ms=>{time+=ms;},now:()=>time};
 }
 
-test('four-digit codes do not grant host power; viewer is read-only across every action', async () => {
+test('legacy host rooms: four-digit codes do not grant host power; viewer is read-only across every action', async () => {
   const f=fixture(), host=await f.create({teamCount:4});
   assert.match(host.lobby.code,/^\d{4}$/);
   const joined=await f.api('/api/lobbies/join',{body:{code:host.lobby.code,nickname:'Viewer'}});

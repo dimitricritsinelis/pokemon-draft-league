@@ -1,0 +1,127 @@
+/* Online auctions are a field and a live pick, with one compact team overview. */
+.online-own-name { grid-column: 1 / -1; }
+.online-header-chat-button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid var(--ui-border); padding: 0 12px; background: #fff; color: var(--ink); font-size: 12px; }
+.online-header-status { display: block; color: #7c8778; font-size: 11px; margin-top: 4px; }
+.online-header-status:empty { display: none; }
+.players-online #auction-strip, .players-online #online-live-bar, .players-online #team-tabs, .players-online #team-switcher, .players-online #simulate-match { display: none !important; }
+.players-online .new-game-button { background: #fff; color: var(--ink); border-color: var(--ui-border); }
+.players-online .new-game-button > svg { display: none; }
+.online-team-dashboard { max-width: 1436px; margin: 0 auto 8px; padding: 0 12px; }
+.online-team-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(0,1fr)); gap: 8px; }
+.online-team-card { position: relative; min-width: 0; overflow: hidden; border: 1px solid #dfe5da; background: #f9faf6; border-radius: 10px; padding: 9px 12px 10px; color: var(--ink); text-align: left; }
+.online-team-card[aria-pressed=true] { background: #fff; border-color: #53735a; box-shadow: 0 0 0 1px #53735a; }
+.online-team-card-name { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.online-team-card-name small { margin-left: auto; color: #7b8b70; font-size: 8px; flex-shrink: 0; font-weight: 550; }
+.online-team-card-detail { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; font-size: 11px; color: #849079; margin-top: 3px; }
+.online-team-card-detail strong { font-size: 13px; font-weight: 600; color: #526d47; }
+.online-team-progress { height: 2px; position: absolute; bottom: 0; left: 0; right: 0; background: #e7ecdf; }
+.online-team-progress i { display: block; height: 100%; background: #7e9d6c; transition: width .2s; }
+.online-draft-status { padding: 8px 1px 0; font-size: 11px; color: #7b8971; min-height: 26px; line-height: 1.5; }
+.online-draft-status.your-placement { color: #325c3c; font-weight: 650; }
+.players-online #auction-dialog { border: 1px solid var(--ui-border); border-radius: 14px; padding: 22px; color: var(--ink); background: #fff; }
+.players-online #auction-dialog[open] { display: flex; flex-direction: column; }
+.players-online #auction-dialog .dialog-heading { margin-bottom: 14px; flex-shrink: 0; }
+.players-online #auction-dialog h2 { margin: 4px 0 0; font-size: 28px; }
+.players-online #auction-dialog .eyebrow { font-size: 9px; letter-spacing: 1.3px; }
+.players-online .auction-dialog-body { flex: 1 1 auto; min-height: 0; }
+.players-online .auction-prospect { border: 0; border-radius: 10px; padding: 8px; gap: 12px; margin-bottom: 16px; background: #f5f7f1; }
+.players-online .auction-prospect img { width: 112px; height: 112px; }
+.players-online .auction-prospect h3 { font-size: 30px; }
+.players-online .auction-scouting { margin-bottom: 8px; }
+.players-online .auction-base-stats { gap: 4px; }
+.players-online .auction-base-stats dt { font-size: 9px; }
+.players-online .auction-base-stats dd { font-size: 17px; }
+.player-position-needs { font-size: 11px; line-height: 1.6; color: #85907d; margin: 8px 0 12px; }
+.player-controls { flex: 0 0 auto; padding-top: 16px; border-top: 1px solid #e9ede4; }
+.live-price-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.live-price-row > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px; }
+.live-price-label { flex: 0 0 100%; color: #87917f; font-size: 9px; letter-spacing: 1px; }
+#player-highest-bid { font-family: system-ui,sans-serif; font-size: 31px; font-weight: 650; letter-spacing: -1px; line-height: 1.3; }
+#player-leader { font-size: 12px; color: #758368; overflow-wrap: anywhere; }
+.is-leading #player-leader { color: #387147; font-weight: 650; }
+.live-clock { text-align: right; display: flex; flex-direction: column; gap: 2px; }
+.live-clock strong { font-size: 24px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.live-clock span { font-size: 9px; color: #8a9483; }
+.live-clock-track { height: 3px; background: #eaf0e3; border-radius: 3px; margin: 10px 0 8px; overflow: hidden; }
+.live-clock-track i { display: block; height: 100%; background: #739c68; transition: width .2s linear; }
+.closing-soon .live-clock strong { color: #aa7326; }
+.closing-soon .live-clock-track i { background: #c89a3e; }
+#player-bid-context { margin: 0 0 10px; font-size: 10px; line-height: 1.5; color: #8a9480; }
+#player-custom-bid { margin-bottom: 10px; font-size: 12px; color: #577348; }
+#player-custom-bid summary { cursor: pointer; min-height: 36px; display: flex; align-items: center; }
+#player-custom-bid summary::after { content: '+'; margin-left: auto; }
+#player-custom-bid[open] summary::after { content: '−'; }
+#player-bid-submit { width: 100%; min-height: 48px; font-size: 16px; border-radius: 9px; }
+#player-bid-submit:disabled { background: #eaf0e4; border-color: #e4eadc; color: #7e9271; opacity: 1; }
+.live-bid-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding-top: 7px; min-height: 34px; font-size: 10px; color: #889480; }
+#player-skip { border: 0; background: transparent; color: #6e7e62; padding: 9px 0 9px 9px; min-height: 36px; font-size: 11px; }
+.player-stage { text-align: center; padding: 24px 4px; }
+.player-stage h3 { font-size: 30px; margin: 8px 0; font-family: 'Barlow Condensed',sans-serif; }
+.player-stage p { font-size: 14px; line-height: 1.6; }
+.player-stage .player-stage-help { font-size: 12px; color: #829075; margin: 12px 0 24px; }
+.player-winner-image { width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 8px 7px #19392418); }
+.player-stage > button { display: block; width: 100%; min-height: 46px; margin-top: 10px; border-radius: 9px; }
+.live-auction-launch { position: fixed; bottom: calc(14px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 30; border: 1px solid #31573b; border-radius: 30px; padding: 13px 22px; background: #163b29; color: #fff; font-size: 13px; box-shadow: 0 5px 20px #102d2330; max-width: calc(100vw - 32px); white-space: nowrap; }
+@media(min-width:1001px) {
+ .players-online .game { grid-template-columns: minmax(0,1fr) 352px; align-items: start; }
+ .players-online #picker { display: none; }
+ .players-online #auction-dialog { position: sticky; top: 12px; left: auto; right: auto; bottom: auto; width: 100%; max-width: none; margin: 0; height: calc(100dvh - 180px); max-height: none; min-height: 500px; box-shadow: none; }
+ .players-online #auction-dialog .dialog-heading > [data-close] { display: none; }
+ .players-online.online-active.auction-active .field { height: calc(100dvh - 234px); min-height: 500px; }
+ .players-online .picker-panel { top: 12px; height: calc(100dvh - 180px); min-height: 500px; }
+ .players-online.online-roster-open #picker { display: flex; }
+ .players-online.online-roster-open #close-picker { display: block; }
+ .players-online.online-roster-open #auction-dialog { display: none; }
+}
+@media(max-width:1000px) {
+ .online-team-dashboard { padding: 0 12px; margin-bottom: 5px; }
+ .online-team-cards { gap: 6px; }
+ .online-team-card { padding: 8px 9px 9px; border-radius: 8px; }
+ .online-team-card-name { font-size: 11px; }
+ .online-team-card-detail strong { font-size: 12px; }
+ .online-draft-status { font-size: 10px; min-height: 34px; padding-top: 6px; }
+ .players-online #auction-dialog { width: calc(100% - 20px); max-width: 440px; max-height: var(--auction-height,calc(100dvh - 20px)); padding: 20px; }
+ .players-online.online-active.auction-active .field { height: calc(100dvh - 212px); min-height: 680px; }
+ .players-online #auction-dialog .dialog-heading h2 { font-size: 29px; }
+ .players-online .player-controls { padding-top: 13px; }
+ .players-online .auction-prospect img { width: 100px; height: 100px; }
+ .players-online .auction-prospect h3 { font-size: 29px; }
+ .players-online .auction-base-stats dd { font-size: 18px; }
+ .players-online .keyboard-open .auction-battle-stats, .players-online .keyboard-open #auction-scouting, .players-online .keyboard-open .player-position-needs, .players-online .keyboard-open #player-bid-context { display: none; }
+ .players-online .keyboard-open .auction-prospect { margin-bottom: 4px; }
+ .players-online .keyboard-open .player-controls { padding-top: 8px; }
+ .players-online .keyboard-open .live-price-row, .players-online .keyboard-open .live-clock-track { display: none; }
+ .players-online .keyboard-open #player-custom-bid summary { min-height: 26px; }
+}
+@media(max-width:560px) {
+ .players-online .header-actions { gap: 3px; }
+ .players-online .header-actions .new-game-button { min-width: 42px; width: auto; padding: 0 9px; }
+ .players-online .header-actions .new-game-label { display: inline; font-size: 11px; }
+ .players-online .header-actions .online-header-chat-button { padding: 0 9px; font-size: 11px; }
+ .players-online .brand h1 { font-size: 20px; }
+ .online-header-status { font-size: 9px; margin-top: 3px; }
+ .players-online .masthead { gap: 6px; }
+ .players-online .brand { min-width: 0; gap: 7px; }
+ .players-online .brand-mark { width: 28px; }
+ .players-online .brand-mark img { width: 28px; height: 28px; }
+ .online-team-card-name { display: block; }
+ .online-team-card-name small { display: none; }
+ .online-team-card-detail { font-size: 9px; }
+ .online-team-card[aria-pressed=true] { background: #f9fcf5; }
+}
+@media(prefers-reduced-motion:reduce) { .online-team-progress i,.live-clock-track i { transition: none; } }
+
+.players-online .new-game-button.in-room .new-game-label:after { display: none; }
+@media(min-width:1001px) { .players-online #auction-dialog .online-modal-chat { display: none; } }
+.player-stage > button:disabled { background: #edf1e7; color: #8a967f; border: 1px solid #e0e6d8; }
+@media(max-width:359px) {
+ .players-online .online-header-chat-label { display: none; }
+ .players-online .header-actions .online-header-chat-button { min-width: 42px; }
+ .players-online .brand h1 { font-size: 18px; }
+ .players-online .online-header-status { max-width: 130px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ .online-team-card { padding-left: 7px; padding-right: 7px; }
+ .online-team-card-detail { font-size: 8px; gap: 2px; }
+ .online-team-card-detail strong { font-size: 11px; }
+}
+.online-header-status.is-offline { color: #a36d2a; }
+#player-bid-range { display: block; color: #839176; font-size: 10px; margin-top: 5px; }

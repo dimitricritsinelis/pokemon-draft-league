@@ -8,12 +8,14 @@ import { createSQLiteStore } from './sqlite-store.mjs';
 const engines=loadEngines();
 const make=()=>{const store=createSQLiteStore(':memory:');return{service:createService({store,engines}),store};};
 async function request(service,path,body,token,headers={}){
+  // Preserve regression coverage for the explicitly supported host-controlled protocol.
+  if(path==='/api/lobbies'&&body)body={controlMode:'host',...body};
   const response=await service.fetch(new Request('http://localhost'+path,{method:body===undefined?'GET':'POST',headers:{...(token?{authorization:'Bearer '+token}:{}),...headers},...(body!==undefined?{body:JSON.stringify(body)}:{})}));
   return{status:response.status,body:response.status===304?null:await response.json(),response};
 }
 const action=(service,snapshot,type,payload={},token=snapshot.member.token)=>request(service,`/api/lobbies/${snapshot.lobby.code}/action`,{actionId:crypto.randomUUID(),version:snapshot.lobby.version,type,payload},token);
 
-test('authoritative full auction, market counters, complete special teams match and idempotent replay',async()=>{
+test('legacy host-controlled authoritative full auction, market counters, complete special teams match and idempotent replay',async()=>{
  const {service,store}=make();
  try{
   const created=await request(service,'/api/lobbies',{teamCount:2,mode:'gen1',names:['Kanto','Rivals'],nickname:'Host'});assert.equal(created.status,201);
