@@ -10,6 +10,7 @@
   const auctionStorageKey = 'pokemon-draft-auction-v1';
   const incomingSharedLink = location.hash.startsWith('#draft=');
   let auction = null, auctionActive = false, regularView = null;
+  let boxMode = false, boxFilter = 'unplaced', boxedChoice = null;
   let onlineSnapshot = null, localViewBackup = null, remoteBoardKey = '', remoteLeagueKey = '', remoteMatchId = null;
   const online = () => Boolean(onlineSnapshot);
   const playersOnline = () => online() && onlineSnapshot.lobby.controlMode !== 'host';
@@ -57,24 +58,24 @@
   const d = (key, role, x, y) => slot('d_' + key, role, x, y, 'defense');
 
   function slots(mobile = phone.matches, board = state) {
-    const lineX = mobile ? [20, 35, 50, 65, 80] : [27, 38.5, 50, 61.5, 73];
+    const lineX = mobile ? [25, 37.5, 50, 62.5, 75] : [27, 38.5, 50, 61.5, 73];
     const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 76), o('rb1', 'HB', 50, 92)];
     const eligible = {
-      wr1: o('wr1', 'WR', 2, 59),
-      wr2: o('wr2', 'WR', 98, 59),
+      wr1: o('wr1', 'WR', mobile ? 12 : 9, 59),
+      wr2: o('wr2', 'WR', mobile ? 88 : 91, 59),
       wr3: o('wr3', 'WR', 15, 76), wr4: o('wr4', 'WR', 85, 76),
-      te1: o('te1', 'TE', mobile ? 92 : 85, mobile ? 74 : 59),
-      te2: o('te2', 'TE', mobile ? 8 : 15, mobile ? 74 : 59),
+      te1: o('te1', 'TE', mobile ? 85 : 81, mobile ? 76 : 59),
+      te2: o('te2', 'TE', mobile ? 15 : 19, mobile ? 76 : 59),
       rb2: o('rb2', 'FB', mobile ? 28 : 39, 88)
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
     offense.push(...extras[board.offense].map(key => eligible[key]));
-    const defense = [d('fs', 'FS', 35, 9), d('ss', 'SS', 65, 9), d('cb1', 'CB', 2, 28), d('cb2', 'CB', 98, 28)];
+    const defense = [d('fs', 'FS', 35, 9), d('ss', 'SS', 65, 9), d('cb1', 'CB', mobile ? 12 : 9, 28), d('cb2', 'CB', mobile ? 88 : 91, 28)];
     const fourLine = [d('de1', 'DE', 20, 43), d('dt1', 'DT', 40, 43), d('dt2', 'DT', 60, 43), d('de2', 'DE', 80, 43)];
     const fronts = {
-      '3-4': [d('de1', 'DE', 30, 43), d('dt1', 'NT', 50, 43), d('de2', 'DE', 70, 43), d('lb1', 'ILB', 40, 26), d('lb2', 'ILB', 60, 26), d('lb3', 'OLB', 22, 26), d('lb4', 'OLB', 78, 26)],
+      '3-4': [d('de1', 'DE', 30, 43), d('dt1', 'NT', 50, 43), d('de2', 'DE', 70, 43), d('lb1', 'ILB', 40, 26), d('lb2', 'ILB', 60, 26), d('lb3', 'OLB', mobile ? 25 : 22, 26), d('lb4', 'OLB', mobile ? 75 : 78, 26)],
       '4-3': [...fourLine, d('lb1', 'MLB', 50, 26), d('lb2', 'WLB', 30, 26), d('lb3', 'SLB', 70, 26)],
-      nickel: [...fourLine, d('lb1', 'LB', 35, 26), d('lb2', 'LB', 57, 26), d('nb', 'NB', 79, 26)],
+      nickel: [...fourLine, d('lb1', 'LB', 35, 26), d('lb2', 'LB', 57, 26), d('nb', 'NB', mobile ? 75 : 79, 26)],
       dime: [...fourLine, d('lb1', 'MLB', 50, 26), d('nb', 'NB', 28, 26), d('db6', 'DB', 72, 26)]
     };
     defense.push(...fronts[board.defense]);
@@ -255,6 +256,7 @@
   function changeTeam(index) {
     if (!Number.isInteger(index) || index < 0 || index >= teamPair().length || index === state.team) return;
     closePicker(false); closePersonnelMenus(); saveDraft();
+    boxedChoice = null; boxMode = false;
     state.team = index; applyBoard(teamPair()[index]);
     $('pokemon-search').value = ''; lastFieldButton = null;
     saveDraft(); renderBoard(); renderCatalog();
@@ -340,7 +342,7 @@
       button.style.setProperty('--depth', s.scale);
       button.dataset.slot = s.key;
       const pending = auctionActive && auctionPhase() === 'placement' && auction.session.awards.at(-1).team === state.team;
-      if (pending && !p) button.classList.add('auction-target');
+      if ((pending || (playersOnline() && boxedChoice && editable())) && !p) button.classList.add('auction-target');
       button.setAttribute('aria-label', `${s.side}: ${s.name}${p ? ', ' + p.name : ', empty'}. Select Pokémon.`);
       button.setAttribute('aria-pressed', String(state.selected === s.key));
       if (p) {
@@ -394,7 +396,12 @@
     $('selection-description').textContent = picked ? `Replacing ${picked.name}` : selected ? 'Choose your Pokémon' : 'Tap a player on the field to draft.';
     $('remove-pick').hidden = auctionActive || !picked;
     if (online() && !editable()) { $('selection-description').textContent = 'Viewing another coach’s roster'; $('picker-heading').textContent = 'Team Pokémon'; } else $('picker-heading').textContent = 'Make your pick';
-    if (auctionActive && editable()) $('selection-description').textContent = selected ? 'Swap with a Pokémon you already own.' : 'Tap a player on the field to change its position.';
+    if (boxMode && playersOnline()) {
+      $('picker-heading').textContent = 'PC Box'; $('selection-badge').textContent = 'PC';
+      $('selection-title').textContent = teamName(); $('selection-description').textContent = editable() ? 'Choose a Pokémon, then tap a position on your field.' : 'Viewing this coach’s Pokémon.';
+    }
+    $('box-filter').hidden = !boxMode;
+    if (!boxMode && auctionActive && editable()) $('selection-description').textContent = selected ? 'Swap with a Pokémon you already own.' : 'Tap a player on the field to change its position.';
   }
 
   function normalize(value) { return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9♀♂]/g, ''); }
@@ -445,15 +452,16 @@
     const owned = auctionActive ? new Set(auctionOwned(state.team)) : null;
     catalogCards.forEach((card, index) => {
       const p = pokemon[index];
-      const matches = allowed(p.id) && (!owned || owned.has(p.id)) && (normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query));
-      card.hidden = !matches;
+      const inBox = !Object.values(state.picks).includes(p.id);
+      const matches = allowed(p.id) && (!owned || owned.has(p.id)) && (!boxMode || boxFilter !== 'unplaced' || inBox) && (normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query));
+      card.hidden = !matches; card.style.order = boxMode && !inBox ? '1' : '0';
       const img = card.querySelector('img');
       if (img.getAttribute('src') !== imagePath(p)) img.src = imagePath(p);
       if (matches) found++;
     });
     emptyResult.hidden = found > 0;
     $('catalog-count').textContent = `${found} ${auctionActive ? 'owned Pokémon' : 'Pokémon'}`;
-    emptyResult.textContent = auctionActive && !query ? 'Win a Pokémon in the auction to add it to your team.' : 'No Pokémon found. Try a name or Pokédex number.';
+    emptyResult.textContent = boxMode && boxFilter === 'unplaced' && !query && owned?.size ? 'All your Pokémon are on the field. Choose All owned to rearrange them.' : auctionActive && !query ? 'Won Pokémon will appear in your PC Box.' : 'No Pokémon found. Try a name or Pokédex number.';
     $('pokemon-list').scrollTop = 0;
     updatePickedMarkers();
   }
@@ -472,7 +480,9 @@
       card.disabled = !editable() || claimed || retired || unowned; card.classList.toggle('opponent-pick', claimed || retired);
       const roster = card.querySelector('.roster-mark');
       const ownerName = claimed ? teamName(unavailable.get(Number(card.dataset.pokemon))) : '';
-      roster.hidden = !claimed && !retired; roster.textContent = retired ? 'Retired' : ownerName;
+      const id = Number(card.dataset.pokemon), placedSlot = slots().find(s => state.picks[s.key] === id);
+      roster.hidden = !claimed && !retired && !(playersOnline() && owned?.has(id));
+      roster.textContent = retired ? 'Retired' : claimed ? ownerName : placedSlot ? placedSlot.role + ' · On field' : 'PC Box';
       card.setAttribute('aria-label', `${retired ? 'Retired' : claimed ? 'Unavailable, on ' + ownerName : 'Draft'} ${byId.get(Number(card.dataset.pokemon)).name}, ${scoutingStats(byId.get(Number(card.dataset.pokemon))).description}`);
     });
   }
@@ -482,7 +492,13 @@
     if (auctionActive && auctionPhase() === 'placement' && (!playersOnline() || (onlineSnapshot.lobby.auction.pendingAward?.team === onlineSnapshot.member.teamIndex && editable()))) { placeAuctionPokemon(key); return; }
     if (playersOnline() && !editable()) { message('You’re viewing another coach’s roster. Select your team to make changes.'); return; }
     if (playersOnline() && !auctionOwned(state.team).length) { message('Win a Pokémon in the auction, then tap a position to place it.'); return; }
-    if (playersOnline()) document.body.classList.add('online-roster-open');
+    if (playersOnline() && boxedChoice) {
+      const id = boxedChoice; sendOnline('place', { teamIndex: state.team, slotKey: key, pokemonId: id }).then(result => {
+        if (!result) return; boxedChoice = null; renderBoard(); window.DraftLiveAuction.refresh(); message(`${byId.get(id).name} placed on your field`);
+      }); return;
+    }
+    boxMode = false;
+    if (playersOnline()) { window.DraftLiveAuction.minimize(); document.body.classList.add('online-roster-open'); }
     setMenuOpen(false);
     state.selected = key;
     $('pokemon-search').value = '';
@@ -490,6 +506,10 @@
     renderCatalog();
     $('pokemon-list').scrollTop = 0;
     lastFieldButton = document.querySelector(`[data-slot="${key}"]`);
+    showPicker();
+  }
+
+  function showPicker() {
     if (narrow.matches) {
       $('picker').classList.add('open');
       $('picker').setAttribute('role', 'dialog');
@@ -504,6 +524,15 @@
     } else $('pokemon-search').focus({ preventScroll: true });
   }
 
+  function openBox(index = state.team) {
+    if (!playersOnline()) return;
+    changeTeam(index); closePersonnelMenus(); setMenuOpen(false); window.DraftLiveAuction.minimize();
+    boxedChoice = null; boxMode = true; boxFilter = auctionOwned(state.team).some(id => !Object.values(state.picks).includes(id)) ? 'unplaced' : 'all'; state.selected = null;
+    $('pokemon-search').value = ''; document.body.classList.add('online-roster-open');
+    document.querySelectorAll('[data-box-filter]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.boxFilter === boxFilter)));
+    renderSelection(); renderCatalog(); showPicker();
+  }
+
   function closePicker(restoreFocus = true) {
     if (document.activeElement === $('pokemon-search')) $('pokemon-search').blur();
     $('picker').classList.remove('open');
@@ -511,12 +540,14 @@
     $('picker').removeAttribute('aria-modal');
     $('picker-backdrop').hidden = true;
     document.body.classList.remove('picker-open', 'online-roster-open');
+    boxMode = false;
     $('picker').classList.remove('keyboard-open');
     $('picker').style.removeProperty('--picker-top');
     $('picker').style.removeProperty('--picker-height');
     document.querySelector('.board-panel').inert = false;
     document.querySelector('.masthead').inert = false;
     document.querySelector('.draft-tools').inert = false;
+    if (playersOnline()) window.DraftLiveAuction?.refresh();
     if (restoreFocus && lastFieldButton) {
       const button = document.querySelector(`[data-slot="${lastFieldButton.dataset.slot}"]`);
       button?.focus({ preventScroll: true });
@@ -635,9 +666,13 @@
   function draftPokemon(id) {
     if (online()) {
       if (!editable()) { message('You can arrange your own team. Select your team above.'); return { drafted: false }; }
+      if (boxMode) {
+        boxedChoice = id; state.selected = null; closePicker(false); renderBoard(); window.DraftLiveAuction.refresh();
+        message(`Choose a position for ${byId.get(id).name}`); return { drafted: false, choosingPosition: true };
+      }
       if (!state.selected) { message('Select a position first.'); return { drafted: false }; }
       const key = state.selected;
-      sendOnline('place', { teamIndex: state.team, slotKey: key, pokemonId: id }).then(result => { if (result && narrow.matches) closePicker(); });
+      sendOnline('place', { teamIndex: state.team, slotKey: key, pokemonId: id }).then(result => { if (result) closePicker(); });
       return { drafted: false, pending: true };
     }
     if (auctionActive) {
@@ -1298,6 +1333,7 @@
   document.addEventListener('focusin', syncInterfaceViewport);
   document.addEventListener('focusout', () => requestAnimationFrame(syncInterfaceViewport));
   window.addEventListener('resize', schedulePickerViewport);
+  document.querySelectorAll('[data-box-filter]').forEach(button => button.addEventListener('click', () => { boxFilter = button.dataset.boxFilter; document.querySelectorAll('[data-box-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === button))); renderCatalog(); }));
   $('close-picker').addEventListener('click', () => closePicker());
   $('picker-backdrop').addEventListener('click', () => closePicker());
   $('remove-pick').addEventListener('click', () => {
@@ -1375,7 +1411,8 @@
     if (boardChanged) {
       const selected = state.selected; applyBoard(next.lobby.teams[state.team]);
       if (selected && slots().some(s => s.key === selected)) state.selected = selected;
-      remoteBoardKey = boardKey; renderBoard(); renderCatalog();
+      const listScroll = $('pokemon-list').scrollTop;
+      remoteBoardKey = boardKey; renderBoard(); renderCatalog(); $('pokemon-list').scrollTop = listScroll;
       if (!playersOnline() && $('auction-dialog').open && next.lobby.phase !== 'bidding') $('auction-dialog').close();
       else if (!playersOnline() && $('auction-dialog').open && previousProspect !== next.lobby.auction?.currentPokemonId) openAuctionRound();
     }
@@ -1390,7 +1427,7 @@
     if (playersOnline()) window.DraftLiveAuction.render(next);
   }
   function leaveOnlineView() {
-    window.DraftLiveAuction.stop();
+    boxedChoice = null; boxMode = false; window.DraftLiveAuction.stop();
     const restore = localViewBackup; onlineSnapshot = null; localViewBackup = null;
     remoteBoardKey = ''; remoteLeagueKey = ''; remoteMatchId = null;
     window.DraftCareers.clearRemote(); document.body.classList.remove('online-active', 'online-viewer', 'players-online');
@@ -1421,7 +1458,8 @@
     const groups = {}; slots(false, board).filter(s => !board.picks[s.key]).forEach(s => { groups[s.role] = (groups[s.role] || 0) + 1; });
     return Object.entries(groups).map(([role, count]) => ({ role, count }));
   }
-  window.DraftLiveAuction.init({ scoutingStats, renderAuctionFacts, selectTeam: changeTeam,
+  window.DraftLiveAuction.init({ scoutingStats, renderAuctionFacts, selectTeam: changeTeam, openBox,
+    getPlacement: () => boxedChoice ? byId.get(boxedChoice)?.name : null,
     getTeamIndex: () => state.team, getNeeds: getTeamNeeds, closePicker, notify: message,
     playMatch: () => simulateMatch() });
   window.DraftOnline.init({ onSnapshot: applyOnlineSnapshot, onExit: leaveOnlineView,

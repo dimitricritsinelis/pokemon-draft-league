@@ -31,6 +31,9 @@ with sync_playwright() as pw:
      check(label+' no player overlap',not overlap,overlap)
      check(label+' everytilewithinfield',all(a['x']>=field['x']-1 and a['right']<=field['x']+field['width']+1 and a['y']>=field['y']-1 and a['bottom']<=field['y']+field['height']+1 for a in positions),[a for a in positions if a['bottom']>field['y']+field['height']+1])
      check(label+' page no horizontal bleed',p.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+     inside_pitch=p.locator('.position').evaluate_all('''els=>{const f=document.getElementById('field').getBoundingClientRect();return els.every(e=>{const r=e.getBoundingClientRect();const ys=[(r.top-f.top)/f.height*100,(r.bottom-f.top)/f.height*100];const left=Math.max(...ys.map(y=>DraftField.project(3,y).x/100*f.width+f.left));const right=Math.min(...ys.map(y=>DraftField.project(97,y).x/100*f.width+f.left));return r.left>=left-1&&r.right<=right+1})}''')
+     check(label+' every player inside painted sidelines',inside_pitch)
+
      # Physically select each position on iPhone-sized portrait in every formation.
      if w==393:
       for slot in positions:

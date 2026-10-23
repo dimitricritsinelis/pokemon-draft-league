@@ -36,7 +36,7 @@
   <link rel="stylesheet" href="auction.css?v=16">
   <script src="assets/pokemon.js?v=14" defer></script>
   <script src="field.js?v=14" defer></script>
-  <script src="export.js?v=14" defer></script>
+  <script src="export.js?v=20" defer></script>
   <script src="ratings.js?v=14" defer></script>
   <script src="simulation.js?v=14" defer></script>
   <script src="career.js?v=14" defer></script>
@@ -45,10 +45,10 @@
   <script src="auction.js?v=14" defer></script>
   <link rel="stylesheet" href="online.css?v=16">
   <link rel="stylesheet" href="interface.css?v=16">
-  <script src="online.js?v=18" defer></script>
-  <link rel="stylesheet" href="live-auction.css?v=18">
-  <script src="live-auction.js?v=19" defer></script>
-  <script src="app.js?v=18" defer></script>
+  <script src="online.js?v=20" defer></script>
+  <link rel="stylesheet" href="live-auction.css?v=20">
+  <script src="live-auction.js?v=20" defer></script>
+  <script src="app.js?v=20" defer></script>
 </head>
 <body>
   <header class="masthead">
@@ -110,6 +110,7 @@
       <div class="picker-handle" aria-hidden="true"></div>
       <div class="picker-heading-row"><div><span class="eyebrow" id="picker-generation">THE ORIGINAL 151</span><h2 id="picker-heading">Make your pick</h2></div><button id="close-picker" class="icon-button mobile-only" aria-label="Close Pokémon picker">×</button></div>
       <div id="selection-info" class="selection-info"><span class="selection-badge" id="selection-badge">＋</span><div><strong id="selection-title">Select a position</strong><span id="selection-description">Tap a player on the field to draft.</span></div><button id="remove-pick" class="remove-button" aria-label="Remove Pokémon from selected position" hidden>Remove</button></div>
+      <div id="box-filter" class="box-filter" role="group" aria-label="PC Box contents" hidden><button type="button" data-box-filter="unplaced" aria-pressed="true">In box</button><button type="button" data-box-filter="all" aria-pressed="false">All owned</button></div>
       <label class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input id="pokemon-search" type="search" placeholder="Find a Pokémon…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="Find a Pokémon by name or Pokédex number"></label>
       <div class="catalog-meta"><span id="catalog-count">151 Pokémon</span><div class="catalog-tools"><span id="catalog-generation">GENERATION I</span></div></div>
       <div id="pokemon-list" class="pokemon-list"></div>

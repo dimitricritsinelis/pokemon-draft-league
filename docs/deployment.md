@@ -50,7 +50,7 @@ This checks the public game page and API health without changing league data. Mi
 1. On the host device, create a lobby with 2–4 coaches and a Pokémon pool. Confirm that its join code contains four digits.
 2. On another device, join using the link or code. Confirm that the guest can browse every team and its owned Pokémon.
 3. Send chat messages in both directions. Confirm that both screens update, and that a message containing HTML appears as text.
-4. Start the auction from the host. Bid from different devices and verify the leading price updates. Let the clock award the Pokémon and have its owner place it. Verify a late bid extends the clock, the host can skip before any bid, and every coach can change only their own roster.
+4. Start the auction from the host. Bid from different devices and verify the leading price updates. Let the clock send the Pokémon to its owner’s PC Box; verify the next pick begins before placement. Minimize the auction and place the owned Pokémon while bidding continues. Verify a late bid restores five seconds, the host can skip before any bid, and every coach can change only their own roster.
 5. Refresh both devices. Each coach must retain their own seat and team controls, the host must retain room controls, and everyone must recover the same live bid, budgets, rosters, and chat.
 6. Finish the 23-player rosters, including each kicker, then simulate a game. Verify that both devices show the same result and that refreshing does not record the game twice.
 7. Induct a Pokémon into the Hall of Fame or Hall of Shame. Confirm that both devices show the induction and cannot draft it. Remove it and confirm that eligibility returns.

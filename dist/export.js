@@ -39,7 +39,7 @@
       const x = 1600 * s.x / 100, y = fieldHeight * s.y / 100;
       const image = images[index];
       if (image) {
-        const size = 132 * s.scale;
+        const size = 112 * s.scale;
         const scale = Math.min(size / image.width, size / image.height);
         const w = image.width * scale, h = image.height * scale;
         ctx.imageSmoothingEnabled = true;
@@ -51,7 +51,7 @@
         ctx.beginPath(); ctx.arc(x, y - 25, 35, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
         ctx.fillStyle = '#e4eccaaa'; ctx.font = '400 40px sans-serif'; ctx.fillText('+', x, y - 12);
       }
-      const plateY = y + 43, plateWidth = 136 * s.scale;
+      const plateY = y + 43, plateWidth = 112 * s.scale;
       ctx.fillStyle = '#0d1f17ef'; ctx.strokeStyle = '#cddfc799'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.roundRect(x - plateWidth / 2, plateY, plateWidth, image ? 65 : 31, 5); ctx.fill(); ctx.stroke();
       if (image) {

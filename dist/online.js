@@ -43,6 +43,7 @@
   function errorText(error) { return error?.message || 'The server could not complete that action. Try again.'; }
   function showError(message, target = 'online-error') { const el = $(target); if (!el) return; el.textContent = message; el.hidden = !message; }
   async function api(path, { method = 'GET', body, authorize = true, authToken } = {}) {
+    const started = performance.now();
     const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 12000);
     try {
       const conditional = method === 'GET' && !authToken && /^\/api\/lobbies\//.test(path);
@@ -51,6 +52,7 @@
       const response = await fetch(path, { method, credentials: 'same-origin', cache: 'no-store', headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}), ...(conditional && etags.has(etagKey) ? { 'If-None-Match': etags.get(etagKey) } : {}) }, body: body ? JSON.stringify(body) : undefined, signal: controller.signal });
       if (response.status === 304) return null;
       let data; try { data = await response.json(); } catch { throw new Error('Online play is not configured on this deployment yet.'); }
+      if (data?.serverTime) { const received = performance.now(), roundTrip = Math.max(0, received - started - (Number(data.serverProcessingMs) || 0)); data.clockSync = { serverNow: Date.parse(data.serverTime) + roundTrip / 2, receivedAt: received, uncertaintyMs: roundTrip / 2 }; }
       if (!response.ok) { const error = new Error(data.error || 'The server could not complete that request.'); error.status = response.status; error.code = data.code; if (data.lobby && data.member) error.snapshot = data; throw error; }
       if (conditional && response.headers.get('ETag')) etags.set(etagKey, response.headers.get('ETag'));
       return data;
@@ -223,7 +225,7 @@
     $('online-room-code').textContent = lobby.code;
     const pool = { gen1: 'Gen 1', gen2: 'Gen 2', gen3: 'Gen 3', both: 'All generations' }[lobby.mode] || lobby.mode;
     $('online-room-summary').textContent = `${lobby.teamCount} teams · ${pool} · $1,000 per team`;
-    $('online-room-phase').textContent = lobby.phase === 'waiting' ? missing && !legacy ? `Invite ${missing} more ${missing === 1 ? 'coach' : 'coaches'} to start` : isHost() ? 'All coaches are here · ready to start' : 'Ready · the host can start the auction' : lobby.phase === 'complete' ? 'Draft complete · ready to play' : lobby.phase === 'placement' ? 'The winning coach is placing their pick' : 'Auction in progress';
+    $('online-room-phase').textContent = lobby.phase === 'waiting' ? missing && !legacy ? `Invite ${missing} more ${missing === 1 ? 'coach' : 'coaches'} to start` : isHost() ? 'All coaches are here · ready to start' : 'Ready · the host can start the auction' : lobby.phase === 'complete' ? lobby.auction?.fieldCounts?.every(n => n === 23) ? 'Draft complete · ready to play' : 'Draft complete · arrange your PC Box on the field' : lobby.phase === 'placement' ? 'The winning coach is placing their pick' : 'Auction in progress';
     $('online-start-button').hidden = !isHost() || lobby.phase !== 'waiting';
     $('online-start-button').textContent = missing && !legacy ? `Waiting for ${missing} ${missing === 1 ? 'coach' : 'coaches'}` : 'Start auction';
     $('online-host-note').textContent = legacy ? 'This room uses the original host-controlled draft. Start a new room for bidding from each player’s device.' : isHost() ? 'Everyone bids for their own team and places their own picks. You start the draft, skip unbid prospects, and run matches.' : 'Bid for your team, place your picks, and choose your schemes. See the highest bid and outbid the other coaches.';
@@ -265,7 +267,7 @@
     $('online-owned-count').textContent = String(owned.length);
     $('online-owned').replaceChildren(...owned.map(pokemonId => {
       const p = pokemon.get(pokemonId), row = node('div', 'online-owned-pokemon'), image = node('img'); image.src = p?.image || ''; image.alt = ''; image.loading = 'lazy'; image.width = 38; image.height = 38;
-      const info = node('div'); info.append(node('strong', '', p?.name || `#${pokemonId}`), node('span', '', placed.has(pokemonId) ? (placed.get(pokemonId) === 's_k' ? 'K' : placed.get(pokemonId).replace(/^[od]_/, '').toUpperCase()) : 'Awaiting position')); row.append(image, info); return row;
+      const info = node('div'); info.append(node('strong', '', p?.name || `#${pokemonId}`), node('span', '', placed.has(pokemonId) ? (placed.get(pokemonId) === 's_k' ? 'K' : placed.get(pokemonId).replace(/^[od]_/, '').toUpperCase()) : 'PC Box')); row.append(image, info); return row;
     }));
     $('online-owned-empty').hidden = owned.length > 0;
     $('online-chat-connection').textContent = offline ? 'Reconnecting · messages will be available when online' : `${current.lobby.members?.length || 1} in room · everyone can chat`;

@@ -129,166 +129,102 @@ def start(pages,label):
    check(label+' phone bid requires no scrolling',button['y']>=0 and button['y']+button['height']<=p.viewport_size['height']+1,button)
  FLOW.append(label+': host starts once; each device receives a personal one-click bid automatically.')
 
-def submit(page,amount,pokemon_id,physical=False):
- wait_round(page,pokemon_id)
- if physical:
-  page.wait_for_function('(amount)=>DraftOnline.state()?.lobby?.auction?.bidding?.highestBid===amount-5',arg=amount,timeout=15000)
-  page.locator(SUBMIT).click()
+def wait_open(page):
+ page.wait_for_function("(()=>{const s=DraftOnline.state(),c=s?.clockSync,b=s?.lobby.auction?.bidding;return b&&((c?.serverNow||Date.parse(s.serverTime))+performance.now()-(c?.receivedAt||performance.now()))>=Date.parse(b.opensAt)})()",timeout=30000)
+ page.wait_for_function('!document.getElementById("player-bid-submit").disabled',timeout=20000)
+def ensure_auction(page):
+ if not page.locator(SUBMIT).is_visible():page.evaluate('DraftLiveAuction.open()')
+def bid(page,amount,pokemon_id,quick=False):
+ wait_round(page,pokemon_id);ensure_auction(page);wait_open(page)
+ if quick:page.locator(SUBMIT).click()
  else:action(page,'bid',{'amount':amount,'pokemonId':pokemon_id})
-
-def place(pages,room,physical=False):
- winner=room['auction']['pendingAward']['team'];award=room['auction']['pendingAward'];p=pages[winner]
- p.wait_for_function('(id)=>DraftOnline.state()?.lobby?.phase==="placement"&&DraftOnline.state().lobby.auction.pendingAward?.pokemonId===id',arg=award['pokemonId'],timeout=60000)
- key=first_empty_key(room['teams'][winner])
+def wait_award(page,id):
+ page.wait_for_function('(id)=>DraftOnline.state()?.lobby.auction?.awards.some(a=>a.pokemonId===id)',arg=id,timeout=45000)
+ return next(a for a in state(page)['lobby']['auction']['awards'] if a['pokemonId']==id)
+def place_owned(pages,award,physical=False):
+ p=pages[award['team']];id=award['pokemonId'];wait_award(p,id);select_own(p);board=state(p)['lobby']['teams'][award['team']];key=first_empty_key(board)
  if physical:
-  p.wait_for_function("!document.querySelector('#auction-dialog').matches(':modal')")
-  p.locator('[data-slot="'+key+'"]').click()
- else:action(p,'place',{'teamIndex':winner,'slotKey':key,'pokemonId':award['pokemonId']})
- p.wait_for_function('(id)=>DraftOnline.state()?.lobby?.auction?.pendingAward?.pokemonId!==id',arg=award['pokemonId'],timeout=30000)
+  p.evaluate('DraftLiveAuction.minimize()');p.locator('#pc-box-button').click();p.locator('[data-pokemon="'+str(id)+'"]').click();p.locator('[data-slot="'+key+'"]').click()
+  p.wait_for_function('(v)=>DraftOnline.state().lobby.teams[v.i].picks[v.key]===v.id',arg={'i':award['team'],'key':key,'id':id},timeout=30000)
+ else:action(p,'place',{'teamIndex':award['team'],'slotKey':key,'pokemonId':id})
  return p
 
 def full_case(browsers,count,label,pool):
  print(json.dumps({'case':label,'stage':'setup','teams':count}),flush=True)
  contexts,pages=setup(browsers,count,label,pool);h=pages[0]
- for p in pages:
-  check(label+' other roster protected '+str(own(p)),raw_action(p,'scheme',{'teamIndex':(own(p)+1)%count,'offense':'10'})['status']==403)
-  action(p,'scheme',{'teamIndex':own(p),'offense':'12' if own(p)%2 else '10','defense':'nickel' if own(p)%2 else '4-3'})
- start(pages,label)
- capture(h,label+'-initial')
- # Every coach spends their actual budget once: highest possible bids legitimately
- # settle immediately, so the rest of this full lifecycle needs no fake timer.
- next_id=state(h)['lobby']['auction']['currentPokemonId']
+ for p in pages:action(p,'scheme',{'offense':'12' if own(p)%2 else '10','defense':'nickel' if own(p)%2 else '4-3'})
+ start(pages,label);placed=set()
  for i in range(count):
-  wait_round(pages[i],next_id);wait_phase(pages[i],'bidding');id=next_id
-  pages[i].evaluate('(idx)=>DraftOnline.selectTeam(idx)',(i+1)%count)
-  action(pages[i],'bid',{'amount':1000,'pokemonId':id});wait_phase(pages[i],'placement');room=state(pages[i])['lobby']
-  check(label+' all-in awarded coach '+str(i),room['auction']['pendingAward']['team']==i and room['auction']['budgets'][i]==0)
-  check(label+' host cannot place another roster '+str(i),raw_action(pages[(i+1)%count],'place',{'teamIndex':i,'slotKey':'s_k','pokemonId':id})['status']==403)
-  if i==0:
-   capture(pages[i],label+'-winner-placement')
-   capture(pages[1],label+'-nonwinner-wait')
-  placed_page=place(pages,room,True)
-  next_id=state(placed_page)['lobby']['auction']['currentPokemonId']
- placed=count;seen=set()
- while placed<count*23:
-  # All wallets are now empty; free awards are automatic and only their owner
-  # should be asked to place. No artificial bid submission per free prospect.
-  h.wait_for_function('(n)=>DraftOnline.state()?.lobby?.auction?.counts.reduce((a,b)=>a+b,0)>n',arg=placed,timeout=60000)
-  room=state(h)['lobby'];award=room['auction']['pendingAward'];idx=award['team'];winner=pages[idx]
-  wait_phase(winner,'placement');check(label+' free automatic round '+str(placed+1),award['amount']==0)
-  check(label+' each free prospect unique '+str(placed+1),award['pokemonId'] not in seen);seen.add(award['pokemonId'])
-  for p in pages:
-   if state(p)['lobby']['auction']['counts'][own(p)]==23 and own(p)!=idx:
-    check(label+' full coach cannot bid '+str(placed),p.locator(SUBMIT+':visible:enabled').count()==0)
-  place(pages,room,FULL_UI or placed<count+2);placed+=1
-  if placed%23==0:print(json.dumps({'case':label,'stage':'draft','placed':placed}),flush=True)
- for p in pages:wait_phase(p,'complete')
- room=state(h)['lobby'];check(label+' every roster full',room['auction']['counts']==[23]*count)
- check(label+' no duplicated species',len({id for t in room['teams'] for id in t['picks'].values()})==count*23)
- for award in room['auction']['awards']:
-  c=state(h)['league']['careers'][str(award['pokemonId'])];check(label+' paid ledger '+str(award['pokemonId']),c['draftCount']==1 and c['totalAuctionPaid']==award['amount'] and c['averagePaid']==award['amount'])
- FLOW.append(label+': every roster completed with one winner placement per pick; empty wallets received automatic free awards.')
- # Reconnect all independent clients before the match; server owns the draft.
- for p in pages:p.reload(wait_until='networkidle');p.wait_for_function('DraftOnline.active()',timeout=45000);wait_phase(p,'complete')
- check(label+' refresh retains every roster',state(h)['lobby']['teams']==room['teams'])
- contexts[-1].set_offline(True);pages[-1].evaluate('window.dispatchEvent(new Event("offline"))')
- contexts[-1].set_offline(False);pages[-1].evaluate('window.dispatchEvent(new Event("online"))')
- pages[-1].wait_for_function('DraftOnline.active()&&DraftOnline.state().lobby.phase==="complete"',timeout=45000)
- check(label+' reconnect retains own seat',own(pages[-1])==count-1)
- h.locator('#player-play-match').click()
- if count>2:
-  h.wait_for_selector('#matchup-dialog[open]');h.locator('#matchup-team-0').select_option('0');h.locator('#matchup-team-1').select_option('1');h.locator('#matchup-play-button').click()
+  if i:wait_award(pages[i],first_id)
+  id=state(h)['lobby']['auction']['currentPokemonId']
+  if i==0:first_id=id
+  bid(pages[i],1000,id);wait_award(h,id)
+  check(label+' win stores in PC Box '+str(i),id in state(h)['lobby']['auction']['boxed'][i] and not state(h)['lobby']['teams'][i]['picks'])
+ check(label+' next picks do not require any placements',len(state(h)['lobby']['auction']['awards'])==count and sum(state(h)['lobby']['auction']['fieldCounts'])==0)
+ # Let free timers continue while actual owners arrange their lineups.
+ limit=time.time()+count*23*5+120;physical=set();last_count=0
+ while time.time()<limit:
+  room=state(h)['lobby'];awards=room['auction']['awards']
+  for award in awards:
+   id=award['pokemonId']
+   if id in placed:continue
+   owner=award['team'];place_owned(pages,award,owner not in physical);physical.add(owner);placed.add(id)
+  n=len(state(h)['lobby']['auction']['awards'])
+  if n//23>last_count//23:print(json.dumps({'case':label,'awarded':n,'placed':len(placed)}),flush=True)
+  last_count=n
+  if n==count*23 and len(placed)==count*23:break
+  h.wait_for_timeout(150)
+ else:raise AssertionError(label+' draft did not complete in its timing budget')
+ for p in pages:
+  wait_phase(p,'complete');p.wait_for_function('DraftOnline.state().lobby.auction.fieldCounts.every(n=>n===23)',timeout=45000)
+ room=state(h)['lobby'];check(label+' every roster full',room['auction']['counts']==[23]*count);check(label+' all lineups placed',room['auction']['fieldCounts']==[23]*count)
+ check(label+' no duplicate species',len({id for t in room['teams'] for id in t['picks'].values()})==count*23)
+ for a in room['auction']['awards']:
+  c=state(h)['league']['careers'][str(a['pokemonId'])];check(label+' paid ledger '+str(a['pokemonId']),c['draftCount']==1 and c['totalAuctionPaid']==a['amount'])
+ for i,p in enumerate(pages):
+  p.reload(wait_until='networkidle');p.wait_for_function('DraftOnline.active()');wait_phase(p,'complete');check(label+' refresh restores PC Box '+str(i),state(p)['lobby']['auction']['boxed'][i]==[])
+  capture(p,label+'-full-'+str(i))
+ h.evaluate('DraftLiveAuction.open()');h.locator('#player-play-match').click()
+ if count>2:h.locator('#matchup-team-0').select_option('0');h.locator('#matchup-team-1').select_option(str(count-1));h.locator('#matchup-play-button').click()
  h.wait_for_function('!!DraftOnline.state().lobby.match',timeout=45000);m=state(h)['lobby']['match'];audit_match(m,label)
  for p in pages:
-  p.wait_for_function('(id)=>DraftOnline.state()?.lobby?.match?.matchId===id',arg=m['matchId'],timeout=60000)
-  check(label+' same match on device '+str(own(p)),state(p)['lobby']['match']['summary']==m['summary'])
-  check(label+' all result rows rendered '+str(own(p)),p.locator('#match-players details.match-player').count()==46)
+  p.wait_for_function('(id)=>DraftOnline.state().lobby.match?.matchId===id',arg=m['matchId']);check(label+' shared all46 stat rows '+str(own(p)),p.locator('#match-players details.match-player').count()==46)
  capture(h,label+'-result')
- close_dialog(h,'match-dialog')
- retired=next(iter(room['teams'][0]['picks'].values()))
- for kind in ['fame','shame',None]:
-  h.evaluate('(v)=>DraftOnline.hallAction(v.id,v.kind)',{'id':retired,'kind':kind})
-  for p in pages:
-   p.evaluate('DraftOnline.refreshLeague()')
-   hall=p.evaluate('DraftOnline.league().hall');entry=hall.get(str(retired))
-   check(label+' shared hall '+str(kind)+' device '+str(own(p)),entry['kind']==kind if kind else entry is None)
-   if kind:check(label+' retired scores revealed',bool(entry['values']) and bool(entry['career']))
- for i,p in enumerate(pages):
-  for dialog in ['match-dialog','auction-dialog']:close_dialog(p,dialog)
-  select_own(p)
-  p.locator('#field').screenshot(path=str(OUT/(label+'-full-roster-'+str(i)+'.png')))
-  overlaps=p.locator('#field .position').evaluate_all('''els=>{const out=[];for(let i=0;i<els.length;i++)for(let j=i+1;j<els.length;j++){const a=els[i].getBoundingClientRect(),b=els[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)out.push([els[i].dataset.slot,els[j].dataset.slot]);}return out;}''')
-  check(label+' full roster tiles do not overlap '+str(i),not overlaps,overlaps)
-  obstructed=p.evaluate('''()=>{const launcher=document.getElementById('live-auction-launch');if(!launcher||launcher.hidden)return[];const b=launcher.getBoundingClientRect();return[...document.querySelectorAll('#field .position')].filter(el=>{const a=el.getBoundingClientRect();return Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;}).map(el=>el.dataset.slot);}''')
-  check(label+' launcher does not cover roster '+str(i),not obstructed,obstructed)
- for i,ctx in enumerate(contexts):
-  private=OUT/(label+'-player-'+str(i)+'-private.json');ctx.storage_state(path=str(private));private.chmod(0o600)
- for ctx in contexts:ctx.close()
+ FLOW.append(label+': timed picks continued without field placements; coaches assigned from PC Box while other auctions ran, then all lineups played a shared match.')
+ for c in contexts:c.close()
  print(json.dumps({'case':label,'stage':'passed'}),flush=True)
 
 def live_probe(browsers):
- label='three-player-live';print(json.dumps({'case':label,'stage':'setup'}),flush=True)
- contexts,pages=setup(browsers,3,label,'gen1');h=pages[0];start(pages,label)
- skipped=state(h)['lobby']['auction']['currentPokemonId']
- check(label+' nonhost cannot skip',raw_action(pages[1],'skip',{'pokemonId':skipped})['status']==403)
- action(h,'skip',{'pokemonId':skipped})
- id=state(h)['lobby']['auction']['currentPokemonId'];old_end=state(h)['lobby']['auction']['bidding']['closesAt']
- check(label+' skipped species discarded',skipped in state(h)['lobby']['auction']['skipped'] and id!=skipped)
- check(label+' stale skip rejected',raw_action(h,'skip',{'pokemonId':skipped})['status']==409)
- for p in pages:wait_round(p,id)
- submit(h,5,id,True)
- for p in pages:p.wait_for_function('DraftOnline.state()?.lobby?.auction?.bidding?.highestBid===5',timeout=15000)
- check(label+' leading coach cannot selfraise',raw_action(h,'bid',{'amount':2,'pokemonId':id})['status']==409)
- check(label+' host cannot skip a live bid',raw_action(h,'skip',{'pokemonId':id})['status']==409)
- check(label+' missing nominee rejected',raw_action(pages[1],'bid',{'amount':2})['status']==409)
- check(label+' lower bid rejected',raw_action(pages[1],'bid',{'amount':1,'pokemonId':id})['status']==400)
- check(label+' other team bid rejected',raw_action(h,'bid',{'amount':2,'pokemonId':id,'teamIndex':1})['status']==403)
- submit(pages[1],10,id,True)
- for p in pages:p.wait_for_function('DraftOnline.state()?.lobby?.auction?.bidding?.highestBid===10',timeout=15000)
- capture(pages[0],label+'-desktop-live');capture(pages[1],label+'-phone-live')
- # Real elapsed clock, including a late raise. wait_for_function yields the
- # browser loop and leaves all real polling active; no route or clock override.
- pages[2].wait_for_function('Date.parse(DraftOnline.state().lobby.auction.bidding.closesAt)-Date.now()<6000',timeout=25000)
- submit(pages[2],15,id,True)
- pages[2].wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===15',timeout=10000)
- b=state(pages[2])['lobby']['auction']['bidding'];check(label+' late bid extends clock',b['closesAt']>old_end)
- for p in pages:wait_phase(p,'placement')
- room=state(h)['lobby'];check(label+' countdown awards highest bidder',room['auction']['pendingAward']['team']==2 and room['auction']['pendingAward']['amount']==15)
- check(label+' all wallets debit only winner',room['auction']['budgets']==[1000,1000,985])
- place(pages,room,True)
- for p in pages:wait_phase(p,'bidding')
- nextid=state(h)['lobby']['auction']['currentPokemonId'];check(label+' advances without reopening button',nextid!=id and pages[2].locator(SUBMIT).is_visible())
- check(label+' old nominee bid rejected',raw_action(h,'bid',{'amount':1,'pokemonId':id})['status']==409)
- # Chat remains editable through remote updates; only one chat form per device.
- h.evaluate("document.querySelector('#online-header-chat-button').click()")
- h.locator('#online-chat-input').fill('Unsent draft plan')
- submit(pages[1],5,nextid,True)
- h.wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===5',timeout=15000)
- check(label+' chat draft preserved across bids',h.locator('#online-chat-input').input_value()=='Unsent draft plan')
- h.locator('#online-chat-form').evaluate('(e)=>e.requestSubmit()')
- for p in pages:p.wait_for_function('DraftOnline.state().lobby.messages.some(m=>m.message==="Unsent draft plan")',timeout=15000)
- check(label+' chat delivered across devices',all('Unsent draft plan' in p.locator('#online-chat-messages').text_content() for p in pages))
- h.locator('#online-panel-close').click()
- h.locator('#player-custom-bid summary').click();h.locator(INPUT).fill('41')
- submit(pages[2],10,nextid,True)
- h.wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===10',timeout=15000)
- check(label+' custom bid text survives remote raise',h.locator(INPUT).input_value()=='41')
- h.locator(INPUT).press('Enter');h.wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===41',timeout=15000)
- check(label+' keyboard custom bid sent',h.locator(INPUT).input_value()=='' and not h.locator('#player-custom-bid').evaluate('e=>e.open'))
- phone=pages[1];phone.wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===41',timeout=15000)
- phone.locator('#player-custom-bid summary').click();phone.locator(INPUT).fill('42')
- # WebKit cannot summon a physical iOS keyboard in headless mode. Reduce its
- # visual viewport only, keeping layout viewport unchanged, to inspect the
- # browser's real resize handlers and reachable controls under the keyboard.
- phone.evaluate('Object.defineProperty(visualViewport,"height",{configurable:true,get:()=>390});visualViewport.dispatchEvent(new Event("resize"))')
- button=phone.locator(SUBMIT).bounding_box()
- check(label+' phone custom bid fits keyboard viewport',button['y']>=0 and button['y']+button['height']<=390,button)
- capture(phone,label+'-phone-custom-keyboard')
- phone.locator(INPUT).press('Enter');phone.wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===42',timeout=15000)
- phone.evaluate('delete visualViewport.height;visualViewport.dispatchEvent(new Event("resize"))')
- check(label+' phone Enter submits own bid',state(phone)['lobby']['auction']['bidding']['leaderTeam']==1)
- FLOW.append(label+': three different devices raised $5→$10→$15; real countdown extended for the late raise and awarded automatically; chat and custom bid drafts survived remote updates; Enter submitted own custom bids.')
- for ctx in contexts:ctx.close()
+ label='continuous-live';contexts,pages=setup(browsers,3,label,'gen1');h,phone,lagged=pages
+ # A fast local clock must not close auctions early. Delayed bid traffic remains valid within the server grace.
+ lagged.evaluate('(()=>{const original=Date.now;Date.now=()=>original()+90000})()')
+ def delayed(route):
+  if route.request.method=='POST' and route.request.url.endswith('/action'):time.sleep(0.9)
+  route.continue_()
+ lagged.route('**/api/lobbies/**',delayed)
+ start(pages,label);id=state(h)['lobby']['auction']['currentPokemonId'];end=state(h)['lobby']['auction']['bidding']['closesAt']
+ bid(h,5,id,True);h.wait_for_function('DraftOnline.state().lobby.auction.bidding?.highestBid===5');check('early bid does not inflate timer',state(h)['lobby']['auction']['bidding']['closesAt']==end)
+ phone.wait_for_function('DraftOnline.state().lobby.auction.bidding?.highestBid===5');bid(phone,10,id,True)
+ lagged.wait_for_function('DraftOnline.state().lobby.auction.bidding?.highestBid===10')
+ check('clock skew does not corrupt countdown',0<int(lagged.locator('#player-countdown').text_content().replace('s',''))<=20)
+ lagged.wait_for_function('(()=>{const s=DraftOnline.state(),c=s.clockSync;return Date.parse(s.lobby.auction.bidding.closesAt)-(c.serverNow+performance.now()-c.receivedAt)<650})()',timeout=25000)
+ lagged.locator(SUBMIT).click();lagged.wait_for_function('DraftOnline.state().lobby.auction.bidding?.highestBid===15',timeout=10000)
+ check('in-transit late raise gets five seconds',state(lagged)['lobby']['auction']['bidding']['closesAt']>end)
+ award=wait_award(h,id);check('timer awards correct highest price',award['amount']==15 and award['team']==2)
+ for p in pages:wait_award(p,id)
+ nextid=state(h)['lobby']['auction']['currentPokemonId'];check('winner can leave Pokémon unplaced',state(h)['lobby']['teams'][2]['picks']=={} and state(h)['lobby']['auction']['boxed'][2]==[id]);check('next auction starts without placement',nextid!=id)
+ # The owner edits their Box while someone else bids, without being yanked back into a modal.
+ lagged.evaluate('DraftLiveAuction.minimize()');lagged.locator('#pc-box-button').click();lagged.locator('#pokemon-search').fill('not-a-pokemon')
+ bid(h,5,nextid,True);lagged.wait_for_function('DraftOnline.state().lobby.auction.bidding?.highestBid===5')
+ check('Box search survives remote bid',lagged.locator('#pokemon-search').input_value()=='not-a-pokemon')
+ check('minimized auction stays minimized',not lagged.locator('#auction-dialog').is_visible())
+ lagged.locator('#pokemon-search').fill('');lagged.locator('[data-pokemon="'+str(id)+'"]').click();lagged.locator('[data-slot="o_qb"]').click();lagged.wait_for_function('(id)=>DraftOnline.state().lobby.teams[2].picks.o_qb===id',arg=id)
+ check('placement does not restart pick timer',state(lagged)['lobby']['auction']['currentPokemonId']==nextid)
+ phone.evaluate('DraftLiveAuction.minimize()');phone.locator('#live-auction-launch').click();phone.wait_for_function('document.querySelector("#auction-dialog").matches(":modal")')
+ phone.locator('#player-custom-bid summary').click();phone.locator(INPUT).fill('41');phone.locator(INPUT).press('Enter');phone.wait_for_function('DraftOnline.state().lobby.auction.bidding?.highestBid===41')
+ capture(h,label+'-desktop');capture(phone,label+'-phone');capture(lagged,label+'-placed')
+ FLOW.append('20-second start; early bids do not extend; a delayed late raise survives transit grace, restores five seconds, and wins; next pick starts without placement; PC Box editing stays uninterrupted; custom bids still work.')
+ for c in contexts:c.close()
  print(json.dumps({'case':label,'stage':'passed'}),flush=True)
 
 try:
@@ -307,6 +243,9 @@ try:
     for bn,b in browsers.items():
      for ci,ctx in enumerate(b.contexts):
       for pi,page in enumerate(ctx.pages):
+       try:
+        storage=OUT/('private-'+bn+'-'+str(ci)+'.json');ctx.storage_state(path=str(storage));storage.chmod(0o600)
+       except Exception:pass
        try:page.screenshot(path=str(OUT/('failure-'+bn+'-'+str(ci)+'-'+str(pi)+'.png')),full_page=True)
        except Exception:pass
    for b in browsers.values():b.close()

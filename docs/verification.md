@@ -95,3 +95,13 @@ The first combined production run exposed a race in the browser test: it assumed
 The online primary action now offers the current leading bid plus $5, with the exact total shown before submission. Custom amounts remain available. If the coach can outbid the leader but cannot afford a full $5 raise, the action explicitly offers the remaining budget as “All in.” Leading, full-roster, offline, and expired-round restrictions continue to apply.
 
 Local verification: all 46 Node tests and deployment checks passed. The three-coach Chromium/WebKit live probe exercised physical $5 → $10 → $15 clicks, a real late extension, correct winner charges, chat preservation, and custom bids. A separate phone/PC budget probe verified custom $996 bidding, an explicit final $4 all-in, no overspending, and the action fitting a 320-pixel-wide phone.
+
+### Continuous auctions and PC Box
+
+Online auctions now run independently of field placement. A win is recorded once, stored in the owning coach’s PC Box, and followed by the next prospect. Coaches can minimize the auction, select a boxed Pokémon, and tap a field position while bidding continues. Minimizing persists across picks. Simulation remains disabled until all 23 positions on every team are assigned.
+
+Funded picks open for 20 seconds, with a two-second introduction between prospects. Early bids do not extend the clock; late bids restore at least five seconds. The server allows a two-second transit buffer after displayed zero, honors bids received before the deadline even if database processing is slow, and reports processing duration separately so client round-trip clock estimates do not count database time as network delay. When all eligible wallets are empty, free draws advance every three seconds instead of flooding the Box instantly.
+
+The WR/CB fix checks the painted perspective sidelines at the full bounds of each player tile, rather than merely checking the outer page. Outside positions are inset; phone line spacing and tablet/PC tile widths were adjusted together. Exported labels and art use the same spacing.
+
+Current local checks include 43 passing Node tests, complete continuous 2/3/4-coach drafts with deferred lineups and reconciled matches, a delayed-browser live probe with a 90-second client clock skew, and the shell/formation browser checks. Earlier reports above describe previous auction timing and placement flows.
