@@ -89,3 +89,9 @@ The public game at https://pokemon-draft-league-jade.vercel.app/ served the fina
 - Final handoff checks covered the empty-team hint, returning from roster editing to a new bidding round, and closing the old phone auction before match results appear. Completed boards were visually reviewed as well as checked for tile and control overlap.
 
 The first combined production run exposed a race in the browser test: it assumed a placement phase identified a particular prospect. Consecutive free awards can remain in that phase. The harness now waits for the exact nominee and pending award on the winning device before acting. The original failure evidence was retained, and the fresh two-coach run passed. Production QA used isolated test leagues, not the user’s room.
+
+### Five-dollar quick raises
+
+The online primary action now offers the current leading bid plus $5, with the exact total shown before submission. Custom amounts remain available. If the coach can outbid the leader but cannot afford a full $5 raise, the action explicitly offers the remaining budget as “All in.” Leading, full-roster, offline, and expired-round restrictions continue to apply.
+
+Local verification: all 46 Node tests and deployment checks passed. The three-coach Chromium/WebKit live probe exercised physical $5 → $10 → $15 clicks, a real late extension, correct winner charges, chat preservation, and custom bids. A separate phone/PC budget probe verified custom $996 bidding, an explicit final $4 all-in, no overspending, and the action fitting a 320-pixel-wide phone.

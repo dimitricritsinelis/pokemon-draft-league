@@ -18,7 +18,7 @@
     headerStatus = make('span', 'online-header-status'); headerStatus.id = 'online-header-status'; document.querySelector('.brand h1').after(headerStatus);
     stage = make('div', 'player-stage'); stage.id = 'player-stage'; stage.hidden = true; panel.querySelector('.auction-dialog-body').append(stage);
     controls = make('form', 'player-controls'); controls.id = 'player-bid-form'; controls.noValidate = true; controls.hidden = true;
-    controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div><div class="live-clock"><strong id="player-countdown"></strong><span>remaining</span></div></div><div class="live-clock-track"><i id="player-time-bar"></i></div><p id="player-bid-context"></p><details id="player-custom-bid"><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="submit" class="primary-button" id="player-bid-submit">Bid $1</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
+    controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div><div class="live-clock"><strong id="player-countdown"></strong><span>remaining</span></div></div><div class="live-clock-track"><i id="player-time-bar"></i></div><p id="player-bid-context"></p><details id="player-custom-bid"><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="submit" class="primary-button" id="player-bid-submit">Bid $5 (+$5)</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
     error = controls.querySelector('#player-bid-error'); panel.append(controls);
     launcher = make('button', 'live-auction-launch', 'View live auction'); launcher.id = 'live-auction-launch'; launcher.type = 'button'; launcher.hidden = true; const footer = make('div', 'online-dashboard-footer'); footer.append(status, launcher); dashboard.append(footer);
     launcher.addEventListener('click', () => { if (snapshot?.lobby.phase === 'complete' && window.DraftOnline.isHost()) adapter.playMatch(); else open(); });
@@ -41,7 +41,7 @@
   async function submit(e) {
     e.preventDefault(); if (!snapshot || busy || snapshot.lobby.phase !== 'bidding') return;
     const sale = snapshot.lobby.auction, raw = $('player-bid-input').value.trim();
-    const amount = $('player-custom-bid').open && raw ? Number(raw) : sale.bidding.minimumBid;
+    const amount = $('player-custom-bid').open && raw ? Number(raw) : Math.min(sale.bidding.highestBid + 5, sale.budgets[own()]);
     if (!Number.isSafeInteger(amount) || amount < sale.bidding.minimumBid || amount > sale.budgets[own()]) {
       error.textContent = `Enter a whole-dollar bid from ${money(sale.bidding.minimumBid)} to ${money(sale.budgets[own()])}.`; error.hidden = false; return;
     }
@@ -56,10 +56,11 @@
     const leading = bidding.leaderTeam === own(), raw = $('player-bid-input').value.trim();
     const custom = $('player-custom-bid').open && raw;
     const valid = !custom || (/^\d+$/.test(raw) && Number(raw) >= bidding.minimumBid && Number(raw) <= budget);
-    const amount = custom ? Number(raw) : bidding.minimumBid;
+    const amount = custom ? Number(raw) : Math.min(bidding.highestBid + 5, budget);
+    const bidLabel = 'Bid ' + money(amount) + (custom ? '' : amount === budget ? ' · All in' : ' (+$5)');
     $('player-bid-input').setAttribute('aria-invalid', String(!valid));
     $('player-bid-range').textContent = `Bid ${money(bidding.minimumBid)}–${money(budget)}`;
-    button.textContent = !window.DraftOnline.connected() ? 'Reconnecting…' : busy ? 'Sending…' : leading ? 'You’re leading' : full ? 'Your roster is full' : budget < bidding.minimumBid ? 'Budget reached' : !valid ? 'Enter a valid bid' : 'Bid ' + money(amount);
+    button.textContent = !window.DraftOnline.connected() ? 'Reconnecting…' : busy ? 'Sending…' : leading ? 'You’re leading' : full ? 'Your roster is full' : budget < bidding.minimumBid ? 'Budget reached' : !valid ? 'Enter a valid bid' : bidLabel;
     button.disabled = busy || !valid || !window.DraftOnline.connected() || !window.DraftOnline.can('bid') || Date.parse(bidding.closesAt) <= Date.now() + offset;
     $('player-custom-bid').hidden = leading || full || budget < bidding.minimumBid;
     $('player-skip').hidden = !window.DraftOnline.isHost() || bidding.leaderTeam !== null;
