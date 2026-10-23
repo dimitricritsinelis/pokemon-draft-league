@@ -7,7 +7,7 @@
   const pokemon = new Map((window.POKEMON || []).map(p => [p.id, p]));
   const desktop = matchMedia('(min-width: 1001px)');
   let adapter, snapshot, lastLot = null, lastPhase = null, dismissed = null, minimized = false, busy = false, skipAvailable = true, tickKey = null, anchorServer = Date.now(), anchorPerf = performance.now(), interval;
-  let dashboard, cards, status, panel, controls, stage, headerStatus, launcher, boxButton, error;
+  let dashboard, cards, status, panel, controls, stage, headerStatus, launcher, boxButton, receipt, receiptText, error;
   const serverNow = () => anchorServer + performance.now() - anchorPerf;
   const ready = () => Boolean(snapshot?.lobby.auction?.fieldCounts?.every(count => count === 23));
   const own = () => snapshot?.member?.teamIndex;
@@ -22,6 +22,10 @@
     controls = make('form', 'player-controls'); controls.id = 'player-bid-form'; controls.noValidate = true; controls.hidden = true;
     controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div><div class="live-clock"><strong id="player-countdown"></strong><span>remaining</span></div></div><div class="live-clock-track"><i id="player-time-bar"></i></div><p id="player-bid-context"></p><details id="player-custom-bid"><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="submit" class="primary-button" id="player-bid-submit">Bid $5 (+$5)</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
     error = controls.querySelector('#player-bid-error'); panel.append(controls);
+    receipt = make('div', 'player-award-receipt'); receipt.hidden = true;
+    receiptText = make('span'); const receiptBox = make('button', '', 'PC Box'); receiptBox.type = 'button'; receiptBox.addEventListener('click', () => adapter.openBox(own()));
+    receipt.append(receiptText, receiptBox); panel.querySelector('.auction-dialog-body').before(receipt);
+
     launcher = make('button', 'live-auction-launch', 'View live auction'); launcher.id = 'live-auction-launch'; launcher.type = 'button'; launcher.hidden = true; const footer = make('div', 'online-dashboard-footer'); boxButton = make('button', 'live-auction-launch pc-box-button', 'PC Box'); boxButton.id = 'pc-box-button'; boxButton.type = 'button'; boxButton.hidden = true; boxButton.addEventListener('click', () => adapter.openBox(adapter.getTeamIndex())); footer.append(status, boxButton, launcher); dashboard.append(footer);
     launcher.addEventListener('click', () => { if (snapshot?.lobby.phase === 'complete' && window.DraftOnline.isHost() && ready()) adapter.playMatch(); else open(); });
     controls.addEventListener('submit', submit);
@@ -116,6 +120,8 @@
     document.body.classList.add('players-online'); dashboard.hidden = false;
     $('auction-bid-form').hidden = true; $('auction-viewer-note').hidden = true;
     const { lobby } = next, sale = lobby.auction;
+    receipt.hidden = lobby.phase !== 'bidding' || sale?.lastAward?.team !== own();
+    if (!receipt.hidden) { receiptText.textContent = `You won ${pokemon.get(sale.lastAward.pokemonId)?.name} · ${money(sale.lastAward.amount)}`; }
     const lot = sale?.currentPokemonId, changedLot = lastLot !== lot;
     const changedPhase = lastPhase !== lobby.phase;
     if (changedLot) { dismissed = null; tickKey = null; $('player-bid-input').value = ''; $('player-custom-bid').open = false; error.hidden = true; }
@@ -206,7 +212,7 @@
   function open() { if (!snapshot) return; dismissed = null; minimized = false; document.body.classList.remove('auction-minimized'); adapter.closePicker(false); present(true, true); renderLauncher(); }
   function stop() {
     snapshot = null; lastLot = lastPhase = dismissed = null; minimized = false; document.body.classList.remove('auction-minimized'); boxButton.hidden = true; clearInterval(interval); interval = null;
-    dashboard.hidden = true; launcher.hidden = true; headerStatus.textContent = ''; controls.hidden = true; stage.hidden = true;
+    dashboard.hidden = true; launcher.hidden = true; receipt.hidden = true; headerStatus.textContent = ''; controls.hidden = true; stage.hidden = true;
     panel.close(); document.body.append(panel); panel.classList.remove('live-stage-only');
     for (const el of panel.querySelectorAll('.auction-prospect,.auction-battle-stats,#auction-scouting')) el.hidden = false;
     $('auction-bid-form').hidden = false; if ($('player-position-needs')) $('player-position-needs').hidden = true;

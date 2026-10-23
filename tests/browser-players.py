@@ -212,6 +212,7 @@ def live_probe(browsers):
  check('in-transit late raise gets five seconds',state(lagged)['lobby']['auction']['bidding']['closesAt']>end)
  award=wait_award(h,id);check('timer awards correct highest price',award['amount']==15 and award['team']==2)
  for p in pages:wait_award(p,id)
+ check('winner sees purchase receipt inside auction',lagged.locator('.player-award-receipt').is_visible() and '$15' in lagged.locator('.player-award-receipt').text_content())
  nextid=state(h)['lobby']['auction']['currentPokemonId'];check('winner can leave Pokémon unplaced',state(h)['lobby']['teams'][2]['picks']=={} and state(h)['lobby']['auction']['boxed'][2]==[id]);check('next auction starts without placement',nextid!=id)
  # The owner edits their Box while someone else bids, without being yanked back into a modal.
  lagged.evaluate('DraftLiveAuction.minimize()');lagged.locator('#pc-box-button').click();lagged.locator('#pokemon-search').fill('not-a-pokemon')
