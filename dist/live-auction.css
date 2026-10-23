@@ -142,12 +142,14 @@
 }
 @media(max-width:560px) {
  .position { --player-width: clamp(32px,10.7cqw,48px); }
- .online-dashboard-footer { flex-wrap: wrap; gap: 4px 8px; }
- .online-dashboard-footer .online-draft-status { flex-basis: 100%; }
- .online-dashboard-footer:has(.live-auction-launch:not([hidden])) .online-draft-status { min-height: 22px; }
- .online-dashboard-footer .live-auction-launch { margin-top: 0; margin-bottom: 4px; }
+ .online-dashboard-footer { gap: 6px; }
+
+
+ .online-dashboard-footer .live-auction-launch { margin-top: 4px; margin-bottom: 0; }
 }
 @media(min-width:561px) { .position { --player-width: clamp(40px,min(7cqw,14cqh),90px); } }
 .player-award-receipt { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0; margin-bottom: 12px; padding: 2px 9px; border: 1px solid #dbe6d0; border-radius: 8px; color: #42653a; background: #f3f7ee; font-size: 11px; }
 .player-award-receipt span { min-width: 0; overflow-wrap: anywhere; }
 .player-award-receipt button { flex-shrink: 0; min-height: 38px; border: 0; background: transparent; font-weight: 650; color: #2d5835; padding: 6px 2px 6px 8px; font-size: 11px; }
+
+.players-online #auction-title:focus { outline: none; }

@@ -96,6 +96,7 @@
     const choice = adapter.getPlacement?.();
     status.classList.toggle('your-placement', Boolean(choice));
     status.textContent = choice ? `Place ${choice} · tap a position on your field.` : lobby.phase === 'waiting' ? 'Invite your friends. Each coach bids and builds their own team.' : lobby.phase === 'complete' ? `Draft complete · ${sale.fieldCounts.filter(n => n === 23).length}/${lobby.teamCount} lineups ready${sale.boxed[own()].length ? ' · ' + sale.boxed[own()].length + ' in your PC Box' : ''}` : `Pick ${sale.round} of ${sale.total} · ${name(own())}${sale.bidding?.leaderTeam === own() ? ' · You’re leading' : sale.bidding?.ownBid != null ? ' · You’ve been outbid' : ''}`;
+    if (minimized && lobby.phase === 'bidding' && !choice) status.textContent = `Pick ${sale.round}/${sale.total}${sale.bidding?.leaderTeam === own() ? ' · Leading' : sale.bidding?.ownBid != null ? ' · Outbid' : ''}`;
     const boxed = sale?.boxed?.[selected]?.length || 0;
     boxButton.hidden = !sale?.owned[selected]?.length;
     boxButton.textContent = 'PC Box' + (boxed ? ' (' + boxed + ')' : '');
@@ -206,7 +207,7 @@
     if (!snapshot) { launcher.hidden = true; return; }
     const { lobby } = snapshot;
     launcher.hidden = (panel.open && !document.body.classList.contains('online-roster-open')) || lobby.phase === 'waiting' || (lobby.phase === 'complete' && (!window.DraftOnline.isHost() || !ready()));
-    launcher.textContent = lobby.phase === 'bidding' ? `Live auction · ${pokemon.get(lobby.auction.currentPokemonId)?.name}` : lobby.phase === 'complete' ? window.DraftOnline.isHost() ? 'Play match' : 'Draft complete' : 'View winning pick';
+    launcher.textContent = lobby.phase === 'bidding' ? `Auction · ${pokemon.get(lobby.auction.currentPokemonId)?.name}` : lobby.phase === 'complete' ? window.DraftOnline.isHost() ? 'Play match' : 'Draft complete' : 'View winning pick';
   }
   function minimize() { if (!snapshot) return; minimized = true; document.body.classList.add('auction-minimized'); panel.close(); renderLauncher(); }
   function open() { if (!snapshot) return; dismissed = null; minimized = false; document.body.classList.remove('auction-minimized'); adapter.closePicker(false); present(true, true); renderLauncher(); }
