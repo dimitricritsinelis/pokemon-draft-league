@@ -4,6 +4,10 @@ Production source: [dimitricritsinelis/pokemon-draft-league](https://github.com/
 
 A responsive HTML/CSS/JavaScript football draft game featuring all 386 Pokémon from generations 1–3. Build two practice teams or host an online auction for 2–4 players, each with a $1,000 budget and a 23-player roster: 11 offense, 11 defense, and one kicker.
 
+## Design approach
+
+The field and the current decision come first. Give each screen one clear next action, reveal less-used options when needed, and remove controls that repeat information or interrupt play. PC and phone share the same game rules with layouts suited to each screen. Review the complete join → bid → win → place → play journey using independent players, populated rosters, reconnects, and keyboard space; passing geometry checks alone does not establish a good experience.
+
 ## Run locally
 
 Use Node 22.13 or newer (Node 24 also works):
@@ -27,7 +31,7 @@ Online auctions use public, ascending live bids. Each coach sees the leader and 
 
 The winning coach taps an empty field position; placing the pick automatically opens the next round. Each coach can rearrange their own purchased Pokémon, rename their team, and change formations. All coaches can inspect the other teams and chat. The host controls starting, skipping prospects before any bid, match simulations, and the league halls. Skipped Pokémon remain excluded for the draft. Auctions contain 46, 69, or 92 unique purchases. After every roster is complete, the host chooses any two teams to play.
 
-On PC the live auction sits beside the field. On phones bidding opens as a compact dialog and closes for the winner’s placement; **View field** and the floating live-auction button allow switching at any time. A single row shows team budgets and roster progress. The Room button holds invitations and session controls. Leaving preserves a **Resume room** option for the same saved seat. Same-device local auctions retain their shared multi-team bid form.
+On PC the live auction sits beside the field. On phones bidding opens as a compact dialog and closes for the winner’s placement; **View field** and the live-auction action above the field allow switching without covering players. A single row shows team budgets and roster progress. The Room button holds invitations and session controls. Leaving preserves a **Resume room** option for the same saved seat. Same-device local auctions retain their shared multi-team bid form.
 
 The database is authoritative for bids, budgets, ownership, schemes, chat, match results, and career updates. Atomic revision checks and action IDs prevent duplicate charges and double-counted games. Clients poll for updates while open; unchanged responses use ETags instead of repeatedly downloading the full state. Routine polling does not extend a lobby’s one-hour inactivity limit. Chat and actual game actions do. League records remain after the session expires, with persistent owner/read access for returning devices.
 

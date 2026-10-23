@@ -184,7 +184,7 @@
       if (panel.parentElement !== document.body || (panel.open && !panel.matches(':modal'))) { panel.close(); document.body.append(panel); }
       const shouldShow = phase === 'bidding' ? sale.counts[own()] < 23 && sale.budgets[own()] > 0 && dismissed !== lastLot : phase === 'complete' && window.DraftOnline.isHost();
       if (phase === 'placement' && sale.pendingAward.team === own()) { if (panel.open) panel.close(); }
-      else if ((force || (auto && shouldShow)) && !panel.open && !document.querySelector('dialog:modal')) { panel.showModal(); $('auction-title').tabIndex = -1; $('auction-title').focus({ preventScroll: true }); }
+      else if ((force || (auto && shouldShow)) && !panel.open && !document.querySelector('dialog:modal')) { adapter.closePicker(false); panel.showModal(); $('auction-title').tabIndex = -1; $('auction-title').focus({ preventScroll: true }); }
       panel.querySelector('[data-close="auction-dialog"]').setAttribute('aria-label', 'View field');
     }
   }

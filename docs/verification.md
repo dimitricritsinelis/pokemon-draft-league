@@ -76,3 +76,5 @@ Local validation for this change:
 - A separate three-coach browser probe used real timed $1 → $2 → $3 outbids and late extension, plus custom amounts, Enter submission, skip/stale controls, and chat draft preservation. A reduced visualViewport checked the custom input and bid action above simulated keyboard space.
 
 WebKit at an iPhone viewport is browser-engine coverage; it is not a test on a physical iPhone. Countdown expiry is settled by authenticated polling or a game action, rather than a background scheduled job.
+
+Final handoff review also verified custom-bid validation before submission, visible reconnect state with bidding disabled, retained typed bids after reconnect, and the phone’s inline auction action reopening bidding. The phone action lives above the field; completed guest rosters have no redundant summary overlay. Before a first win, tapping the field shows next-step guidance rather than an empty catalog. Opening a new live round clears any underlying roster picker.

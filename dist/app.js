@@ -481,6 +481,7 @@
     if (!slots().some(s => s.key === key)) throw new Error('Unknown position.');
     if (auctionActive && auctionPhase() === 'placement' && (!playersOnline() || (onlineSnapshot.lobby.auction.pendingAward?.team === onlineSnapshot.member.teamIndex && editable()))) { placeAuctionPokemon(key); return; }
     if (playersOnline() && !editable()) { message('You’re viewing another coach’s roster. Select your team to make changes.'); return; }
+    if (playersOnline() && !auctionOwned(state.team).length) { message('Win a Pokémon in the auction, then tap a position to place it.'); return; }
     if (playersOnline()) document.body.classList.add('online-roster-open');
     setMenuOpen(false);
     state.selected = key;
@@ -1382,6 +1383,7 @@
       remoteMatchId = next.lobby.match.matchId; renderMatch(next.lobby.match);
       $('match-career-status').textContent = 'Career stats saved to your league database.';
       $('rerun-match').hidden = !hostControls(); lastMatchTeams = next.lobby.matches?.at(-1)?.teamIndexes || [0, 1];
+      if (playersOnline() && $('auction-dialog').matches(':modal')) $('auction-dialog').close();
       if (!$('match-dialog').open) $('match-dialog').showModal();
     }
     window.DraftOnline.refreshNeeds();

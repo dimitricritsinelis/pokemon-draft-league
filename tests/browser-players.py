@@ -191,7 +191,10 @@ def full_case(browsers,count,label,pool):
  contexts[-1].set_offline(False);pages[-1].evaluate('window.dispatchEvent(new Event("online"))')
  pages[-1].wait_for_function('DraftOnline.active()&&DraftOnline.state().lobby.phase==="complete"',timeout=45000)
  check(label+' reconnect retains own seat',own(pages[-1])==count-1)
- action(h,'simulate',{'teamIndexes':[0,1]});h.wait_for_function('!!DraftOnline.state().lobby.match',timeout=45000);m=state(h)['lobby']['match'];audit_match(m,label)
+ h.locator('#player-play-match').click()
+ if count>2:
+  h.wait_for_selector('#matchup-dialog[open]');h.locator('#matchup-team-0').select_option('0');h.locator('#matchup-team-1').select_option('1');h.locator('#matchup-play-button').click()
+ h.wait_for_function('!!DraftOnline.state().lobby.match',timeout=45000);m=state(h)['lobby']['match'];audit_match(m,label)
  for p in pages:
   p.wait_for_function('(id)=>DraftOnline.state()?.lobby?.match?.matchId===id',arg=m['matchId'],timeout=60000)
   check(label+' same match on device '+str(own(p)),state(p)['lobby']['match']['summary']==m['summary'])
