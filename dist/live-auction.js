@@ -22,6 +22,8 @@
     controls = make('form', 'player-controls'); controls.id = 'player-bid-form'; controls.noValidate = true; controls.hidden = true;
     controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div></div><p id="player-bid-context"></p><details id="player-custom-bid" open><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="button" class="secondary-button" id="player-finalize">Finalize bid</button><button type="submit" class="primary-button" id="player-bid-submit">Bid $5 (+$5)</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
     error = controls.querySelector('#player-bid-error'); panel.append(controls);
+    controls.querySelector('.live-price-row').append($('player-bid-wallet'));
+    controls.append($('player-skip')); controls.querySelector('.live-bid-footer').hidden = true;
     receipt = make('div', 'player-award-receipt'); receipt.hidden = true;
     receiptText = make('span'); const receiptBox = make('button', '', 'PC Box'); receiptBox.type = 'button'; receiptBox.addEventListener('click', () => adapter.openBox(own()));
     receipt.append(receiptText, receiptBox); panel.querySelector('.auction-dialog-body').before(receipt);
@@ -126,6 +128,8 @@
     const { lobby } = next, sale = lobby.auction;
     receipt.hidden = lobby.phase !== 'bidding' || sale?.lastAward?.team !== own();
     if (!receipt.hidden) { receiptText.textContent = `You won ${pokemon.get(sale.lastAward.pokemonId)?.name} · ${money(sale.lastAward.amount)}`; }
+    window.DraftAnalysis?.setCurrent(sale?.currentPokemonId, lobby.phase);
+    $('auction-analysis-button').hidden = lobby.phase !== 'bidding';
     const lot = sale?.currentPokemonId, changedLot = lastLot !== lot;
     const changedPhase = lastPhase !== lobby.phase;
     if (changedLot) { dismissed = null; tickKey = null; $('player-bid-input').value = ''; $('player-custom-bid').open = true; error.hidden = true; }

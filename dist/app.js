@@ -1060,7 +1060,7 @@
     $('auction-stat-total').textContent = 'Total ' + Object.values(p.baseStats).reduce((sum, value) => sum + value, 0);
     $('auction-abilities').textContent = 'Abilities: ' + p.abilities.join(' · ');
     $('auction-synopsis').textContent = p.synopsis;
-    $('auction-scouting').open = false;
+    $('auction-scouting').open = true;
   }
 
   function renderAuctionSkip() {

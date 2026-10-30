@@ -1,0 +1,154 @@
+/* The current prospect's complete report stays visible; bidding has one compact action row. */
+.players-online #auction-dialog .dialog-heading { margin-bottom: 8px; }
+.players-online #auction-dialog h2 { font-size: 25px; }
+.players-online .auction-prospect { margin-bottom: 10px; padding: 7px; gap: 10px; }
+.players-online .auction-prospect img { width: 72px; height: 72px; }
+.players-online .auction-prospect h3 { font-size: 27px; }
+.players-online .auction-prospect > div { gap: 3px; }
+.players-online .auction-battle-stats { margin-bottom: 10px; }
+.players-online #auction-scouting { border: 0; margin: 0; padding: 0; font-size: 13px; }
+.players-online #auction-scouting summary { display: none; }
+.players-online #auction-scouting p { color: #50634a; font-size: 13px; line-height: 1.45; margin: 0; }
+.players-online #auction-abilities { font-size: 11px !important; color: #71826a !important; margin-bottom: 7px !important; }
+.players-online .auction-dialog-body { flex: 0 1 auto; }
+.auction-analysis-button { display: block; margin: 3px 0 6px auto; min-height: 30px; padding: 5px 0 5px 12px; border: 0; background: none; color: #59724c; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.players-online #player-position-needs, .players-online #player-bid-context { display: none !important; }
+.players-online .player-controls { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; margin-top: auto; padding-top: 10px; }
+.players-online .live-price-row { grid-column: 1 / -1; gap: 8px; }
+.players-online .live-price-row > div:first-child { gap: 3px 7px; }
+.players-online .live-price-label { flex: 0 1 auto; font-size: 9px; }
+.players-online #player-highest-bid { font-size: 26px; }
+.players-online #player-leader { font-size: 11px; }
+.players-online #player-bid-wallet { font-size: 9px; color: #829077; text-align: right; max-width: 42%; line-height: 1.4; }
+.players-online #player-custom-bid { grid-column: 1; grid-row: 2; margin: 0; align-self: stretch; }
+.players-online #player-custom-bid summary { display: none; }
+.players-online #player-bid-range { display: none; }
+.players-online #player-custom-bid .auction-bid-input { height: 46px; }
+.players-online #player-bid-input { font-size: 17px; min-height: 44px; }
+.players-online #player-bid-submit { grid-column: 2; grid-row: 2; min-height: 46px; font-size: 14px; }
+.players-online #player-finalize { grid-column: 1; grid-row: 3; margin: 0; min-height: 42px; font-size: 12px; }
+.players-online #player-skip { grid-column: 2; grid-row: 3; min-height: 42px; padding: 6px; border: 1px solid #e0e5d9; border-radius: 8px; font-size: 12px; }
+.players-online #player-bid-error { grid-column: 1 / -1; grid-row: 4; }
+.players-online #auction-dialog .player-award-receipt { margin-bottom: 8px; }
+@media(min-width:1001px) {
+ .players-online:not(.auction-minimized) .game, .players-online.online-roster-open .game { grid-template-columns: minmax(0,1fr) clamp(440px,42vw,600px); }
+ .players-online #auction-dialog { padding: 19px; }
+ .players-online #auction-scouting p { font-size: 14px; line-height: 1.5; }
+}
+@media(max-width:1000px) {
+ .players-online #auction-dialog { padding: 16px; }
+ .players-online #auction-dialog .dialog-heading h2 { font-size: 25px; }
+ .players-online #auction-dialog .dialog-heading .eyebrow { font-size: 9px; }
+ .players-online .auction-base-stats dd { font-size: 17px; }
+ .players-online .auction-base-stats > div { padding: 5px 2px; }
+ .players-online .keyboard-open #auction-scouting, .players-online .keyboard-open .auction-analysis-button { display: none; }
+ .players-online .keyboard-open .auction-prospect img { width: 42px; height: 42px; }
+}
+@media(max-height:650px) and (max-width:560px) {
+ .players-online #auction-dialog { padding: 12px; }
+ .players-online #auction-dialog .dialog-heading { margin-bottom: 6px; }
+ .players-online .auction-prospect { margin-bottom: 7px; padding: 4px; }
+ .players-online .auction-prospect img { width: 54px; height: 54px; }
+ .players-online .auction-prospect h3 { font-size: 24px; }
+ .players-online #auction-scouting p { font-size: 12px; line-height: 1.4; }
+ .players-online .auction-battle-stats { margin-bottom: 7px; }
+ .players-online .player-controls { gap: 6px; padding-top: 7px; }
+ .players-online .auction-analysis-button { min-height: 26px; margin-bottom: 3px; }
+}
+/* A comfortable, complete reading view. Overflow remains an accessibility fallback for zoom/short landscape screens. */
+.pokemon-analysis-dialog { width: min(700px,calc(100% - 24px)); max-width: 700px; max-height: calc(100dvh - 24px); padding: 26px; overflow: auto; overscroll-behavior: contain; }
+.analysis-identity { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.analysis-identity img { width: 90px; height: 90px; object-fit: contain; }
+.analysis-identity > div { min-width: 0; flex: 1; }
+.analysis-identity h2 { margin: 4px 0; font-size: 36px; }
+.analysis-identity .eyebrow { font-size: 10px; }
+.analysis-identity p { font-size: 13px; color: #7b8971; text-transform: capitalize; }
+.analysis-identity .icon-button { align-self: flex-start; min-width: 40px; min-height: 40px; }
+.analysis-measurements { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 0 0 18px; }
+.analysis-measurements div { border: 1px solid #e1e7da; border-radius: 8px; padding: 10px; }
+.analysis-measurements dt { font-size: 10px; color: #849178; }
+.analysis-measurements dd { font-size: 17px; font-weight: 650; margin: 4px 0 0; color: var(--ink); }
+.pokemon-analysis-dialog section { margin-bottom: 18px; }
+.pokemon-analysis-dialog h3 { display: flex; justify-content: space-between; margin: 0 0 7px; font-size: 11px; color: #819075; font-weight: 650; }
+.pokemon-analysis-dialog h3 span { font-weight: 400; }
+.pokemon-analysis-dialog section p { font-size: 15px; color: #3e5638; line-height: 1.55; margin: 0; }
+#analysis-back { min-height: 44px; width: 100%; border: 0; border-radius: 8px; font-size: 14px; }
+#analysis-previous { font-size: 11px; color: #9a7536; margin: 0 0 10px; }
+@media(min-width:800px) {
+ .pokemon-analysis-dialog { display: none; }
+ .pokemon-analysis-dialog[open] { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+ .analysis-identity, .analysis-measurements, .analysis-base, #analysis-previous, #analysis-back { grid-column: 1 / -1; }
+ .pokemon-analysis-dialog .analysis-abilities, .pokemon-analysis-dialog .analysis-synopsis { margin-bottom: 22px; }
+}
+@media(max-width:799px) {
+ .pokemon-analysis-dialog { padding: 18px; }
+ .analysis-identity { gap: 10px; margin-bottom: 12px; }
+ .analysis-identity img { width: 64px; height: 64px; }
+ .analysis-identity h2 { font-size: 29px; }
+ .analysis-identity .eyebrow { font-size: 8px; letter-spacing: 1px; }
+ .analysis-measurements { gap: 7px; margin-bottom: 13px; }
+ .analysis-measurements div { padding: 8px; }
+ .analysis-measurements dd { font-size: 15px; }
+ .pokemon-analysis-dialog section { margin-bottom: 13px; }
+ .pokemon-analysis-dialog section p { font-size: 14px; line-height: 1.5; }
+ .pokemon-analysis-dialog .auction-base-stats dt { font-size: 9px; }
+ .pokemon-analysis-dialog .auction-base-stats dd { font-size: 18px; }
+}
+@media(max-height:650px) and (max-width:799px) {
+ .pokemon-analysis-dialog { padding: 12px; width: calc(100% - 16px); max-height: calc(100dvh - 16px); }
+ .analysis-identity { margin-bottom: 9px; }
+ .analysis-identity img { width: 50px; height: 50px; }
+ .analysis-identity h2 { font-size: 26px; }
+ .analysis-measurements { margin-bottom: 10px; }
+ .analysis-measurements div { padding: 6px; }
+ .pokemon-analysis-dialog section { margin-bottom: 10px; }
+ .pokemon-analysis-dialog section p { font-size: 13px; line-height: 1.4; }
+ .pokemon-analysis-dialog .auction-base-stats > div { padding: 4px 1px; }
+ .pokemon-analysis-dialog .auction-base-stats dd { font-size: 16px; }
+}
+
+.auction-analysis-button { display: inline-flex; align-items: center; margin: 0; padding: 3px 7px; min-height: 24px; font-size: 10px; letter-spacing: 0; }
+@media(min-width:1001px) { .players-online .position { --player-width: clamp(32px,min(7cqw,14cqh),90px); } }
+@media(max-height:650px) and (max-width:560px) {
+ .players-online #auction-dialog { width: calc(100% - 8px); padding: 10px; }
+ .players-online #auction-dex { display: none; }
+ .players-online #auction-dialog .dialog-heading { margin-bottom: 4px; }
+ .players-online #auction-dialog .dialog-heading h2 { font-size: 23px; }
+ .players-online #auction-dialog .player-award-receipt { margin-bottom: 4px; padding: 0 7px; }
+ .players-online .player-award-receipt button { min-height: 28px; }
+ .players-online .auction-base-stats > div { padding-top: 3px; padding-bottom: 3px; }
+ .players-online .auction-analysis-button { margin: 0; min-height: 24px; }
+}
+@media(min-width:600px) and (max-width:1000px) and (max-height:500px) {
+ .players-online #auction-dialog[open] { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); grid-template-rows: auto auto minmax(0,1fr); gap: 6px 18px; width: calc(100% - 16px); max-width: none; padding: 12px; }
+ .players-online #auction-dialog .dialog-heading { grid-column: 1 / -1; grid-row: 1; margin: 0; }
+ .players-online #auction-dialog .player-award-receipt { grid-column: 1 / -1; grid-row: 2; margin: 0; }
+ .players-online #auction-dialog .player-award-receipt button { min-height: 28px; }
+ .players-online #auction-dialog .auction-dialog-body { grid-column: 1; grid-row: 3; }
+ .players-online #auction-dialog .player-controls { grid-column: 2; grid-row: 3; align-self: end; padding-top: 8px; }
+ .players-online .auction-prospect img { width: 56px; height: 56px; }
+ .players-online .auction-prospect { margin-bottom: 6px; padding: 4px; }
+ .players-online #auction-scouting p { font-size: 12px; line-height: 1.4; }
+ .players-online #auction-abilities { margin-bottom: 4px !important; }
+ .players-online .auction-battle-stats { margin-bottom: 6px; }
+}
+@media(min-width:600px) and (max-height:500px) {
+ .pokemon-analysis-dialog[open] { display: grid; width: min(950px,calc(100% - 16px)); max-width: 950px; max-height: calc(100dvh - 16px); grid-template-columns: minmax(0,1fr) minmax(0,1.15fr); gap: 8px 18px; padding: 14px; }
+ .pokemon-analysis-dialog .analysis-identity { grid-column: 1; grid-row: 1; margin: 0; gap: 8px; }
+ .pokemon-analysis-dialog .analysis-identity img { width: 48px; height: 48px; }
+ .pokemon-analysis-dialog .analysis-identity h2 { font-size: 26px; }
+ .pokemon-analysis-dialog .analysis-measurements { grid-column: 1; grid-row: 2; margin: 0; }
+ .pokemon-analysis-dialog .analysis-measurements div { padding: 6px; }
+ .pokemon-analysis-dialog .analysis-base { grid-column: 1; grid-row: 3; margin: 0; }
+ .pokemon-analysis-dialog .analysis-abilities { grid-column: 2; grid-row: 1; margin: 0; }
+ .pokemon-analysis-dialog .analysis-synopsis { grid-column: 2; grid-row: 2 / span 2; margin: 0; }
+ .pokemon-analysis-dialog #analysis-previous { grid-column: 1 / -1; grid-row: 4; margin: 0; }
+ .pokemon-analysis-dialog #analysis-back { grid-column: 1 / -1; grid-row: 5; }
+ .pokemon-analysis-dialog section p { font-size: 13px; line-height: 1.45; }
+}
+@media(min-width:1001px) and (max-height:800px) {
+ .players-online #auction-dialog { padding: 16px; }
+ .players-online #auction-dialog .dialog-heading { margin-bottom: 4px; }
+ .players-online .auction-prospect { margin-bottom: 6px; }
+ .players-online .auction-battle-stats { margin-bottom: 6px; }
+}

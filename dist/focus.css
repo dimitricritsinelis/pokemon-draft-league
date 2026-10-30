@@ -1,0 +1,36 @@
+/* Full screen keeps play controls, not the surrounding branding. */
+.header-actions .focus-toggle { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 42px; width: 42px; min-width: 42px; min-height: 44px; padding: 0; border: 1px solid #dbe3d5; border-radius: 9px; background: #fff; color: #516d48; }
+.focus-toggle svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.focus-toggle .focus-contract { display: none; }
+.game-focus .focus-toggle .focus-contract { display: block; }
+.game-focus .focus-toggle .focus-expand { display: none; }
+.game-focus .focus-toggle { background: #183b29; color: #fff; border-color: #183b29; }
+.game-focus .masthead { max-width: none; height: calc(48px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); padding-left: 12px; padding-right: 12px; }
+.game-focus .brand-mark, .game-focus .brand h1, .game-focus .online-header-status, .game-focus #new-game-button { display: none !important; }
+.game-focus .brand { min-width: 0; flex: 1; }
+.game-focus .team-tabs { margin-top: 0; }
+.game-focus .header-actions { margin-left: auto; }
+.game-focus .game, .game-focus .online-team-dashboard, .game-focus .auction-strip { max-width: none; }
+.game-focus .game { padding-left: 8px; padding-right: 8px; }
+.game-focus .board-panel { border-radius: 8px; }
+.game-focus .field { height: var(--focus-field-height, calc(100dvh - 104px)); }
+.game-focus.players-online.online-active.auction-active .field { height: var(--focus-field-height, calc(100dvh - 200px)); }
+.game-focus .draft-tools { top: calc(52px + env(safe-area-inset-top)); }
+.focus-safari-note { border-top: 1px solid #e6ecdf; margin-top: 12px; padding-top: 12px; font-size: 11px; line-height: 1.55; color: #819175; }
+@media(min-width:1001px) {
+ .game-focus .picker-panel { top: 8px; height: calc(var(--focus-field-height, 650px) + 54px); }
+ .game-focus.players-online #auction-dialog { top: 8px; height: calc(var(--focus-field-height, 650px) + 54px); }
+}
+@media(max-width:560px) {
+ .header-actions .focus-toggle { flex-basis: 36px; min-width: 36px; width: 36px; }
+ .game-focus .masthead { padding-left: 7px; padding-right: 7px; gap: 5px; }
+ .game-focus .field, .game-focus.players-online.online-active.auction-active .field { min-height: 680px; }
+ .game-focus .game { padding-left: 4px; padding-right: 4px; }
+ .game-focus .board-toolbar { border-radius: 0; }
+}
+dialog .focus-modal-toggle { display: none; flex: 0 0 36px; width: 36px; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 7px; background: #f0f4eb; color: #56734a; align-items: center; justify-content: center; }
+dialog:modal .focus-modal-toggle { display: inline-flex; }
+.game-focus dialog .focus-modal-toggle { background: #183b29; color: #fff; }
+#picker.open .focus-modal-toggle { display: inline-flex; flex: 0 0 36px; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 7px; align-items: center; justify-content: center; background: #f0f4eb; color: #56734a; }
+.game-focus #picker.open .focus-modal-toggle { background: #183b29; color: #fff; }
+.game-focus { padding-bottom: env(safe-area-inset-bottom); }
