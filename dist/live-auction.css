@@ -153,3 +153,7 @@
 .player-award-receipt button { flex-shrink: 0; min-height: 38px; border: 0; background: transparent; font-weight: 650; color: #2d5835; padding: 6px 2px 6px 8px; font-size: 11px; }
 
 .players-online #auction-title:focus { outline: none; }
+
+.players-online .live-clock, .players-online .live-clock-track { display: none; }
+#player-finalize { width: 100%; min-height: 44px; border: 1px solid #d6dfce; border-radius: 8px; margin-bottom: 8px; font-size: 13px; color: #355439; background: #f1f5eb; }
+.players-online #player-custom-bid { margin-bottom: 10px; }

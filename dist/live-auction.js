@@ -20,7 +20,7 @@
     headerStatus = make('span', 'online-header-status'); headerStatus.id = 'online-header-status'; document.querySelector('.brand h1').after(headerStatus);
     stage = make('div', 'player-stage'); stage.id = 'player-stage'; stage.hidden = true; panel.querySelector('.auction-dialog-body').append(stage);
     controls = make('form', 'player-controls'); controls.id = 'player-bid-form'; controls.noValidate = true; controls.hidden = true;
-    controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div><div class="live-clock"><strong id="player-countdown"></strong><span>remaining</span></div></div><div class="live-clock-track"><i id="player-time-bar"></i></div><p id="player-bid-context"></p><details id="player-custom-bid"><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="submit" class="primary-button" id="player-bid-submit">Bid $5 (+$5)</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
+    controls.innerHTML = '<div class="live-price-row"><div><span class="live-price-label">CURRENT BID</span><strong id="player-highest-bid">$0</strong><span id="player-leader"></span></div></div><p id="player-bid-context"></p><details id="player-custom-bid" open><summary>Set a higher bid</summary><label for="player-bid-input" class="sr-only">Your bid in dollars</label><div class="auction-bid-input"><span aria-hidden="true">$</span><input id="player-bid-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" enterkeyhint="done" aria-describedby="player-bid-range player-bid-error"></div><small id="player-bid-range"></small></details><p id="player-bid-error" class="auction-error" role="alert" hidden></p><button type="button" class="secondary-button" id="player-finalize">Finalize bid</button><button type="submit" class="primary-button" id="player-bid-submit">Bid $5 (+$5)</button><div class="live-bid-footer"><span id="player-bid-wallet"></span><button type="button" id="player-skip">Skip Pokémon</button></div>';
     error = controls.querySelector('#player-bid-error'); panel.append(controls);
     receipt = make('div', 'player-award-receipt'); receipt.hidden = true;
     receiptText = make('span'); const receiptBox = make('button', '', 'PC Box'); receiptBox.type = 'button'; receiptBox.addEventListener('click', () => adapter.openBox(own()));
@@ -31,6 +31,7 @@
     controls.addEventListener('submit', submit);
     $('player-bid-input').addEventListener('input', updateBidButton);
     $('player-custom-bid').addEventListener('toggle', updateBidButton);
+    $('player-finalize').addEventListener('click', () => { if (snapshot && !busy) request('finalize', { pokemonId: snapshot.lobby.auction.currentPokemonId }); });
     $('player-skip').addEventListener('click', async () => { if (!snapshot || busy) return; await request('skip', { pokemonId: snapshot.lobby.auction.currentPokemonId }); });
     const minimizeButton = panel.querySelector('[data-close="auction-dialog"]'); minimizeButton.textContent = '−'; minimizeButton.title = 'Minimize auction'; minimizeButton.addEventListener('click', () => { if (snapshot) minimize(); });
     panel.addEventListener('close', renderLauncher);
@@ -53,7 +54,7 @@
       error.textContent = `Enter a whole-dollar bid from ${money(sale.bidding.minimumBid)} to ${money(sale.budgets[own()])}.`; error.hidden = false; return;
     }
     const result = await request('bid', { amount, pokemonId: sale.currentPokemonId });
-    if (result) { $('player-bid-input').value = ''; $('player-custom-bid').open = false; document.activeElement?.blur(); updateBidButton(); }
+    if (result) { $('player-bid-input').value = ''; $('player-custom-bid').open = true; document.activeElement?.blur(); updateBidButton(); }
   }
   function updateBidButton() {
     if (!snapshot) return;
@@ -67,12 +68,15 @@
     const bidLabel = 'Bid ' + money(amount) + (custom ? '' : amount === budget ? ' · All in' : ' (+$5)');
     $('player-bid-input').setAttribute('aria-invalid', String(!valid));
     $('player-bid-range').textContent = `Bid ${money(bidding.minimumBid)}–${money(budget)}`;
-    const opening = serverNow() < Date.parse(bidding.opensAt || 0), closing = serverNow() >= Date.parse(bidding.closesAt);
+    const opening = false, closing = false;
     button.textContent = !window.DraftOnline.connected() ? 'Reconnecting…' : busy ? 'Sending…' : opening ? 'Next pick opening…' : closing ? 'Closing bids…' : leading ? 'You’re leading' : full ? 'Your roster is full' : budget < bidding.minimumBid ? 'Budget reached' : !valid ? 'Enter a valid bid' : bidLabel;
-    button.disabled = busy || opening || closing || !valid || !window.DraftOnline.connected() || !window.DraftOnline.can('bid') || Date.parse(bidding.closesAt) <= serverNow();
-    $('player-custom-bid').hidden = leading || full || budget < bidding.minimumBid;
-    $('player-skip').hidden = !window.DraftOnline.isHost() || bidding.leaderTeam !== null;
-    $('player-skip').disabled = busy || !skipAvailable || Date.parse(bidding.closesAt) <= serverNow();
+    button.disabled = busy || opening || closing || !valid || !window.DraftOnline.connected() || !window.DraftOnline.can('bid');
+    $('player-custom-bid').hidden = false; $('player-bid-input').disabled = leading || full || budget < bidding.minimumBid;
+    $('player-skip').hidden = !window.DraftOnline.isHost();
+    $('player-skip').disabled = busy || !skipAvailable;
+    $('player-finalize').hidden = !window.DraftOnline.isHost();
+    $('player-finalize').disabled = busy || !window.DraftOnline.connected();
+    $('player-finalize').textContent = bidding.leaderTeam === null ? 'Finalize free pick' : `Finalize bid · ${money(bidding.highestBid)}`;
     $('player-skip').textContent = skipAvailable ? 'Skip Pokémon' : 'No skips left';
     $('player-skip').title = skipAvailable ? 'Discard this Pokémon for the rest of this draft' : 'All remaining Pokémon are needed to fill every roster';
     $('player-bid-wallet').textContent = `${money(budget)} available · ${23 - sale.counts[own()]} spots left`;
@@ -112,7 +116,6 @@
     const { lobby } = snapshot, connected = window.DraftOnline.connected();
     headerStatus.textContent = `Room ${lobby.code} · ${!connected ? 'Reconnecting…' : lobby.phase === 'waiting' ? 'Waiting for coaches' : lobby.phase === 'complete' ? 'Draft complete' : 'Live auction'}`;
     headerStatus.classList.toggle('is-offline', !connected);
-    $('player-countdown').closest('.live-clock').setAttribute('aria-label', connected ? 'Time remaining' : 'Reconnecting. Auction time may have changed.');
   }
   function render(next) {
     const previous = snapshot; snapshot = next;
@@ -125,7 +128,7 @@
     if (!receipt.hidden) { receiptText.textContent = `You won ${pokemon.get(sale.lastAward.pokemonId)?.name} · ${money(sale.lastAward.amount)}`; }
     const lot = sale?.currentPokemonId, changedLot = lastLot !== lot;
     const changedPhase = lastPhase !== lobby.phase;
-    if (changedLot) { dismissed = null; tickKey = null; $('player-bid-input').value = ''; $('player-custom-bid').open = false; error.hidden = true; }
+    if (changedLot) { dismissed = null; tickKey = null; $('player-bid-input').value = ''; $('player-custom-bid').open = true; error.hidden = true; }
     lastLot = lot; lastPhase = lobby.phase;
     if (previous && sale?.lastAward && sale.lastAward.pokemonId !== previous.lobby.auction?.lastAward?.pokemonId && sale.lastAward.team === own()) adapter.notify(`${pokemon.get(sale.lastAward.pokemonId)?.name} won for ${money(sale.lastAward.amount)} · Sent to your PC Box`);
     refresh();
@@ -151,7 +154,7 @@
       const priority = ['QB', 'WR', 'TE', 'HB', 'FB', 'K'];
       const rank = role => priority.includes(role) ? priority.indexOf(role) : priority.length;
       const needs = adapter.getNeeds(own()).sort((a, b) => rank(a.role) - rank(b.role)).map(v => v.role + (v.count > 1 ? ' ×' + v.count : '')).join(' · ');
-      $('player-bid-context').textContent = sale.bidding.leaderTeam === null ? 'No bids? A team gets this Pokémon free when time expires.' : 'Only the winner pays. Late bids leave at least 5 seconds to respond. A short network buffer protects bids in transit.';
+      $('player-bid-context').textContent = sale.bidding.leaderTeam === null ? 'The host finalizes this pick. No bids means a random free award.' : 'Only the winner pays. Bidding stays open until the host finalizes.';
       stage.dataset.needs = needs;
       let need = $('player-position-needs');
       if (!need) { need = make('p', 'player-position-needs'); need.id = 'player-position-needs'; panel.querySelector('#auction-scouting').after(need); }
@@ -164,7 +167,7 @@
       $('auction-title').textContent = lobby.phase === 'waiting' ? 'Your draft room' : 'Draft complete';
       if (lobby.phase === 'waiting') {
         const joined = new Set(lobby.members.map(m => m.teamIndex)).size;
-        stage.append(make('p', '', `${joined} of ${lobby.teamCount} coaches are here.`), make('p', 'player-stage-help', 'Each pick starts with 20 seconds. Late bids leave 5 seconds to respond. Won Pokémon go to your PC Box while the auction continues. You have $1,000 for 23 Pokémon.'));
+        stage.append(make('p', '', `${joined} of ${lobby.teamCount} coaches are here.`), make('p', 'player-stage-help', 'Bid from your own device. The host finalizes each pick or skips it. Won Pokémon go to your PC Box. You have $1,000 for 23 Pokémon.'));
         const invite = make('button', 'secondary-button', 'Invite friends'); invite.type = 'button'; invite.addEventListener('click', () => window.DraftOnline.shareRoom()); stage.append(invite);
         if (window.DraftOnline.isHost()) { const start = make('button', 'primary-button', 'Start live auction'); start.type = 'button'; start.disabled = joined < lobby.teamCount; start.addEventListener('click', () => request('start', {})); stage.append(start); }
         else stage.append(make('p', 'player-stage-help', 'The host will start when everyone has joined.'));
@@ -174,21 +177,10 @@
         else stage.append(make('p', 'player-stage-help', 'The host starts the match. Results appear for everyone.'));
       }
     }
-    if (!interval) interval = setInterval(clock, 200);
+
     clock(); present(changedLot || changedPhase); renderLauncher();
   }
-  function clock() {
-    if (!snapshot || snapshot.lobby.phase !== 'bidding') return;
-    const bid = snapshot.lobby.auction.bidding, now = serverNow();
-    const opening = now < Date.parse(bid.opensAt || 0), remaining = Math.max(0, Date.parse(opening ? bid.opensAt : bid.closesAt) - now);
-    $('player-countdown').textContent = remaining ? Math.ceil(remaining / 1000) + 's' : 'Closing';
-    panel.querySelector('.live-clock > span').textContent = opening ? 'next pick' : remaining ? bid.free ? 'free draw' : 'remaining' : 'finalizing bids';
-    const duration = opening ? 2000 : bid.free ? 3000 : 20000;
-    $('player-time-bar').style.width = Math.min(100, remaining / duration * 100) + '%';
-    controls.classList.toggle('closing-soon', !opening && remaining <= 5000); updateBidButton();
-    const key = bid.pokemonId + ':' + bid.closesAt;
-    if (now >= Date.parse(bid.settlesAt || bid.closesAt) && tickKey !== key && window.DraftOnline.connected() && !window.DraftOnline.pending()) { tickKey = key; window.DraftOnline.request('tick').catch(() => { tickKey = null; }); }
-  }
+  function clock() { updateBidButton(); }
   function present(auto = false, force = false) {
     if (!snapshot) return;
     const sale = snapshot.lobby.auction, phase = snapshot.lobby.phase;

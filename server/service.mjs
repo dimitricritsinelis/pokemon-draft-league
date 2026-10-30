@@ -2,7 +2,7 @@ import { OFFENSES, DEFENSES, MODES, ROSTER_SIZE, eligible, slots, cleanName } fr
 import { DatabaseError } from './supabase-store.mjs';
 
 const HOUR = 60 * 60 * 1000;
-const PICK_MS = 20000, RESPONSE_MS = 5000, NETWORK_GRACE_MS = 2000, NEXT_PICK_MS = 2000, FREE_PICK_MS = 3000;
+
 const clone = value => JSON.parse(JSON.stringify(value));
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const nowISO = time => new Date(time).toISOString();
@@ -50,44 +50,41 @@ export function createService({ store, engines, clock = () => Date.now(), random
   }
   function newBidding(lobby,time,delay=0) {
     if(!lobby.session||Auction.phase(lobby.session)!=='bidding')return null;
-    const free=freeRound(lobby),opensAt=time+(free?0:delay);
-    return {pokemonId:Auction.current(lobby.session),highestBid:0,leaderTeam:null,opensAt,closesAt:opensAt+(free?FREE_PICK_MS:PICK_MS),free,bids:Array(lobby.teamCount).fill(null),history:[]};
+    const free=freeRound(lobby),opensAt=time;
+    return {pokemonId:Auction.current(lobby.session),highestBid:0,leaderTeam:null,opensAt,closesAt:null,free,bids:Array(lobby.teamCount).fill(null),history:[]};
   }
   function liveBidding(lobby,time) {
     if(!playerRoom(lobby)||!lobby.session||Auction.phase(lobby.session)!=='bidding')return null;
     const pokemonId=Auction.current(lobby.session);
-    if(lobby.bidding?.pokemonId===pokemonId&&Number.isFinite(lobby.bidding.closesAt)){
-      return {...lobby.bidding,opensAt:lobby.bidding.opensAt??lobby.bidding.closesAt-PICK_MS,free:lobby.bidding.free??false};
+    if(lobby.bidding?.pokemonId===pokemonId){
+      return {...lobby.bidding,opensAt:time,closesAt:null,free:lobby.bidding.free??false};
     }
     return newBidding(lobby,time);
   }
-  const settlesAt = bidding => bidding.closesAt+(bidding.free?0:NETWORK_GRACE_MS);
+
   function migratePending(lobby,time) {
     if(!playerRoom(lobby)||!lobby.session||Auction.phase(lobby.session)!=='placement')return false;
     // Existing purchases stay owned in the PC Box; migrating never records them twice.
-    lobby.session=Auction.place(lobby.session);lobby.bidding=newBidding(lobby,time,NEXT_PICK_MS);return true;
+    lobby.session=Auction.place(lobby.session);lobby.bidding=newBidding(lobby,time);return true;
   }
-  function settlePlayerBids(lobby,league,time) {
+  function settlePlayerBids(lobby,league,time,finalize=false) {
     const bidding=liveBidding(lobby,time);
     if(!bidding){lobby.bidding=null;return false;}
     lobby.bidding=bidding;
-    if(time<bidding.opensAt)return false;
-    const budgets=Auction.budgets(lobby.session),counts=Auction.counts(lobby.session);
-    const eligible=budgets.map((_,i)=>counts[i]<(lobby.session.rosterSize||ROSTER_SIZE));
-    const unbeatable=bidding.leaderTeam!==null&&eligible.every((open,i)=>!open||i===bidding.leaderTeam||budgets[i]<=bidding.highestBid);
-    if(!unbeatable&&time<settlesAt(bidding))return false;
+    if(!finalize)return false;
+    const budgets=Auction.budgets(lobby.session);
     const bids=budgets.map((_,i)=>i===bidding.leaderTeam?bidding.highestBid:0);
     const result=Auction.bid(lobby.session,bids,randomUnit);
     lobby.session=Auction.place(result.session);recordAuction(league,result.award);
     lobby.lastAward={...result.award,at:nowISO(time)};
-    lobby.bidding=newBidding(lobby,time,NEXT_PICK_MS);
+    lobby.bidding=newBidding(lobby,time);
     systemMessage(lobby,`${lobby.teams[result.award.team].name} won ${names.get(result.award.pokemonId)} for $${result.award.amount}. Sent to their PC Box.`,time);
     return true;
   }
   function bidView(lobby,member,time) {
     const state=liveBidding(lobby,time);
     if(!state)return null;
-    return {pokemonId:state.pokemonId,highestBid:state.highestBid,leaderTeam:state.leaderTeam,opensAt:nowISO(state.opensAt),closesAt:nowISO(state.closesAt),settlesAt:nowISO(settlesAt(state)),free:state.free,responseWindowMs:RESPONSE_MS,networkGraceMs:state.free?0:NETWORK_GRACE_MS,ownBid:state.bids[member.teamIndex],minimumBid:state.highestBid+1,history:clone(state.history)};
+    return {pokemonId:state.pokemonId,highestBid:state.highestBid,leaderTeam:state.leaderTeam,manual:true,opensAt:nowISO(state.opensAt),closesAt:null,settlesAt:null,free:state.free,ownBid:state.bids[member.teamIndex],minimumBid:state.highestBid+1,history:clone(state.history)};
   }
   async function advanceClock(code,authHash){
     return mutate((state,time)=>{
@@ -98,7 +95,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
         if(migrated){lobby.version++;lobby.lastGameVersion=lobby.version;return null;}
         return{unchanged:true,value:null};
       }
-      const initialized=lobby.bidding?.pokemonId===Auction.current(lobby.session)&&Number.isFinite(lobby.bidding.closesAt);
+      const initialized=lobby.bidding?.pokemonId===Auction.current(lobby.session);
       const settled=settlePlayerBids(lobby,state.leagues[lobby.leagueId],time);
       if(!settled&&initialized&&!migrated)return{unchanged:true,value:null};
       // Time progression does not count as player activity.
@@ -243,9 +240,9 @@ export function createService({ store, engines, clock = () => Date.now(), random
       return {...view(lobby,member,state,time,freshToken),leagueReadToken:readToken};
     });
   }
-  async function lobbyAction(code,body,authHash,receivedAt=clock()) {
+  async function lobbyAction(code,body,authHash) {
     if(!actionID(body.actionId))fail(400,'INVALID_ACTION','This action needs a unique request ID.');
-    const supported=new Set(['configure','rename','start','bid','skip','place','scheme','simulate','tick']);
+    const supported=new Set(['configure','rename','start','bid','finalize','skip','place','scheme','simulate','tick']);
     if(!supported.has(body.type))fail(400,'INVALID_ACTION','This game action is not supported.');
     const payload=object(body.payload)?body.payload:{};
     return mutate((state,time)=>{
@@ -267,13 +264,6 @@ export function createService({ store, engines, clock = () => Date.now(), random
       if(migratePending(lobby,time)){lobby.version++;lobby.lastGameVersion=lobby.version;}
       let phase=lobby.session?Auction.phase(lobby.session):'waiting';
       const pool=POKEMON.filter(p=>eligible(p.id,lobby.mode)&&!league.hall[p.id]).map(p=>p.id);
-      const inFlight=individual&&phase==='bidding'&&body.type==='bid'&&payload.pokemonId===Auction.current(lobby.session)&&receivedAt<settlesAt(liveBidding(lobby,time));
-      if(individual&&phase==='bidding'&&!inFlight&&settlesAt(liveBidding(lobby,time))<=time){
-        settlePlayerBids(lobby,league,time);lobby.version++;lobby.lastGameVersion=lobby.version;
-        if(body.type==='tick')return view(lobby,member,state,time);
-        if(['bid','skip'].includes(body.type))return {...view(lobby,member,state,time),error:'Bidding has closed for this Pokémon.',code:'BIDDING_CLOSED',httpStatus:409};
-        phase=Auction.phase(lobby.session);
-      }
       switch(body.type){
         case 'configure':
           if(phase!=='waiting')fail(409,'AUCTION_STARTED','Team count, names, and pool must be chosen before the auction starts.');
@@ -295,21 +285,24 @@ export function createService({ store, engines, clock = () => Date.now(), random
             if(payload.pokemonId!==id)fail(409,'STALE_PROSPECT','This pick has changed. Submit a bid for the current Pokémon.');
             if(payload.bids!==undefined)fail(400,'INDIVIDUAL_BID_REQUIRED','Submit only your own bid amount from your device.');
             const bidding=liveBidding(lobby,time),index=member.teamIndex,budget=Auction.budgets(lobby.session)[index];
-            if(time<bidding.opensAt)fail(409,'PICK_OPENING','The next pick is opening. Wait for its countdown to start.');
             if(Auction.counts(lobby.session)[index]>=(lobby.session.rosterSize||ROSTER_SIZE))fail(409,'ROSTER_FULL','Your roster is full. You can follow the rest of the draft.');
             if(bidding.leaderTeam===index)fail(409,'ALREADY_LEADING','You already have the highest bid.');
             if(!Number.isInteger(payload.amount)||payload.amount<bidding.highestBid+1||payload.amount>budget)fail(400,'INVALID_BID',`Bid at least $${bidding.highestBid+1}, within your $${budget} budget.`);
             bidding.highestBid=payload.amount;bidding.leaderTeam=index;bidding.bids[index]=payload.amount;
-            bidding.closesAt=Math.max(bidding.closesAt,time+RESPONSE_MS);
             bidding.history=[...bidding.history,{teamIndex:index,amount:payload.amount,at:nowISO(time)}].slice(-5);
             lobby.bidding=bidding;
             settlePlayerBids(lobby,league,time);break;
           }
           const awarded=Auction.bid(lobby.session,payload.bids,randomUnit);lobby.session=awarded.session;
           recordAuction(league,awarded.award);systemMessage(lobby,`${lobby.teams[awarded.award.team].name} drafted ${names.get(id)} for $${awarded.award.amount}.`,time);break;}
+        case 'finalize':
+          if(!individual)fail(400,'INVALID_ACTION','This room uses the original host-controlled auction.');
+          if(phase!=='bidding')fail(409,'WRONG_PHASE','There is no open bid to finalize.');
+          if(payload.pokemonId!==Auction.current(lobby.session))fail(409,'STALE_PROSPECT','This pick has changed. Finalize only the current Pokémon.');
+          settlePlayerBids(lobby,league,time,true);break;
         case 'skip':
           if(phase!=='bidding')fail(409,'WRONG_PHASE','Only the Pokémon up for bidding can be skipped.');
-          {const id=Auction.current(lobby.session);if(individual&&payload.pokemonId!==id)fail(409,'STALE_PROSPECT','This pick has changed. Skip only the current Pokémon.');if(individual&&liveBidding(lobby,time).leaderTeam!==null)fail(409,'BIDS_STARTED','A live bid has already been placed. Let this auction finish.');lobby.session=Auction.skip(lobby.session,pool,randomUnit);lobby.bidding=null;systemMessage(lobby,`${names.get(id)} was skipped for the rest of this draft.`,time);if(individual)settlePlayerBids(lobby,league,time);}break;
+          {const id=Auction.current(lobby.session);if(individual&&payload.pokemonId!==id)fail(409,'STALE_PROSPECT','This pick has changed. Skip only the current Pokémon.');lobby.session=Auction.skip(lobby.session,pool,randomUnit);lobby.bidding=null;systemMessage(lobby,`${names.get(id)} was skipped for the rest of this draft.`,time);if(individual)settlePlayerBids(lobby,league,time);}break;
         case 'place':{
           if(phase==='waiting')fail(409,'WRONG_PHASE','Start the auction before placing Pokémon.');
           const teamIndex=payload.teamIndex ?? payload.team ?? (individual?member.teamIndex:undefined), key=payload.slotKey ?? payload.key;
@@ -424,7 +417,6 @@ export function createService({ store, engines, clock = () => Date.now(), random
         try{body=text?JSON.parse(text):{};}catch{fail(400,'INVALID_JSON','Send a valid JSON request.');}
         if(!object(body))fail(400,'INVALID_JSON','Send a JSON object.');
       }
-      const receivedAt=clock();
       const auth=request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]{32,256})$/)?.[1] || '';
       const owner=typeof body.leagueToken==='string'?body.leagueToken:auth;
       const authHash=await digest(path==='/api/lobbies'&&method==='POST'?owner:auth);
@@ -435,7 +427,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
         const [,code,operation]=match;
         if(method==='GET'&&!operation){
           let stored=await store.read(),time=clock(),lobby=requireLobby(stored.state,code,time),member=memberFor(lobby,authHash);
-          if(playerRoom(lobby)&&lobby.session&&(Auction.phase(lobby.session)==='placement'||(Auction.phase(lobby.session)==='bidding'&&(!Number.isFinite(lobby.bidding?.closesAt)||settlesAt(liveBidding(lobby,time))<=time)))){
+          if(playerRoom(lobby)&&lobby.session&&(Auction.phase(lobby.session)==='placement'||(Auction.phase(lobby.session)==='bidding'&&lobby.bidding?.pokemonId!==Auction.current(lobby.session)))){
             await advanceClock(code,authHash);
             stored=await store.read();time=clock();lobby=requireLobby(stored.state,code,time);member=memberFor(lobby,authHash);
           }
@@ -443,7 +435,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
           if(request.headers.get('if-none-match')===etag)return new Response(null,{status:304,headers:{...headers,etag}});
           const result=respond(view(lobby,member,stored.state,time));result.headers.set('etag',etag);return result;
         }
-        if(method==='POST'&&operation==='action'){const result=await lobbyAction(code,body,authHash,receivedAt),status=result.httpStatus||200;delete result.httpStatus;return respond(result,status);}
+        if(method==='POST'&&operation==='action'){const result=await lobbyAction(code,body,authHash),status=result.httpStatus||200;delete result.httpStatus;return respond(result,status);}
         if(method==='POST'&&operation==='chat')return respond(await chat(code,body,authHash));
       }
       match=path.match(/^\/api\/leagues\/([A-Za-z0-9-]{16,64})(?:\/(hall))?$/);

@@ -26,8 +26,8 @@ function fixture(){
 const ok=result=>{assert.equal(result.status,200,JSON.stringify(result.body));return result.body;};
 const assertError=(result,status,code)=>{assert.equal(result.status,status,JSON.stringify(result.body));assert.equal(result.body.code,code);};
 
-const open = (f,s) => { const wait=Date.parse(s.lobby.auction.bidding.opensAt)-Date.parse(s.serverTime);if(wait>0)f.advance(wait); };
-async function expire(f,s,actor=0){const wait=Date.parse(s.lobby.auction.bidding.settlesAt)-Date.parse(s.serverTime);if(wait>0)f.advance(wait);return (await f.poll(actor)).body;}
+const open = () => {};
+async function expire(f,s){return ok(await f.action(0,s,'finalize',{pokemonId:s.lobby.auction.currentPokemonId}));}
 async function placeAll(f,s){for(let i=0;i<s.lobby.teamCount;i++){const ids=s.lobby.auction.owned[i];const positions=slots(s.lobby.teams[i]);for(let j=0;j<ids.length;j++)s=ok(await f.action(i,s,'place',{pokemonId:ids[j],slotKey:positions[j].key}));}return s;}
 
 test('each coach controls their own team; start waits for coaches and tolerates unrelated setup edits',async()=>{
@@ -39,28 +39,25 @@ test('each coach controls their own team; start waits for coaches and tolerates 
  assert.equal(s.lobby.auction.lots,undefined);assert.equal(s.member.token,undefined);assert.ok(!JSON.stringify(s).includes('tokenHash'));
 });
 
-test('20-second picks use a 5-second soft close and a 2-second network grace without inflating early bids',async()=>{
- const f=fixture();let s=await f.start(3),id=s.lobby.auction.currentPokemonId;const start=Date.parse(s.serverTime);
- assert.equal(Date.parse(s.lobby.auction.bidding.closesAt)-start,20000);
- f.advance(1000);s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));assert.equal(Date.parse(s.lobby.auction.bidding.closesAt),start+20000);
- f.advance(17000);s=ok(await f.action(2,s,'bid',{amount:10,pokemonId:id}));assert.equal(Date.parse(s.lobby.auction.bidding.closesAt),start+23000);
- // Arrives one second after the displayed zero: still within the transit buffer.
- f.advance(6000);s=ok(await f.action(0,s,'bid',{amount:15,pokemonId:id}));assert.equal(Date.parse(s.lobby.auction.bidding.closesAt),start+29000);
- f.advance(5000);let p=(await f.poll()).body;assert.equal(p.lobby.auction.awards.length,0);assert.equal(p.lobby.auction.bidding.highestBid,15);
- f.advance(2000);const activity=p.lobby.lastActivityAt;const polls=await Promise.all([f.poll(0),f.poll(1),f.poll(2)]);
- for(const r of polls){assert.equal(r.status,200);assert.equal(r.body.lobby.phase,'bidding');assert.equal(r.body.lobby.auction.awards.length,1);assert.equal(r.body.lobby.auction.lastAward.amount,15);assert.equal(r.body.lobby.lastActivityAt,activity);assert.equal(r.body.league.careers[id].draftCount,1);}
- s=polls[0].body;assert.deepEqual(s.lobby.auction.budgets,[985,1000,1000]);assert.deepEqual(s.lobby.auction.boxed,[[id],[],[]]);assert.notEqual(s.lobby.auction.currentPokemonId,id);
- assert.equal(Date.parse(s.lobby.auction.bidding.opensAt),start+33000);
- assertError(await f.action(1,s,'bid',{amount:5,pokemonId:s.lobby.auction.currentPokemonId}),409,'PICK_OPENING');
+test('bids remain open indefinitely, including all-ins, and only the host can finalize the current leader',async()=>{
+ const f=fixture();let s=await f.start(3),id=s.lobby.auction.currentPokemonId;
+ assert.equal(s.lobby.auction.bidding.manual,true);assert.equal(s.lobby.auction.bidding.closesAt,null);
+ s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));s=ok(await f.action(2,s,'bid',{amount:1000,pokemonId:id}));
+ f.advance(120000);s=(await f.poll()).body;assert.equal(s.lobby.auction.awards.length,0);assert.deepEqual(s.lobby.auction.budgets,[1000,1000,1000]);
+ s=ok(await f.action(1,s,'tick'));assert.equal(s.lobby.auction.awards.length,0);
+ assertError(await f.action(1,s,'finalize',{pokemonId:id}),403,'HOST_ONLY');
+ s=await expire(f,s);assert.equal(s.lobby.auction.lastAward.team,2);assert.equal(s.lobby.auction.lastAward.amount,1000);assert.deepEqual(s.lobby.auction.boxed,[[],[],[id]]);
+ assert.equal(s.league.careers[id].draftCount,1);assert.equal(s.lobby.phase,'bidding');
+ assertError(await f.action(0,s,'finalize',{pokemonId:id}),409,'STALE_PROSPECT');
 });
 
 test('wins go to PC Box and bidding continues while coaches place, replace, and swap their owned players',async()=>{
  const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;
- s=ok(await f.action(0,s,'bid',{amount:1000,pokemonId:id}));assert.equal(s.lobby.phase,'bidding');assert.deepEqual(s.lobby.teams[0].picks,{});assert.deepEqual(s.lobby.auction.boxed[0],[id]);
+ s=ok(await f.action(0,s,'bid',{amount:1000,pokemonId:id}));s=await expire(f,s);assert.equal(s.lobby.phase,'bidding');assert.deepEqual(s.lobby.teams[0].picks,{});assert.deepEqual(s.lobby.auction.boxed[0],[id]);
  const next=s.lobby.auction.currentPokemonId,deadline=s.lobby.auction.bidding.closesAt;
  assertError(await f.action(1,s,'place',{pokemonId:id,slotKey:'o_qb'}),400,'NOT_OWNED');
  s=ok(await f.action(0,s,'place',{pokemonId:id,slotKey:'o_qb'}));assert.deepEqual(s.lobby.auction.boxed[0],[]);assert.equal(s.lobby.auction.currentPokemonId,next);assert.equal(s.lobby.auction.bidding.closesAt,deadline);
- open(f,s);s=ok(await f.action(1,s,'bid',{amount:1000,pokemonId:next}));assert.equal(s.lobby.auction.awards.length,2);assert.equal(s.lobby.phase,'bidding');
+ open(f,s);s=ok(await f.action(1,s,'bid',{amount:1000,pokemonId:next}));s=await expire(f,s);assert.equal(s.lobby.auction.awards.length,2);assert.equal(s.lobby.phase,'bidding');
  s=ok(await f.action(1,s,'place',{pokemonId:next,slotKey:'s_k'}));assert.equal(s.lobby.teams[1].picks.s_k,next);
  s=await expire(f,s);const third=s.lobby.auction.lastAward;assert.equal(third.amount,0);assert.equal(s.lobby.auction.awards.length,3);
  const i=third.team,existing=i===0?id:next,slot=i===0?'o_qb':'s_k';
@@ -85,30 +82,31 @@ for(const count of [2,3,4])test(`${count} coaches finish all continuous picks be
  assert.deepEqual(s.lobby.matches.at(-1).teamIndexes,[0,count-1]);s=ok(await f.action(0,s,'simulate',{teamIndexes:[0,count-1]},actionId));assert.equal(s.league.matchCount,1);
 });
 
-test('free picks are paced three seconds apart, never assigned in a burst, and exclude full teams',async()=>{
+test('empty bids finalize randomly for free; empty wallets never auto-award or overfill teams',async()=>{
  const f=fixture();let s=await f.start(3);
- for(let i=0;i<3;i++){open(f,s);s=ok(await f.action(i,s,'bid',{amount:1000,pokemonId:s.lobby.auction.currentPokemonId}));}
- assert.deepEqual(s.lobby.auction.budgets,[0,0,0]);assert.equal(s.lobby.auction.awards.length,3);
- assert.equal(s.lobby.auction.bidding.free,true);f.advance(2999);s=(await f.poll()).body;assert.equal(s.lobby.auction.awards.length,3);
- f.advance(1);s=(await f.poll()).body;assert.equal(s.lobby.auction.awards.length,4);
+ for(let i=0;i<3;i++){s=ok(await f.action(i,s,'bid',{amount:1000,pokemonId:s.lobby.auction.currentPokemonId}));s=await expire(f,s);}
+ assert.deepEqual(s.lobby.auction.budgets,[0,0,0]);f.advance(120000);s=(await f.poll()).body;assert.equal(s.lobby.auction.awards.length,3);
  while(s.lobby.phase!=='complete'){s=await expire(f,s);assert.equal(s.lobby.auction.lastAward.amount,0);}
- assert.deepEqual(s.lobby.auction.counts,[23,23,23]);assert.equal(new Set(s.lobby.auction.awards.map(a=>a.pokemonId)).size,69);assert.equal(s.lobby.auction.awards.length,69);
- assert.equal(Object.values(s.league.careers).reduce((n,c)=>n+c.draftCount,0),69);
+ assert.deepEqual(s.lobby.auction.counts,[23,23,23]);assert.equal(new Set(s.lobby.auction.awards.map(a=>a.pokemonId)).size,69);
 });
 
-test('late or stale bids cannot steal the next nominee; exact replay and simultaneous all-ins charge once',async()=>{
- const f=fixture();let s=await f.start(2),old=s,id=s.lobby.auction.currentPokemonId;
- s=ok(await f.action(0,s,'skip',{pokemonId:id}));assertError(await f.action(1,old,'bid',{amount:5,pokemonId:id}),409,'STALE_PROSPECT');
- id=s.lobby.auction.currentPokemonId;s=ok(await f.action(0,s,'bid',{amount:5,pokemonId:id}));f.advance(22000);
- const late=await f.action(1,s,'bid',{amount:10,pokemonId:id});assertError(late,409,'BIDDING_CLOSED');assert.equal(late.body.lobby.auction.lastAward.amount,5);assert.equal(late.body.lobby.auction.awards.length,1);
- s=late.body;open(f,s);id=s.lobby.auction.currentPokemonId;const key=crypto.randomUUID();
- const outcomes=await Promise.all([f.action(1,s,'bid',{amount:1000,pokemonId:id},key),f.action(1,s,'bid',{amount:1000,pokemonId:id},key),f.action(0,s,'bid',{amount:995,pokemonId:id})]);
- assert.ok(outcomes.some(r=>r.status===200));s=(await f.poll()).body;assert.equal(s.lobby.auction.awards.length,2);assert.equal(s.league.careers[id].draftCount,1);
- if(outcomes[0].status===200){assert.equal(outcomes[1].status,200);assertError(await f.action(0,s,'bid',{amount:1,pokemonId:id},key),409,'ACTION_REUSED');}
+test('host can discard a bid prospect without charging anyone; stale finalize and skip cannot affect next prospect',async()=>{
+ const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;
+ s=ok(await f.action(1,s,'bid',{amount:50,pokemonId:id}));assertError(await f.action(1,s,'skip',{pokemonId:id}),403,'HOST_ONLY');
+ s=ok(await f.action(0,s,'skip',{pokemonId:id}));assert.ok(s.lobby.auction.skipped.includes(id));assert.deepEqual(s.lobby.auction.budgets,[1000,1000]);assert.equal(s.lobby.auction.awards.length,0);assert.equal(s.lobby.auction.bidding.highestBid,0);
+ assertError(await f.action(0,s,'finalize',{pokemonId:id}),409,'STALE_PROSPECT');assertError(await f.action(0,s,'skip',{pokemonId:id}),409,'STALE_PROSPECT');
+});
+
+test('finalization is atomic, replay-safe, and cannot silently finalize after an unseen raise',async()=>{
+ const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;
+ const old=s;s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));assertError(await f.action(0,old,'finalize',{pokemonId:id}),409,'CONFLICT');
+ const key=crypto.randomUUID(),out=await Promise.all([f.action(0,s,'finalize',{pokemonId:id},key),f.action(0,s,'finalize',{pokemonId:id},key)]);
+ assert.equal(out[0].status,200);assert.equal(out[1].status,200);s=(await f.poll()).body;assert.equal(s.lobby.auction.awards.length,1);assert.equal(s.league.careers[id].draftCount,1);assert.deepEqual(s.lobby.auction.budgets,[1000,995]);
+ assertError(await f.action(1,s,'finalize',{pokemonId:id},key),403,'HOST_ONLY');
 });
 
 test('old pending placements migrate into the PC Box without losing purchases or duplicating career records',async()=>{
- const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;s=ok(await f.action(0,s,'bid',{amount:1000,pokemonId:id}));
+ const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;s=ok(await f.action(0,s,'bid',{amount:1000,pokemonId:id}));s=await expire(f,s);
  const saved=await f.store.read(),room=saved.state.lobbies[f.code];room.session.placed--;room.bidding=null;delete room.controlMode;room.members[1].role='viewer';await f.store.commit(saved.revision,saved.state);
  const revision=(await f.store.read()).revision;assertError(await f.request(`/api/lobbies/${f.code}`),403,'FORBIDDEN');assert.equal((await f.store.read()).revision,revision);
  const activity=s.lobby.lastActivityAt;s=(await f.poll(1)).body;assert.equal(s.member.role,'player');assert.equal(s.lobby.phase,'bidding');assert.deepEqual(s.lobby.auction.boxed[0],[id]);assert.equal(s.league.careers[id].draftCount,1);assert.equal(s.lobby.lastActivityAt,activity);
@@ -120,16 +118,23 @@ test('forged amounts, other-team edits, full teams, and retirement cannot bypass
  for(const amount of [-1,0,1.5,1001,'10',null])assertError(await f.action(1,s,'bid',{amount,pokemonId:id}),400,'INVALID_BID');
  assertError(await f.action(0,s,'bid',{amount:5,pokemonId:id,teamIndex:1}),403,'OWN_TEAM_ONLY');
  s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));assertError(await f.action(1,s,'bid',{amount:10,pokemonId:id}),409,'ALREADY_LEADING');
- assertError(await f.action(0,s,'skip',{pokemonId:id}),409,'BIDS_STARTED');
  const hall=await f.request(`/api/leagues/${s.league.id}/hall`,{actionId:crypto.randomUUID(),pokemonId:id,kind:'shame'},f.tokens[0]);assertError(hall,409,'BIDS_STARTED');
  assert.equal((await f.poll()).body.league.hall[id],undefined);
 });
 
 
-test('a bid received in time survives slow database processing and still gives opponents five seconds',async()=>{
- const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;
- f.advance(19000);f.delayRead(4000);
- s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));
- assert.equal(s.lobby.auction.awards.length,0);assert.equal(s.lobby.auction.bidding.highestBid,5);
- assert.equal(Date.parse(s.lobby.auction.bidding.closesAt)-Date.parse(s.serverTime),5000);assert.equal(s.serverProcessingMs,4000);
+test('database lag does not expire an auction or award its nominee',async()=>{
+ const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;f.advance(300000);f.delayRead(4000);
+ s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));assert.equal(s.lobby.auction.awards.length,0);assert.equal(s.lobby.auction.bidding.highestBid,5);assert.equal(s.lobby.auction.bidding.closesAt,null);
+});
+
+
+test('a raise racing with finalize is serialized without silently changing the awarded price',async()=>{
+ const f=fixture();let s=await f.start(2),id=s.lobby.auction.currentPokemonId;s=ok(await f.action(0,s,'bid',{amount:5,pokemonId:id}));
+ const outcomes=await Promise.all([f.action(0,s,'finalize',{pokemonId:id}),f.action(1,s,'bid',{amount:10,pokemonId:id})]);
+ assert.equal(outcomes.filter(r=>r.status===200).length,1);assert.equal(outcomes.filter(r=>r.status===409).length,1);
+ s=(await f.poll()).body;
+ if(s.lobby.auction.awards.length){assert.equal(s.lobby.auction.lastAward.amount,5);assert.equal(s.lobby.auction.lastAward.team,0);}
+ else{s=await expire(f,s);assert.equal(s.lobby.auction.lastAward.amount,10);assert.equal(s.lobby.auction.lastAward.team,1);}
+ assert.equal(s.lobby.auction.awards.length,1);assert.equal(s.league.careers[id].draftCount,1);
 });

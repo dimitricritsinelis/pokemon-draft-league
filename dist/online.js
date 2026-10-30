@@ -36,7 +36,7 @@
     }
     if (['place', 'scheme', 'rename'].includes(type)) return ownsTeam(payload.teamIndex ?? payload.team ?? current.member?.teamIndex);
     if (type === 'start') return isHost() && new Set((current.lobby.members || []).map(member => member.teamIndex).filter(Number.isInteger)).size === current.lobby.teamCount;
-    return ['configure', 'start', 'skip', 'simulate'].includes(type) && isHost();
+    return ['configure', 'start', 'skip', 'finalize', 'simulate'].includes(type) && isHost();
   }
   const token = () => saved.token || saved.leagueToken || saved.leagueReadToken;
   const name = index => current?.lobby?.teams?.[index]?.name || `Team ${index + 1}`;
