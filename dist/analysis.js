@@ -30,7 +30,7 @@
     setCurrent(current, phase); dialog.scrollTop=0;
     if (!dialog.open) dialog.showModal(); $('analysis-close').focus({preventScroll:true});
   }
-  function setCurrent(id, nextPhase = 'bidding') { current=id; phase=nextPhase; if (!dialog) return; if (context?.source === 'box') { $('analysis-previous').hidden=true; $('analysis-back').textContent='Back to PC Box'; return; } const ended=phase==='complete', moved=current!=null&&shown!=null&&current!==shown; $('analysis-previous').hidden=!moved&&!ended; $('analysis-previous').textContent=ended?'Draft complete. This report stays open for you.':'This pick has moved on. This report stays open for you.'; $('analysis-back').textContent=ended?'Back to game':moved?'View current pick':'Back to bidding'; }
+  function setCurrent(id, nextPhase = 'bidding') { current=id; phase=nextPhase; if (!dialog) return; if (context?.source === 'spectator') { $('analysis-previous').hidden=true; $('analysis-back').textContent='Back to field'; return; } if (context?.source === 'box') { $('analysis-previous').hidden=true; $('analysis-back').textContent='Back to PC Box'; return; } const ended=phase==='complete', moved=current!=null&&shown!=null&&current!==shown; $('analysis-previous').hidden=!moved&&!ended; $('analysis-previous').textContent=ended?'Draft complete. This report stays open for you.':'This pick has moved on. This report stays open for you.'; $('analysis-back').textContent=ended?'Back to game':moved?'View current pick':'Back to bidding'; }
   function close() { dialog?.close(); }
   window.DraftAnalysis={open,close,setCurrent};
   init();

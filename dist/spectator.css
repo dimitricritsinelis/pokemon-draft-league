@@ -1,0 +1,38 @@
+.spectator-view { margin:0 auto 10px; width:100%; }
+.spectator-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; margin:8px 0; }
+.spectator-heading .eyebrow { font-size:10px; color:#64755e; }
+.spectator-status { font-size:13px; color:#52664b; text-align:right; }
+.spectator-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; }
+.spectator-tabs button { min-width:0; flex:1; display:grid; text-align:left; gap:4px; border:1px solid #dce3d5; border-radius:10px; padding:10px 14px; background:#fff; color:#223b2b; }
+.spectator-tabs button[aria-pressed=true] { background:#18382a; color:#fff; border-color:#18382a; }
+.spectator-tabs strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; }
+.spectator-tabs span { font-size:11px; opacity:.75; }
+.spectating .game { display:block!important; max-width:1100px; margin-inline:auto; }
+.spectating .spectator-view,.spectating .spectator-recap { max-width:1100px; margin-inline:auto; }
+.spectating #picker,.spectating #auction-strip,.spectating #online-team-dashboard,.spectating .team-switch,.spectating #team-selector,.spectating #simulate-match,.spectating #new-game-button,.spectating #menu-toggle,.spectating .board-toolbar,.spectating #online-header-chat,.spectating .online-header-status { display:none!important; }
+.spectating .board-panel { width:100%; }
+.spectating .board-panel .field { max-height:none; }
+.spectator-recap { border-top:1px solid #dce3d5; margin-top:12px; padding:12px 0; }
+.spectator-recap summary { font-size:14px; font-weight:650; cursor:pointer; }
+.spectator-recap-list { list-style:none; padding:0; margin:8px 0; max-height:280px; overflow:auto; }
+.spectator-recap-list li { display:flex; align-items:center; gap:10px; border-bottom:1px solid #e5eadd; padding:7px 0; font-size:13px; }
+.spectator-recap-list img { width:38px; height:38px; object-fit:contain; }
+.spectator-recap-list li div { flex:1; display:grid; gap:3px; }
+.spectator-recap-list li div span { color:#6b7b63; font-size:12px; }
+.spectator-join-choice { display:flex; align-items:center; gap:10px; padding:10px 0 18px; font-size:15px; }
+.spectator-join-choice input { width:20px; height:20px; accent-color:#264b36; }
+@media(max-width:560px){
+ .spectator-tabs button { padding:9px 10px; min-width:100px; }
+ .spectator-tabs strong { font-size:13px; }
+ .spectator-tabs span { font-size:10px; }
+ .spectator-heading { align-items:flex-start; }
+ .spectator-status { font-size:11px; }
+ .spectating .masthead { margin-bottom:6px; }
+}
+
+.spectating #team-tabs,.spectating #team-switcher { display:none!important; }
+
+.spectating .spectator-view { position:sticky; top:calc(68px + env(safe-area-inset-top)); z-index:11; background:#f3f4ee; padding:0 5px 7px; }
+.spectator-room { border:0; background:none; padding:6px 0; font-size:10px; font-weight:650; color:#64755e; white-space:nowrap; }
+
+.spectating .position.empty .empty-icon { visibility:hidden; }

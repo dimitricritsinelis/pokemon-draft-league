@@ -176,3 +176,28 @@ test('include retired permits drafting and simulation while preserving hall snap
  s=await placeAll(f,s);s=ok(await f.action(0,s,'simulate'));assert.equal(s.league.matchCount,1);
  for(const a of s.lobby.auction.awards){assert.equal(s.league.hall[a.pokemonId].career.games,99);assert.equal(s.league.careers[a.pokemonId].games,0);assert.equal(s.league.careers[a.pokemonId].draftCount,1);}
 });
+
+test('spectators join full live rooms, persist read access, and cannot mutate any game action',async()=>{
+ const f=fixture();let s=await f.start(2);const code=f.code,id=s.lobby.auction.currentPokemonId;
+ const joined=await f.request('/api/lobbies/join',{code,nickname:'Watching',spectator:true,teamIndex:0,teamName:'Hijacked'});
+ assert.equal(joined.status,201);assert.equal(joined.body.member.role,'spectator');assert.equal(joined.body.member.teamIndex,null);
+ assert.equal(joined.body.lobby.teams[0].name,'Home');assert.equal(joined.body.lobby.auction.bidding.ownBid,null);
+ const token=joined.body.token;
+ for(const [type,payload] of [['bid',{amount:10,pokemonId:id}],['place',{teamIndex:0,slotKey:'o_qb',pokemonId:id}],['scheme',{teamIndex:0,offense:'12'}],['rename',{teamIndex:0,name:'Hijacked'}],['configure',{teamCount:3}],['start',{}],['skip',{pokemonId:id}],['finalize',{pokemonId:id}],['simulate',{}]]){
+  assertError(await f.request(`/api/lobbies/${code}/action`,{actionId:crypto.randomUUID(),version:joined.body.lobby.version,type,payload},token),403,'SPECTATOR_READ_ONLY');
+ }
+ s=ok(await f.poll());s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));s=await expire(f,s);s=ok(await f.action(1,s,'place',{pokemonId:id,slotKey:'o_qb'}));
+ const seen=ok(await f.request(`/api/lobbies/${code}`,undefined,token));assert.equal(seen.member.role,'spectator');assert.equal(seen.lobby.teams[1].picks.o_qb,id);assert.equal(seen.lobby.auction.awards[0].team,1);
+ const chat=await f.request(`/api/lobbies/${code}/chat`,{actionId:crypto.randomUUID(),message:'Great pick!'},token);assert.equal(chat.status,200);assert.ok(chat.body.lobby.messages.some(m=>m.message==='Great pick!'));
+ const extra=await f.request('/api/lobbies/join',{code,nickname:'Coach'});assertError(extra,409,'LOBBY_FULL');
+});
+
+test('spectators never occupy coach slots or satisfy auction readiness, with a bounded spectator capacity',async()=>{
+ const f=fixture();let s=await f.create(2);
+ for(let i=0;i<32;i++){
+  const result=await f.request('/api/lobbies/join',{code:f.code,nickname:`Watcher ${i}`,spectator:true});assert.equal(result.status,201);assert.equal(result.body.member.teamIndex,null);
+ }
+ assertError(await f.request('/api/lobbies/join',{code:f.code,spectator:true}),409,'SPECTATORS_FULL');
+ s=ok(await f.poll());assertError(await f.action(0,s,'start'),409,'PLAYERS_MISSING');
+ s=await f.join(2);s=ok(await f.action(0,s,'start'));assert.equal(s.lobby.phase,'bidding');assert.equal(s.lobby.members.filter(m=>m.role==='spectator').length,32);
+});

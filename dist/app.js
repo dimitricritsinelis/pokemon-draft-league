@@ -510,6 +510,7 @@
   }
 
   function selectPosition(key) {
+    if (onlineSnapshot?.member?.role === 'spectator') { const p=byId.get(state.picks[key]); if(p) window.DraftAnalysis.open(p,{source:'spectator'}); return; }
     if (!slots().some(s => s.key === key)) throw new Error('Unknown position.');
     if (auctionActive && auctionPhase() === 'placement' && (!playersOnline() || (onlineSnapshot.lobby.auction.pendingAward?.team === onlineSnapshot.member.teamIndex && editable()))) { placeAuctionPokemon(key); return; }
     if (playersOnline() && !editable()) { message('You’re viewing another coach’s roster. Select your team to make changes.'); return; }
@@ -1452,13 +1453,14 @@
       $('match-career-status').textContent = 'Career stats saved to your league database.';
       $('rerun-match').hidden = !hostControls(); lastMatchTeams = next.lobby.matches?.at(-1)?.teamIndexes || [0, 1];
       if (playersOnline() && $('auction-dialog').matches(':modal')) $('auction-dialog').close();
-      if (!$('match-dialog').open) $('match-dialog').showModal();
+      if (next.member?.role !== 'spectator' && !$('match-dialog').open) $('match-dialog').showModal();
     }
     window.DraftOnline.refreshNeeds();
-    if (playersOnline()) window.DraftLiveAuction.render(next);
+    if (next.member?.role === 'spectator') { if(first) { window.DraftLiveAuction.stop(); window.DraftOnline.close(); } window.DraftSpectator.render(next,state.team); }
+    else if (playersOnline()) window.DraftLiveAuction.render(next);
   }
   function leaveOnlineView() {
-    boxedChoice = null; boxMode = false; window.DraftLiveAuction.stop();
+    boxedChoice = null; boxMode = false; window.DraftSpectator.stop(); window.DraftLiveAuction.stop();
     const restore = localViewBackup; onlineSnapshot = null; localViewBackup = null;
     remoteBoardKey = ''; remoteLeagueKey = ''; remoteMatchId = null;
     window.DraftCareers.clearRemote(); document.body.classList.remove('online-active', 'online-viewer', 'players-online');

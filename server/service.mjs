@@ -46,7 +46,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
     return member;
   }
   const playerRoom = lobby => lobby.controlMode !== 'host';
-  const memberView = (member, lobby) => ({id:member.id,nickname:member.nickname,role:member.role==='host'?'host':playerRoom(lobby)?'player':'viewer',isHost:member.role==='host',teamIndex:member.teamIndex});
+  const memberView = (member, lobby) => ({id:member.id,nickname:member.nickname,role:member.role==='spectator'?'spectator':member.role==='host'?'host':playerRoom(lobby)?'player':'viewer',isHost:member.role==='host',teamIndex:member.teamIndex});
   function freeRound(lobby) {
     const budgets=Auction.budgets(lobby.session),counts=Auction.counts(lobby.session);
     return budgets.every((budget,i)=>counts[i]>=(lobby.session.rosterSize||ROSTER_SIZE)||budget===0);
@@ -95,7 +95,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
   function bidView(lobby,member,time) {
     const state=liveBidding(lobby,time);
     if(!state)return null;
-    return {pokemonId:state.pokemonId,highestBid:state.highestBid,leaderTeam:state.leaderTeam,manual:true,opensAt:nowISO(state.opensAt),closesAt:null,settlesAt:null,free:state.free,ownBid:state.bids[member.teamIndex],minimumBid:state.highestBid+1,history:clone(state.history)};
+    return {pokemonId:state.pokemonId,highestBid:state.highestBid,leaderTeam:state.leaderTeam,manual:true,opensAt:nowISO(state.opensAt),closesAt:null,settlesAt:null,free:state.free,ownBid:member.role==='spectator'?null:state.bids[member.teamIndex],minimumBid:state.highestBid+1,history:clone(state.history)};
   }
   async function advanceClock(code,authHash){
     return mutate((state,time)=>{
@@ -247,14 +247,17 @@ export function createService({ store, engines, clock = () => Date.now(), random
     const freshToken=token(),hash=await digest(freshToken),readToken=token(),readHash=await digest(readToken);
     return mutate((state,time)=>{
       const lobby=requireLobby(state,String(body.code||''),time);
-      if(lobby.members.length>=lobby.teamCount)fail(409,'LOBBY_FULL','This lobby already has a player for every team.');
-      const claimed=new Set(lobby.members.map(member=>member.teamIndex));
-      const teamIndex=body.teamIndex===undefined?lobby.teams.findIndex((_,index)=>!claimed.has(index)):body.teamIndex;
-      if(!Number.isInteger(teamIndex)||teamIndex<0||teamIndex>=lobby.teamCount||claimed.has(teamIndex))fail(409,'TEAM_TAKEN','That team already has a player.');
-      const member={id:crypto.randomUUID(),nickname:cleanName(body.nickname,'Guest'),role:playerRoom(lobby)?'player':'viewer',teamIndex,tokenHash:hash,joinedAt:time};
+      const spectator=body.spectator===true;
+      const coaches=lobby.members.filter(member=>member.role!=='spectator');
+      if(spectator&&lobby.members.filter(member=>member.role==='spectator').length>=32)fail(409,'SPECTATORS_FULL','This room already has 32 spectators.');
+      if(!spectator&&coaches.length>=lobby.teamCount)fail(409,'LOBBY_FULL','This lobby already has a player for every team. You can join as a spectator.');
+      const claimed=new Set(coaches.map(member=>member.teamIndex));
+      const teamIndex=spectator?null:body.teamIndex===undefined?lobby.teams.findIndex((_,index)=>!claimed.has(index)):body.teamIndex;
+      if(!spectator&&(!Number.isInteger(teamIndex)||teamIndex<0||teamIndex>=lobby.teamCount||claimed.has(teamIndex)))fail(409,'TEAM_TAKEN','That team already has a player.');
+      const member={id:crypto.randomUUID(),nickname:cleanName(body.nickname,spectator?'Spectator':'Guest'),role:spectator?'spectator':playerRoom(lobby)?'player':'viewer',teamIndex,tokenHash:hash,joinedAt:time};
       const league=state.leagues[lobby.leagueId];(league.readers ||= {})[hash]=true;league.readers[readHash]=true;
-      if(body.teamName!==undefined)lobby.teams[teamIndex].name=cleanName(body.teamName,lobby.teams[teamIndex].name);
-      lobby.members.push(member);touch(lobby,time);systemMessage(lobby,`${member.nickname} joined ${lobby.teams[teamIndex].name}.`,time);
+      if(!spectator&&body.teamName!==undefined)lobby.teams[teamIndex].name=cleanName(body.teamName,lobby.teams[teamIndex].name);
+      lobby.members.push(member);touch(lobby,time);systemMessage(lobby,spectator?`${member.nickname} joined to watch.`:`${member.nickname} joined ${lobby.teams[teamIndex].name}.`,time);
       return {...view(lobby,member,state,time,freshToken),leagueReadToken:readToken};
     });
   }
@@ -265,6 +268,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
     const payload=object(body.payload)?body.payload:{};
     return mutate((state,time)=>{
       const lobby=requireLobby(state,code,time),member=memberFor(lobby,authHash),league=state.leagues[lobby.leagueId];
+      if(member.role==='spectator'&&body.type!=='tick')fail(403,'SPECTATOR_READ_ONLY','Spectators can watch and chat, but cannot change the game.');
       const individual=playerRoom(lobby), ownAction=individual&&['bid','place','scheme','rename'].includes(body.type);
       if(member.role!=='host'&&!ownAction&&body.type!=='tick')fail(403,'HOST_ONLY','Only the host can manage the room, skip prospects, or simulate matches.');
       if(ownAction){
@@ -292,7 +296,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
           lobby.teams[index].name=cleanName(payload.name,`Team ${index+1}`);break; }
         case 'start':
           if(phase!=='waiting')fail(409,'AUCTION_STARTED','This auction has already started.');
-          if(individual&&new Set(lobby.members.map(item=>item.teamIndex)).size!==lobby.teamCount)fail(409,'PLAYERS_MISSING','Invite a coach for every team before starting the auction.');
+          if(individual&&new Set(lobby.members.filter(item=>item.role!=='spectator').map(item=>item.teamIndex)).size!==lobby.teamCount)fail(409,'PLAYERS_MISSING','Invite a coach for every team before starting the auction.');
           lobby.session=Auction.create(pool,{mode:lobby.mode,teamCount:lobby.teamCount,random:randomUnit});
           systemMessage(lobby,`Auction started: ${lobby.teamCount} teams, $1,000 each, ${lobby.session.lots.length} Pokémon.`,time);
           if(individual)settlePlayerBids(lobby,league,time);break;
