@@ -85,7 +85,7 @@ def run():
    for p in pages:focus(p,True)
    nominee=state(guest)['lobby']['auction']['currentPokemonId'];guest.locator(SUBMIT).click();host.wait_for_function('DraftOnline.state().lobby.auction.bidding.highestBid===5')
    host.locator('#player-finalize').click();award=wait_award(host,nominee);check('focused finalize awards guest',award['team']==1)
-   wait_award(guest,nominee);guest.evaluate('DraftLiveAuction.minimize()');guest.locator('#pc-box-button').click();guest.locator('[data-pokemon="'+str(nominee)+'"]').click();guest.locator('[data-slot="o_qb"]').click();guest.wait_for_function('(id)=>DraftOnline.state().lobby.teams[1].picks.o_qb===id',arg=nominee)
+   wait_award(guest,nominee);guest.evaluate('DraftLiveAuction.minimize()');guest.locator('#pc-box-button').click();guest.locator('[data-pokemon="'+str(nominee)+'"]').click();guest.locator('#analysis-place').click();guest.locator('[data-slot="o_qb"]').click();guest.wait_for_function('(id)=>DraftOnline.state().lobby.teams[1].picks.o_qb===id',arg=nominee)
    check('focused PC Box places on own field',state(guest)['lobby']['teams'][1]['picks']['o_qb']==nominee);capture(guest,'qol-focused-field')
    nextid=state(host)['lobby']['auction']['currentPokemonId'];budget=state(host)['lobby']['auction']['budgets'];host.locator('#player-skip').click();host.wait_for_function('(id)=>DraftOnline.state().lobby.auction.currentPokemonId!==id',arg=nextid);check('focused host skip charges nobody',state(host)['lobby']['auction']['budgets']==budget)
    for p in pages:focus(p,False)

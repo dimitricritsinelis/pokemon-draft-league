@@ -401,7 +401,7 @@
     if (online() && !editable()) { $('selection-description').textContent = 'Viewing another coach’s roster'; $('picker-heading').textContent = 'Team Pokémon'; } else $('picker-heading').textContent = 'Make your pick';
     if (boxMode && playersOnline()) {
       $('picker-heading').textContent = 'PC Box'; $('selection-badge').textContent = 'PC';
-      $('selection-title').textContent = teamName(); $('selection-description').textContent = editable() ? 'Choose a Pokémon, then tap a position on your field.' : 'Viewing this coach’s Pokémon.';
+      $('selection-title').textContent = teamName(); $('selection-description').textContent = editable() ? 'Tap a Pokémon to read its report or place it on the field.' : 'Viewing this coach’s Pokémon.';
     }
     $('box-filter').hidden = !boxMode;
     if (!boxMode && auctionActive && editable()) $('selection-description').textContent = selected ? 'Swap with a Pokémon you already own.' : 'Tap a player on the field to change its position.';
@@ -443,7 +443,13 @@
       });
       const roster = document.createElement('span'); roster.className = 'roster-mark'; roster.hidden = true;
       button.append(dex, roster, img, name, type, metrics);
-      button.addEventListener('click', () => draftPokemon(p.id));
+      button.addEventListener('click', () => {
+        if (boxMode) {
+          window.DraftAnalysis.open(p, { source: 'box', onPlace: editable() ? () => {
+            if (boxMode && editable() && auctionOwned(state.team).includes(p.id)) draftPokemon(p.id);
+          } : null });
+        } else draftPokemon(p.id);
+      });
       return button;
       });
       emptyResult = document.createElement('p');
@@ -455,6 +461,7 @@
     const owned = auctionActive ? new Set(auctionOwned(state.team)) : null;
     catalogCards.forEach((card, index) => {
       const p = pokemon[index];
+      if (boxMode) card.setAttribute('aria-haspopup', 'dialog'); else card.removeAttribute('aria-haspopup');
       const inBox = !Object.values(state.picks).includes(p.id);
       const matches = allowed(p.id) && (!owned || owned.has(p.id)) && (!boxMode || boxFilter !== 'unplaced' || inBox) && (normalize(p.name).includes(query) || String(p.id).includes(query) || String(p.id).padStart(3, '0').includes(query));
       card.hidden = !matches; card.style.order = boxMode && !inBox ? '1' : '0';
@@ -480,13 +487,13 @@
       const retired = window.DraftCareers.isInducted(Number(card.dataset.pokemon));
       const claimed = unavailable.has(Number(card.dataset.pokemon));
       const unowned = owned && !owned.has(Number(card.dataset.pokemon));
-      card.disabled = !editable() || claimed || retired || unowned; card.classList.toggle('opponent-pick', claimed || retired);
+      card.disabled = boxMode ? !owned?.has(Number(card.dataset.pokemon)) : !editable() || claimed || retired || unowned; card.classList.toggle('opponent-pick', claimed || retired);
       const roster = card.querySelector('.roster-mark');
       const ownerName = claimed ? teamName(unavailable.get(Number(card.dataset.pokemon))) : '';
       const id = Number(card.dataset.pokemon), placedSlot = slots().find(s => state.picks[s.key] === id);
       roster.hidden = !claimed && !retired && !(playersOnline() && owned?.has(id));
       roster.textContent = retired ? 'Retired' : claimed ? ownerName : placedSlot ? placedSlot.role + ' · On field' : 'PC Box';
-      card.setAttribute('aria-label', `${retired ? 'Retired' : claimed ? 'Unavailable, on ' + ownerName : 'Draft'} ${byId.get(Number(card.dataset.pokemon)).name}, ${scoutingStats(byId.get(Number(card.dataset.pokemon))).description}`);
+      card.setAttribute('aria-label', `${boxMode ? 'View draft profile for' : retired ? 'Retired' : claimed ? 'Unavailable, on ' + ownerName : 'Draft'} ${byId.get(Number(card.dataset.pokemon)).name}, ${scoutingStats(byId.get(Number(card.dataset.pokemon))).description}`);
     });
   }
 

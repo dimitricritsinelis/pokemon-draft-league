@@ -144,7 +144,7 @@ def wait_award(page,id):
 def place_owned(pages,award,physical=False):
  p=pages[award['team']];id=award['pokemonId'];wait_award(p,id);select_own(p);board=state(p)['lobby']['teams'][award['team']];key=first_empty_key(board)
  if physical:
-  p.evaluate('DraftLiveAuction.minimize()');p.locator('#pc-box-button').click();p.locator('[data-pokemon="'+str(id)+'"]').click();p.locator('[data-slot="'+key+'"]').click()
+  p.evaluate('DraftLiveAuction.minimize()');p.locator('#pc-box-button').click();p.locator('[data-pokemon="'+str(id)+'"]').click();p.locator('#analysis-place').click();p.locator('[data-slot="'+key+'"]').click()
   p.wait_for_function('(v)=>DraftOnline.state().lobby.teams[v.i].picks[v.key]===v.id',arg={'i':award['team'],'key':key,'id':id},timeout=30000)
  else:action(p,'place',{'teamIndex':award['team'],'slotKey':key,'pokemonId':id})
  return p
