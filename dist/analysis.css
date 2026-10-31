@@ -152,3 +152,7 @@
  .players-online .auction-prospect { margin-bottom: 6px; }
  .players-online .auction-battle-stats { margin-bottom: 6px; }
 }
+
+/* Tighter mobile OL splits retain a clear pocket and room for attached tight ends. */
+@media(max-width:560px) { .position.offensive-line { --player-width: clamp(26px,8.5cqw,38px); } }
+@media(min-width:561px) { .position.offensive-line { --player-width: clamp(26px,min(7cqw,14cqh),90px); } }

@@ -58,14 +58,17 @@
   const d = (key, role, x, y) => slot('d_' + key, role, x, y, 'defense');
 
   function slots(mobile = phone.matches, board = state) {
-    const lineX = mobile ? [25, 37.5, 50, 62.5, 75] : [27, 38.5, 50, 61.5, 73];
+    // Five linemen form one compact pocket; eligible receivers keep legal on/off-line groupings.
+    const lineX = mobile ? [30, 40, 50, 60, 70] : [34, 42, 50, 58, 66];
+    const wideLeft = mobile ? 12 : 9, wideRight = mobile ? 88 : 91;
+    const offLine = mobile ? 72 : 64;
     const offense = [o('lt', 'LT', lineX[0], 59), o('lg', 'LG', lineX[1], 59), o('c', 'C', lineX[2], 59), o('rg', 'RG', lineX[3], 59), o('rt', 'RT', lineX[4], 59), o('qb', 'QB', 50, 76), o('rb1', 'HB', 50, 92)];
     const eligible = {
-      wr1: o('wr1', 'WR', mobile ? 12 : 9, 59),
-      wr2: o('wr2', 'WR', mobile ? 88 : 91, 59),
-      wr3: o('wr3', 'WR', 15, 76), wr4: o('wr4', 'WR', 85, 76),
-      te1: o('te1', 'TE', mobile ? 85 : 81, mobile ? 76 : 59),
-      te2: o('te2', 'TE', mobile ? 15 : 19, mobile ? 76 : 59),
+      wr1: o('wr1', 'WR', wideLeft, ['12', '22'].includes(board.offense) ? offLine : 59),
+      wr2: o('wr2', 'WR', wideRight, board.offense === '10' ? 59 : offLine),
+      wr3: o('wr3', 'WR', 22, mobile ? 72 : 65), wr4: o('wr4', 'WR', 78, mobile ? 72 : 65),
+      te1: o('te1', 'TE', mobile ? 82 : 74, 59),
+      te2: o('te2', 'TE', mobile ? 18 : 26, 59),
       rb2: o('rb2', 'FB', mobile ? 28 : 39, 88)
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
@@ -336,7 +339,7 @@
     $('positions').replaceChildren(...current.map(s => {
       const p = byId.get(state.picks[s.key]);
       const button = document.createElement('button');
-      button.className = `position ${s.side}${p ? '' : ' empty'}${state.selected === s.key ? ' selected' : ''}`;
+      button.className = `position ${s.side}${['LT','LG','C','RG','RT'].includes(s.role) ? ' offensive-line' : ''}${p ? '' : ' empty'}${state.selected === s.key ? ' selected' : ''}`;
       button.style.setProperty('--x', s.x + '%');
       button.style.setProperty('--y', s.y + '%');
       button.style.setProperty('--depth', s.scale);
