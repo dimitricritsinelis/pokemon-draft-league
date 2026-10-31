@@ -1,4 +1,4 @@
-import { OFFENSES, DEFENSES, MODES, ROSTER_SIZE, eligible, slots, cleanName } from './formations.mjs';
+import { OFFENSES, DEFENSES, MODES, ROSTER_SIZE, slots, cleanName } from './formations.mjs';
 import { DatabaseError } from './supabase-store.mjs';
 
 const HOUR = 60 * 60 * 1000;
@@ -18,6 +18,9 @@ export function createService({ store, engines, clock = () => Date.now(), random
   const { POKEMON, DraftAuction: Auction, DraftMatch: Match, DraftRatings: Ratings } = engines;
   const names = new Map(POKEMON.map(p => [p.id, p.name]));
   const randomUnit = () => { const value = random(); if (!Number.isFinite(value) || value < 0 || value >= 1) throw new Error('Invalid random source.'); return value; };
+  const legendary = new Set([144,145,146,150,151,243,244,245,249,250,251,377,378,379,380,381,382,383,384,385,386]);
+  const generations = lobby => lobby.generations || (lobby.mode === 'both' ? [1,2,3] : [Number(lobby.mode.slice(-1))]);
+  const inPool = (p,lobby,league) => generations(lobby).includes(p.id<=151?1:p.id<=251?2:3) && (lobby.includeLegendary !== false || !legendary.has(p.id)) && (lobby.includeRetired === true || !league.hall[p.id]);
   function blankCareer(id) {
     return { pokemonId:id, name:names.get(id), games:0, wins:0, losses:0, draws:0, offensiveMVPs:0, defensiveMVPs:0, appearancesByRole:{}, stats:Object.fromEntries(Match.statKeys.map(key=>[key,0])), draftCount:0, auctionPurchases:0, totalAuctionPaid:0 };
   }
@@ -67,14 +70,22 @@ export function createService({ store, engines, clock = () => Date.now(), random
     // Existing purchases stay owned in the PC Box; migrating never records them twice.
     lobby.session=Auction.place(lobby.session);lobby.bidding=newBidding(lobby,time);return true;
   }
-  function settlePlayerBids(lobby,league,time,finalize=false) {
+  function settlePlayerBids(lobby,league,time,finalize=false,teamIndex) {
     const bidding=liveBidding(lobby,time);
     if(!bidding){lobby.bidding=null;return false;}
     lobby.bidding=bidding;
     if(!finalize)return false;
     const budgets=Auction.budgets(lobby.session);
     const bids=budgets.map((_,i)=>i===bidding.leaderTeam?bidding.highestBid:0);
-    const result=Auction.bid(lobby.session,bids,randomUnit);
+    let draw = randomUnit;
+    if(teamIndex!==undefined){
+      if(bidding.leaderTeam!==null)fail(409,'BIDS_STARTED','A paid bid already leads this pick. Finalize the highest bidder.');
+      if(!Number.isInteger(teamIndex)||teamIndex<0||teamIndex>=lobby.teamCount)fail(400,'INVALID_TEAM','Choose a team in this lobby.');
+      const counts=Auction.counts(lobby.session),open=counts.map((count,i)=>count<(lobby.session.rosterSize||ROSTER_SIZE)?i:-1).filter(i=>i>=0);
+      if(!open.includes(teamIndex))fail(409,'ROSTER_FULL','That team already has a full roster.');
+      draw=()=> (open.indexOf(teamIndex)+.5)/open.length;
+    }
+    const result=Auction.bid(lobby.session,bids,draw);
     lobby.session=Auction.place(result.session);recordAuction(league,result.award);
     lobby.lastAward={...result.award,at:nowISO(time)};
     lobby.bidding=newBidding(lobby,time);
@@ -118,7 +129,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
     }:null;
     return {
       lobby:{ code:lobby.code, leagueId:lobby.leagueId, phase:auction?.phase || 'waiting', version:lobby.version,
-        mode:lobby.mode,controlMode:playerRoom(lobby)?'players':'host',teamCount:lobby.teamCount,teams:clone(lobby.teams),auction,
+        mode:lobby.mode,generations:generations(lobby),includeRetired:lobby.includeRetired===true,includeLegendary:lobby.includeLegendary!==false,controlMode:playerRoom(lobby)?'players':'host',teamCount:lobby.teamCount,teams:clone(lobby.teams),auction,
         messages:clone(lobby.messages),members:lobby.members.map(item=>memberView(item,lobby)),
         lastActivityAt:nowISO(lobby.lastActivity),expiresAt:nowISO(lobby.lastActivity+HOUR),
         match:clone(lobby.match),matches:lobby.matches.map(result=>({matchId:result.matchId,teamIndexes:clone(result.teamIndexes||[0,1]),summary:result.summary,winnerIndex:result.winnerIndex,teams:result.teams.map(team=>({name:team.name,score:team.score}))})),rosterSize:ROSTER_SIZE },
@@ -137,7 +148,11 @@ export function createService({ store, engines, clock = () => Date.now(), random
     if (!MODES.includes(mode)) fail(400,'INVALID_POOL','Choose Gen 1, Gen 2, Gen 3, or all generations.');
     if (payload.names!==undefined && (!Array.isArray(payload.names)||payload.names.length!==count)) fail(400,'INVALID_NAMES','Provide a name for each team.');
     if (lobby.members.some(member=>member.teamIndex>=count)) fail(409,'MEMBERS_JOINED','A player has already joined a team that would be removed.');
-    lobby.teamCount=count; lobby.mode=mode;
+    for(const key of ['includeRetired','includeLegendary'])if(payload[key]!==undefined&&typeof payload[key]!=='boolean')fail(400,'INVALID_POOL','Pool toggles must be true or false.');
+    const selected=payload.generations ?? (payload.mode!==undefined ? (mode==='both'?[1,2,3]:[Number(mode.slice(-1))]) : generations(lobby));
+    if(!Array.isArray(selected)||!selected.length||selected.some(g=>!Number.isInteger(g)||g<1||g>3)||new Set(selected).size!==selected.length)fail(400,'INVALID_POOL','Select at least one generation from Gen 1, Gen 2 and Gen 3.');
+    lobby.generations=selected.slice().sort();lobby.includeRetired=payload.includeRetired ?? lobby.includeRetired ?? false;lobby.includeLegendary=payload.includeLegendary ?? lobby.includeLegendary ?? true;
+    lobby.teamCount=count; lobby.mode=selected.length===1?'gen'+selected[0]:'both';
     lobby.teams=Array.from({length:count},(_,index)=>({name:cleanName(payload.names?.[index],lobby.teams[index]?.name||`Team ${index+1}`),offense:lobby.teams[index]?.offense || '21',defense:lobby.teams[index]?.defense || '3-4',picks:{}}));
   }
   function ownLeague(state,leagueId,authHash,time,manage=false) {
@@ -163,10 +178,13 @@ export function createService({ store, engines, clock = () => Date.now(), random
     career.draftCount++;career.auctionPurchases++;career.totalAuctionPaid+=award.amount;
     league.revision++;
   }
-  function recordMatch(league,result) {
+  function recordMatch(league,result,includeRetired=false) {
     if(league.recordedMatches[result.matchId])return;
     for(let index=0;index<result.teams.length;index++)for(const player of result.teams[index].players) {
-      if(league.hall[player.pokemonId])fail(409,'RETIRED','A retired Pokémon is still on this roster. Start a new draft to play again.');
+      if(league.hall[player.pokemonId]){
+        if(!includeRetired)fail(409,'RETIRED','A retired Pokémon is still on this roster. Start a new draft to play again.');
+        continue; // Exhibition appearances never change a retired career.
+      }
       const career=league.careers[player.pokemonId] ||= blankCareer(player.pokemonId);
       career.games++;career[result.winnerIndex===null?'draws':result.winnerIndex===index?'wins':'losses']++;
       if(result.offensiveMVP?.pokemonId===player.pokemonId)career.offensiveMVPs++;
@@ -263,7 +281,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
       if(!Number.isInteger(body.version)||body.version<1||body.version>lobby.version||(!ownAction&&!(individual&&['start','skip','tick'].includes(body.type))&&body.version<(lobby.lastGameVersion||1)))fail(409,'CONFLICT','The lobby changed. The latest version will load; please try again.');
       if(migratePending(lobby,time)){lobby.version++;lobby.lastGameVersion=lobby.version;}
       let phase=lobby.session?Auction.phase(lobby.session):'waiting';
-      const pool=POKEMON.filter(p=>eligible(p.id,lobby.mode)&&!league.hall[p.id]).map(p=>p.id);
+      const pool=POKEMON.filter(p=>inPool(p,lobby,league)).map(p=>p.id);
       switch(body.type){
         case 'configure':
           if(phase!=='waiting')fail(409,'AUCTION_STARTED','Team count, names, and pool must be chosen before the auction starts.');
@@ -280,7 +298,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
           if(individual)settlePlayerBids(lobby,league,time);break;
         case 'bid':{
           if(phase!=='bidding')fail(409,'WRONG_PHASE','Place the current Pokémon before bidding again.');
-          const id=Auction.current(lobby.session);if(league.hall[id])fail(409,'RETIRED','This Pokémon was retired. Skip it to draw another.');
+          const id=Auction.current(lobby.session);if(!lobby.includeRetired&&league.hall[id])fail(409,'RETIRED','This Pokémon was retired. Skip it to draw another.');
           if(individual){
             if(payload.pokemonId!==id)fail(409,'STALE_PROSPECT','This pick has changed. Submit a bid for the current Pokémon.');
             if(payload.bids!==undefined)fail(400,'INDIVIDUAL_BID_REQUIRED','Submit only your own bid amount from your device.');
@@ -299,7 +317,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
           if(!individual)fail(400,'INVALID_ACTION','This room uses the original host-controlled auction.');
           if(phase!=='bidding')fail(409,'WRONG_PHASE','There is no open bid to finalize.');
           if(payload.pokemonId!==Auction.current(lobby.session))fail(409,'STALE_PROSPECT','This pick has changed. Finalize only the current Pokémon.');
-          settlePlayerBids(lobby,league,time,true);break;
+          settlePlayerBids(lobby,league,time,true,payload.teamIndex);break;
         case 'skip':
           if(phase!=='bidding')fail(409,'WRONG_PHASE','Only the Pokémon up for bidding can be skipped.');
           {const id=Auction.current(lobby.session);if(individual&&payload.pokemonId!==id)fail(409,'STALE_PROSPECT','This pick has changed. Skip only the current Pokémon.');lobby.session=Auction.skip(lobby.session,pool,randomUnit);lobby.bidding=null;systemMessage(lobby,`${names.get(id)} was skipped for the rest of this draft.`,time);if(individual)settlePlayerBids(lobby,league,time);}break;
@@ -339,9 +357,9 @@ export function createService({ store, engines, clock = () => Date.now(), random
           const indexes=payload.teamIndexes || payload.teams || [0,1];
           if(!Array.isArray(indexes)||indexes.length!==2||indexes[0]===indexes[1]||indexes.some(index=>!Number.isInteger(index)||!lobby.teams[index]))fail(400,'INVALID_MATCHUP','Choose two different teams from this lobby.');
           const selected=indexes.map(index=>{const board=lobby.teams[index];return{name:board.name,positions:slots(board).map(slot=>({...slot,pokemonId:board.picks[slot.key]}))};});
-          for(const team of selected)for(const slot of team.positions)if(league.hall[slot.pokemonId])fail(409,'RETIRED','A retired Pokémon is on this team. Start a new draft to play again.');
+          for(const team of selected)for(const slot of team.positions)if(!lobby.includeRetired&&league.hall[slot.pokemonId])fail(409,'RETIRED','A retired Pokémon is on this team. Start a new draft to play again.');
           const result=Match.simulate(selected[0],selected[1],{random:randomUnit});result.teamIndexes=indexes;
-          recordMatch(league,result);lobby.match=clone(result);lobby.matches.push(clone(result));systemMessage(lobby,result.summary,time);break;}
+          recordMatch(league,result,lobby.includeRetired);lobby.match=clone(result);lobby.matches.push(clone(result));systemMessage(lobby,result.summary,time);break;}
       }
       lobby.actions[body.actionId]={type:body.type,memberId:member.id};touch(lobby,time);lobby.lastGameVersion=lobby.version;
       return view(lobby,member,state,time);
@@ -368,7 +386,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
       if(league.hallActions[body.actionId])return{unchanged:true,value:{league:leagueView(league,true),serverTime:nowISO(time)}};
       const id=body.pokemonId;
       if(body.kind!==null){
-        const ongoing=Object.values(state.lobbies).filter(lobby=>lobby.leagueId===leagueId&&active(lobby,time)&&lobby.session&&Auction.phase(lobby.session)!=='complete');
+        const ongoing=Object.values(state.lobbies).filter(lobby=>lobby.leagueId===leagueId&&!lobby.includeRetired&&active(lobby,time)&&lobby.session&&Auction.phase(lobby.session)!=='complete');
         if(ongoing.some(lobby=>lobby.session.awards.some(award=>award.pokemonId===id)))fail(409,'ON_ACTIVE_ROSTER','This Pokémon is part of an ongoing auction. Finish the draft before retiring it.');
         // Future lots are private, but are still reserved roster capacity. Redraw
         // every affected room in this same transaction before retiring a species.
@@ -378,7 +396,7 @@ export function createService({ store, engines, clock = () => Date.now(), random
           if(index<0||index<lobby.session.awards.length)continue;
           if(playerRoom(lobby)&&index===lobby.session.placed&&liveBidding(lobby,time)?.leaderTeam!=null)fail(409,'BIDS_STARTED','Finish this live auction before retiring its nominated Pokémon.');
           const unavailable=new Set([...lobby.session.lots,...lobby.session.skipped,id]);
-          const candidates=POKEMON.filter(p=>eligible(p.id,lobby.mode)&&!league.hall[p.id]&&!unavailable.has(p.id));
+          const candidates=POKEMON.filter(p=>inPool(p,lobby,league)&&!unavailable.has(p.id));
           if(!candidates.length)fail(409,'AUCTION_POOL_RESERVED','Every remaining Pokémon is needed to finish an active auction. Finish the draft before inducting this Pokémon.');
           const replacement=candidates[Math.floor(randomUnit()*candidates.length)].id;
           const next={...lobby.session,lots:lobby.session.lots.slice(),skipped:[...lobby.session.skipped,id]};

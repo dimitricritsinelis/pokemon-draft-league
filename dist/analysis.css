@@ -158,3 +158,21 @@
 @media(min-width:561px) { .position.offensive-line { --player-width: clamp(26px,min(7cqw,14cqh),90px); } }
 
 #analysis-place { grid-column: 1 / -1; width: 100%; min-height: 44px; margin-bottom: 8px; border-radius: 8px; }
+
+/* Pool choices and clearly separated host controls. */
+.pool-generations { display:flex; gap:8px; padding:0; margin:16px 0 12px; border:0; flex-wrap:wrap; }
+.pool-generations legend { font-size:12px; color:var(--ink); font-weight:650; margin-bottom:8px; }
+.pool-generations label { display:flex; align-items:center; gap:8px; padding:10px 14px; border:1px solid #d9dfd1; border-radius:10px; font-size:14px; cursor:pointer; }
+.pool-generations label:has(input:checked) { background:#e8efdf; border-color:#738568; }
+.pool-generations input, .pool-toggles input { width:18px; height:18px; margin:0; accent-color:#264b36; flex-shrink:0; }
+.pool-toggles { display:grid; gap:4px; margin:0 0 12px; }
+.pool-toggles label { display:flex; align-items:center; gap:10px; min-height:40px; font-size:14px; cursor:pointer; }
+.players-online #player-finalize, .players-online #player-skip, .host-auction-action { color:#a72d28; background:#fff0ed; border:1px solid #e9b3aa; }
+.players-online #player-finalize:hover, .players-online #player-skip:hover, .host-auction-action:hover { background:#fce0da; }
+.free-assignment-dialog { width:min(440px,calc(100% - 24px)); padding:22px; }
+.free-assignment-dialog h2 { font-size:27px; }
+.free-assignment-dialog p { font-size:14px; margin:0 0 16px; }
+#free-assignment-teams { display:grid; gap:8px; }
+.host-auction-action { border-radius:10px; min-height:48px; padding:10px; font-weight:650; }
+
+.players-online #player-stage .host-auction-action { color:#a72d28; background:#fff0ed; border:1px solid #e9b3aa; }

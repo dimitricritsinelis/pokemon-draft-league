@@ -7,6 +7,7 @@
   const pokemon = new Map((window.POKEMON || []).map(p => [p.id, p]));
   const desktop = matchMedia('(min-width: 1001px)');
   let adapter, snapshot, lastLot = null, lastPhase = null, dismissed = null, minimized = false, busy = false, skipAvailable = true, tickKey = null, anchorServer = Date.now(), anchorPerf = performance.now(), interval;
+  let freeDialog, freePick = null;
   let dashboard, cards, status, panel, controls, stage, headerStatus, launcher, boxButton, receipt, receiptText, error;
   const serverNow = () => anchorServer + performance.now() - anchorPerf;
   const ready = () => Boolean(snapshot?.lobby.auction?.fieldCounts?.every(count => count === 23));
@@ -33,7 +34,19 @@
     controls.addEventListener('submit', submit);
     $('player-bid-input').addEventListener('input', updateBidButton);
     $('player-custom-bid').addEventListener('toggle', updateBidButton);
-    $('player-finalize').addEventListener('click', () => { if (snapshot && !busy) request('finalize', { pokemonId: snapshot.lobby.auction.currentPokemonId }); });
+    freeDialog = make('dialog', 'free-assignment-dialog'); freeDialog.id='free-assignment-dialog'; freeDialog.setAttribute('aria-labelledby','free-assignment-title');
+    freeDialog.innerHTML='<div class="dialog-heading"><h2 id="free-assignment-title">Assign free Pokémon</h2><button type="button" class="icon-button" aria-label="Cancel free assignment">×</button></div><p>Choose which team receives this Pokémon for $0.</p><div id="free-assignment-teams"></div>';
+    freeDialog.querySelector('button').addEventListener('click',()=>freeDialog.close()); document.body.append(freeDialog);
+    $('player-finalize').addEventListener('click', () => {
+      if (!snapshot || busy) return;
+      const sale=snapshot.lobby.auction;
+      if (sale.bidding.leaderTeam !== null) { request('finalize',{pokemonId:sale.currentPokemonId}); return; }
+      freePick=sale.currentPokemonId;
+      $('free-assignment-teams').replaceChildren(...snapshot.lobby.teams.map((team,i)=>{
+        const button=make('button','host-auction-action',team.name+' · '+sale.counts[i]+'/23');button.type='button';button.disabled=sale.counts[i]>=23;
+        button.addEventListener('click',async()=>{ if(busy)return;const result=await request('finalize',{pokemonId:freePick,teamIndex:i});freeDialog.close(); });return button;
+      }));freeDialog.showModal();
+    });
     $('player-skip').addEventListener('click', async () => { if (!snapshot || busy) return; await request('skip', { pokemonId: snapshot.lobby.auction.currentPokemonId }); });
     const minimizeButton = panel.querySelector('[data-close="auction-dialog"]'); minimizeButton.textContent = '−'; minimizeButton.title = 'Minimize auction'; minimizeButton.addEventListener('click', () => { if (snapshot) minimize(); });
     panel.addEventListener('close', renderLauncher);
@@ -78,7 +91,7 @@
     $('player-skip').disabled = busy || !skipAvailable;
     $('player-finalize').hidden = !window.DraftOnline.isHost();
     $('player-finalize').disabled = busy || !window.DraftOnline.connected();
-    $('player-finalize').textContent = bidding.leaderTeam === null ? 'Finalize free pick' : `Finalize bid · ${money(bidding.highestBid)}`;
+    $('player-finalize').textContent = bidding.leaderTeam === null ? 'Assign free Pokémon' : `Finalize bid · ${money(bidding.highestBid)}`;
     $('player-skip').textContent = skipAvailable ? 'Skip Pokémon' : 'No skips left';
     $('player-skip').title = skipAvailable ? 'Discard this Pokémon for the rest of this draft' : 'All remaining Pokémon are needed to fill every roster';
     $('player-bid-wallet').textContent = `${money(budget)} available · ${23 - sale.counts[own()]} spots left`;
@@ -158,7 +171,7 @@
       const priority = ['QB', 'WR', 'TE', 'HB', 'FB', 'K'];
       const rank = role => priority.includes(role) ? priority.indexOf(role) : priority.length;
       const needs = adapter.getNeeds(own()).sort((a, b) => rank(a.role) - rank(b.role)).map(v => v.role + (v.count > 1 ? ' ×' + v.count : '')).join(' · ');
-      $('player-bid-context').textContent = sale.bidding.leaderTeam === null ? 'The host finalizes this pick. No bids means a random free award.' : 'Only the winner pays. Bidding stays open until the host finalizes.';
+      $('player-bid-context').textContent = sale.bidding.leaderTeam === null ? 'No bids yet. The host can assign this Pokémon to a team for free.' : 'Only the winner pays. Bidding stays open until the host finalizes.';
       stage.dataset.needs = needs;
       let need = $('player-position-needs');
       if (!need) { need = make('p', 'player-position-needs'); need.id = 'player-position-needs'; panel.querySelector('#auction-scouting').after(need); }
@@ -173,11 +186,11 @@
         const joined = new Set(lobby.members.map(m => m.teamIndex)).size;
         stage.append(make('p', '', `${joined} of ${lobby.teamCount} coaches are here.`), make('p', 'player-stage-help', 'Bid from your own device. The host finalizes each pick or skips it. Won Pokémon go to your PC Box. You have $1,000 for 23 Pokémon.'));
         const invite = make('button', 'secondary-button', 'Invite friends'); invite.type = 'button'; invite.addEventListener('click', () => window.DraftOnline.shareRoom()); stage.append(invite);
-        if (window.DraftOnline.isHost()) { const start = make('button', 'primary-button', 'Start live auction'); start.type = 'button'; start.disabled = joined < lobby.teamCount; start.addEventListener('click', () => request('start', {})); stage.append(start); }
+        if (window.DraftOnline.isHost()) { const start = make('button', 'primary-button host-auction-action', 'Start live auction'); start.type = 'button'; start.disabled = joined < lobby.teamCount; start.addEventListener('click', () => request('start', {})); stage.append(start); }
         else stage.append(make('p', 'player-stage-help', 'The host will start when everyone has joined.'));
       } else {
         stage.append(make('p', '', ready() ? 'Every lineup is ready for kickoff.' : 'Your Pokémon are waiting in the PC Box.'), make('p', 'player-stage-help', ready() ? 'You can still rearrange your team before playing.' : `Open the PC Box, choose a Pokémon, then tap a field position. ${sale.fieldCounts.filter(n => n === 23).length} of ${lobby.teamCount} teams are ready.`));
-        if (window.DraftOnline.isHost()) { const play = make('button', 'primary-button', 'Play match'); play.type = 'button'; play.id = 'player-play-match'; play.disabled = !ready(); play.addEventListener('click', () => { if (!desktop.matches) panel.close(); adapter.playMatch(); }); stage.append(play); }
+        if (window.DraftOnline.isHost()) { const play = make('button', 'primary-button host-auction-action', 'Play match'); play.type = 'button'; play.id = 'player-play-match'; play.disabled = !ready(); play.addEventListener('click', () => { if (!desktop.matches) panel.close(); adapter.playMatch(); }); stage.append(play); }
         else stage.append(make('p', 'player-stage-help', 'The host starts the match. Results appear for everyone.'));
       }
     }

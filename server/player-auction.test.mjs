@@ -138,3 +138,41 @@ test('a raise racing with finalize is serialized without silently changing the a
  else{s=await expire(f,s);assert.equal(s.lobby.auction.lastAward.amount,10);assert.equal(s.lobby.auction.lastAward.team,1);}
  assert.equal(s.lobby.auction.awards.length,1);assert.equal(s.league.careers[id].draftCount,1);
 });
+
+test('host selects a free-award team; full teams, invalid teams, and paid bid overrides are rejected',async()=>{
+ const f=fixture();let s=await f.start(3),id=s.lobby.auction.currentPokemonId;
+ assertError(await f.action(1,s,'finalize',{pokemonId:id,teamIndex:1}),403,'HOST_ONLY');
+ assertError(await f.action(0,s,'finalize',{pokemonId:id,teamIndex:3}),400,'INVALID_TEAM');
+ s=ok(await f.action(0,s,'finalize',{pokemonId:id,teamIndex:2}));
+ assert.equal(s.lobby.auction.lastAward.team,2);assert.equal(s.lobby.auction.lastAward.amount,0);assert.deepEqual(s.lobby.auction.budgets,[1000,1000,1000]);
+ id=s.lobby.auction.currentPokemonId;s=ok(await f.action(1,s,'bid',{amount:5,pokemonId:id}));
+ assertError(await f.action(0,s,'finalize',{pokemonId:id,teamIndex:0}),409,'BIDS_STARTED');s=await expire(f,s);
+ for(let i=1;i<23;i++)s=ok(await f.action(0,s,'finalize',{pokemonId:s.lobby.auction.currentPokemonId,teamIndex:2}));
+ assert.equal(s.lobby.auction.counts[2],23);
+ assertError(await f.action(0,s,'finalize',{pokemonId:s.lobby.auction.currentPokemonId,teamIndex:2}),409,'ROSTER_FULL');
+});
+
+test('generation combinations and legendary exclusions constrain initial lots and skip replacements',async()=>{
+ const f=fixture();let s=await f.create(2);
+ assertError(await f.action(0,s,'configure',{generations:[]}),400,'INVALID_POOL');
+ assertError(await f.action(0,s,'configure',{includeRetired:'yes'}),400,'INVALID_POOL');
+ s=ok(await f.action(0,s,'configure',{generations:[1,3],includeLegendary:false}));
+ assert.deepEqual(s.lobby.generations,[1,3]);assert.equal(s.lobby.includeRetired,false);assert.equal(s.lobby.includeLegendary,false);
+ s=await f.join(2);s=ok(await f.action(0,s,'start'));
+ const legends=new Set([144,145,146,150,151,243,244,245,249,250,251,377,378,379,380,381,382,383,384,385,386]);
+ const assertPool=async()=>{const r=await f.store.read(),lots=r.state.lobbies[f.code].session.lots;assert.ok(lots.every(id=>(id<=151||id>=252)&&!legends.has(id)));};
+ await assertPool();s=ok(await f.action(0,s,'skip',{pokemonId:s.lobby.auction.currentPokemonId}));await assertPool();
+});
+
+test('include retired permits drafting and simulation while preserving hall snapshots',async()=>{
+ const f=fixture();let s=await f.create(2);const saved=await f.store.read(),league=saved.state.leagues[s.league.id];
+ for(let id=1;id<=386;id++)league.hall[id]={pokemonId:id,kind:'fame',career:{games:99},values:{QB:50}};
+ await f.store.commit(saved.revision,saved.state);
+ s=await f.join(2);assertError(await f.action(0,s,'start'),400,'INVALID_GAME_ACTION');
+ s=ok(await f.action(0,s,'configure',{generations:[2],includeRetired:true,includeLegendary:false}));
+ s=ok(await f.action(0,s,'start'));assert.deepEqual(s.lobby.generations,[2]);
+ for(let i=0;i<46;i++)s=ok(await f.action(0,s,'finalize',{pokemonId:s.lobby.auction.currentPokemonId,teamIndex:i%2}));
+ assert.ok(s.lobby.auction.awards.every(a=>a.pokemonId>=152&&a.pokemonId<=251));
+ s=await placeAll(f,s);s=ok(await f.action(0,s,'simulate'));assert.equal(s.league.matchCount,1);
+ for(const a of s.lobby.auction.awards){assert.equal(s.league.hall[a.pokemonId].career.games,99);assert.equal(s.league.careers[a.pokemonId].games,0);assert.equal(s.league.careers[a.pokemonId].draftCount,1);}
+});

@@ -45,12 +45,12 @@
   <script src="auction.js?v=14" defer></script>
   <link rel="stylesheet" href="online.css?v=16">
   <link rel="stylesheet" href="interface.css?v=16">
-  <script src="online.js?v=22" defer></script>
+  <script src="online.js?v=27" defer></script>
   <link rel="stylesheet" href="live-auction.css?v=22">
-  <script src="live-auction.js?v=23" defer></script>
-  <link rel="stylesheet" href="analysis.css?v=26">
+  <script src="live-auction.js?v=27" defer></script>
+  <link rel="stylesheet" href="analysis.css?v=27">
   <script src="analysis.js?v=26" defer></script>
-  <script src="app.js?v=26" defer></script>
+  <script src="app.js?v=27" defer></script>
   <link rel="stylesheet" href="focus.css?v=23">
   <script src="focus.js?v=23" defer></script>
 </head>
@@ -131,8 +131,9 @@
     <form id="auction-setup-form" novalidate>
       <div class="auction-setup-options">
         <div><label class="auction-count-label" for="auction-team-count">Teams</label><select id="auction-team-count"><option value="2" selected>2 teams</option><option value="3">3 teams</option><option value="4">4 teams</option></select></div>
-        <div><label class="auction-pool-label" for="auction-pool">Pokémon pool</label><select id="auction-pool"><option value="gen1">Gen 1 · Kanto</option><option value="gen2">Gen 2 · Johto</option><option value="gen3">Gen 3 · Hoenn</option><option value="both">All · 386 Pokémon</option></select></div>
+        <div><span class="auction-pool-label">Generations</span><div class="pool-generations" role="group" aria-label="Pokémon generations"><label><input type="checkbox" id="auction-gen-1" checked>Gen 1</label><label><input type="checkbox" id="auction-gen-2">Gen 2</label><label><input type="checkbox" id="auction-gen-3">Gen 3</label></div><select id="auction-pool" hidden aria-label="Pokémon pool"><option value="gen1">Gen 1 · Kanto</option><option value="gen2">Gen 2 · Johto</option><option value="gen3">Gen 3 · Hoenn</option><option value="both">All · 386 Pokémon</option></select></div>
       </div>
+      <div class="pool-toggles"><label><input type="checkbox" id="auction-include-retired">Include retired Pokémon</label><label><input type="checkbox" id="auction-include-legendary" checked>Include legendary/mythical Pokémon</label></div>
       <p id="auction-setup-summary" class="auction-setup-summary">46 Pokémon · $1,000 per team</p>
       <div class="auction-setup-names">
         <label data-auction-name="0">Team 1 name<input id="auction-name-0" type="text" maxlength="48" placeholder="Team 1" autocomplete="off" enterkeyhint="next"></label>

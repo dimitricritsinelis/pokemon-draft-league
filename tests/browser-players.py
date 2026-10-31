@@ -94,7 +94,7 @@ def setup(browsers,count,label,pool='both'):
   if mobile:opts['user_agent']='Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
   ctx=browser.new_context(**opts)
   contexts.append(ctx);pages.append(ctx.new_page());boot(pages[-1])
- h=pages[0];new_online(h);h.locator('#online-nickname').fill('QA '+label+' host');h.locator('#online-team-count').select_option(str(count));h.locator('#online-pool').select_option(pool)
+ h=pages[0];new_online(h);h.locator('#online-nickname').fill('QA '+label+' host');h.locator('#online-team-count').select_option(str(count));h.evaluate('(mode)=>{const e=document.getElementById("online-pool");e.value=mode;e.dispatchEvent(new Event("change"))}',pool)
  h.locator('#online-name-0').fill('QA '+label+' 1');h.locator('#online-create-button').click();h.wait_for_function('DraftOnline.active()&&DraftOnline.isHost()',timeout=45000)
  check(label+' defaults to individual player control',state(h)['lobby'].get('controlMode')=='players')
  check(label+' early start is prevented',raw_action(h,'start',{})['status']==409)

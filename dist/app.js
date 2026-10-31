@@ -103,6 +103,18 @@
     return Number.isInteger(id) && byId.has(id) && (mode === 'both' || (mode === 'gen1' ? id <= 151 : mode === 'gen2' ? id >= 152 && id <= 251 : mode === 'gen3' && id >= 252 && id <= 386));
   }
 
+  const legendaryIds = new Set([144,145,146,150,151,243,244,245,249,250,251,377,378,379,380,381,382,383,384,385,386]);
+  const generationOf = id => id <= 151 ? 1 : id <= 251 ? 2 : 3;
+  const poolOptions = () => online() ? onlineSnapshot.lobby : auction || {};
+  const includesRetired = () => auctionActive && poolOptions().includeRetired === true;
+  function inAuctionPool(id, options = auction || {}, mode = auction?.session.mode || state.mode) {
+    const generations = options.generations || (mode === 'both' ? [1,2,3] : [Number(mode.slice(-1))]);
+    return generations.includes(generationOf(id)) && (options.includeLegendary !== false || !legendaryIds.has(id)) && (options.includeRetired === true || !window.DraftCareers.isInducted(id));
+  }
+  function setupGenerations() {
+    return [1,2,3].filter(i => $('auction-gen-' + i).checked);
+  }
+
   function validateBoard(value, mode) {
     if (!value || !Object.hasOwn(offenseDetails, value.offense) || !Object.hasOwn(defenseDetails, value.defense) || !value.picks || typeof value.picks !== 'object' || Array.isArray(value.picks)) return null;
     const picks = {}, seen = new Set();
@@ -119,7 +131,7 @@
     Object.entries(board.picks).forEach(([key, id]) => { if (window.DraftCareers.isInducted(id)) { delete board.picks[key]; removed++; } });
     return removed;
   }
-  function applyBoard(board) { if (!online()) removeRetirees(board); state.name = cleanName(board.name); state.offense = board.offense; state.defense = board.defense; state.picks = { ...board.picks }; state.selected = null; }
+  function applyBoard(board) { if (!online() && !includesRetired()) removeRetirees(board); state.name = cleanName(board.name); state.offense = board.offense; state.defense = board.defense; state.picks = { ...board.picks }; state.selected = null; }
 
   function hallChanged(id, inducted) {
     if (online()) { renderCatalog(); window.DraftOnline.refreshNeeds(); return; }
@@ -127,7 +139,7 @@
     if (inducted) reconcileAuctionRetirees();
     if (inducted) {
       Object.values(boards).forEach(removeRetirees); Object.values(opponents).forEach(removeRetirees);
-      sharedCopy?.teams.forEach(removeRetirees); removeRetirees(state);
+      sharedCopy?.teams.forEach(removeRetirees); if (!includesRetired()) removeRetirees(state);
       if (auctionActive) persistRegularDraft(regularView, false);
     }
     saveDraft(); renderBoard(); renderCatalog();
@@ -484,7 +496,7 @@
     document.querySelectorAll('.pokemon-card').forEach(card => {
       const picked = visiblePicks.has(Number(card.dataset.pokemon));
       card.classList.toggle('picked', picked);
-      const retired = window.DraftCareers.isInducted(Number(card.dataset.pokemon));
+      const retired = !includesRetired() && window.DraftCareers.isInducted(Number(card.dataset.pokemon));
       const claimed = unavailable.has(Number(card.dataset.pokemon));
       const unowned = owned && !owned.has(Number(card.dataset.pokemon));
       card.disabled = boxMode ? !owned?.has(Number(card.dataset.pokemon)) : !editable() || claimed || retired || unowned; card.classList.toggle('opponent-pick', claimed || retired);
@@ -694,7 +706,7 @@
       if (!auctionOwned(state.team).includes(id)) { message('Only Pokémon won by this team can play on its auction roster.'); return { drafted: false }; }
     }
     if (!allowed(id)) throw new Error('Choose a Pokémon from the selected generation.');
-    if (window.DraftCareers.isInducted(id)) { message(`${byId.get(id).name} is retired in the league halls`); return { drafted: false }; }
+    if (!includesRetired() && window.DraftCareers.isInducted(id)) { message(`${byId.get(id).name} is retired in the league halls`); return { drafted: false }; }
     if (opponentPicks().has(id)) { message(`${byId.get(id).name} is already on ${teamName(claimedTeam(id))}`); return { drafted: false }; }
     const selected = slots().find(s => s.key === state.selected);
     if (!selected) { message('Select a position on the field first.'); return { drafted: false }; }
@@ -770,7 +782,7 @@
     if (!validMatchup(indices)) return null;
     if (online()) { sendOnline('simulate', { teamIndexes: indices }); return null; }
     const teams = matchTeams(indices);
-    if (teams.some(t => t.positions.some(p => p.pokemonId && window.DraftCareers.isInducted(p.pokemonId)))) {
+    if (!includesRetired() && teams.some(t => t.positions.some(p => p.pokemonId && window.DraftCareers.isInducted(p.pokemonId)))) {
       hallChanged(null, true); message('Retired Pokémon have left the draft. Fill the open positions.'); return null;
     }
     const missing = teams.map(t => t.positions.filter(p => !p.pokemonId).length);
@@ -873,7 +885,7 @@
       if (!teams) throw new Error('Invalid auction');
       if (session.rosterSize === 22) {
         const excluded = new Set([...session.lots, ...session.skipped]);
-        const candidates = pokemon.filter(p => allowed(p.id, session.mode) && !excluded.has(p.id) && !window.DraftCareers.isInducted(p.id)).map(p => p.id);
+        const candidates = pokemon.filter(p => inAuctionPool(p.id, saved, session.mode) && !excluded.has(p.id)).map(p => p.id);
         if (candidates.length >= session.teamCount) {
           for (let count = 0; count < session.teamCount; count++) session.lots.push(candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0]);
           session.rosterSize = 23;
@@ -890,7 +902,7 @@
         const ids = Object.values(board.picks);
         if (Object.keys(board.picks).some(key => !active.has(key)) || ids.length !== owned.length || ids.some(id => !owned.includes(id))) throw new Error('Invalid auction roster');
       });
-      auction = { draftId: saved.draftId || crypto.randomUUID(), session, teams, team: Number.isInteger(saved.team) && saved.team >= 0 && saved.team < session.teamCount ? saved.team : 0 };
+      auction = { generations: Array.isArray(saved.generations) ? saved.generations.filter(g => [1,2,3].includes(g)) : undefined, includeRetired: saved.includeRetired === true, includeLegendary: saved.includeLegendary !== false, draftId: saved.draftId || crypto.randomUUID(), session, teams, team: Number.isInteger(saved.team) && saved.team >= 0 && saved.team < session.teamCount ? saved.team : 0 };
       if (Array.isArray(saved.matchup) && saved.matchup.length === 2 && new Set(saved.matchup).size === 2 && saved.matchup.every(i => Number.isInteger(i) && i >= 0 && i < session.teamCount)) auction.matchup = saved.matchup.slice();
       regularView = saved.regularView && Object.hasOwn(modeLabels, saved.regularView.mode) ? { mode: saved.regularView.mode, team: saved.regularView.team === 1 ? 1 : 0, shared: !!saved.regularView.shared && !!sharedCopy } : { mode: state.mode, team: state.team, shared };
       if (!reconcileAuctionRetirees()) return;
@@ -905,6 +917,7 @@
   function reconcileAuctionRetirees() {
     if (online()) return true;
     if (!auction) return false;
+    if (auction.includeRetired) return true;
     const currentBefore = auctionCurrent();
     const retired = id => window.DraftCareers.isInducted(id);
     const awardedRetiree = auction.session.awards.some(a => retired(a.pokemonId));
@@ -932,7 +945,7 @@
   function auctionReplacementPool() {
     if (!auction) return [];
     const excluded = new Set([...auction.session.lots, ...(auction.session.skipped || [])]);
-    return pokemon.filter(p => allowed(p.id, auction.session.mode) && !window.DraftCareers.isInducted(p.id) && !excluded.has(p.id)).map(p => p.id);
+    return pokemon.filter(p => inAuctionPool(p.id) && !excluded.has(p.id)).map(p => p.id);
   }
 
   function enterAuction() {
@@ -967,6 +980,9 @@
     $('auction-team-count').value = String(auction?.session.teamCount || 2);
     renderAuctionSetup();
     $('auction-pool').value = state.mode;
+    [1,2,3].forEach(i => { $('auction-gen-' + i).checked = auction?.generations ? auction.generations.includes(i) : state.mode === 'both' || state.mode === 'gen' + i; });
+    $('auction-include-retired').checked = auction?.includeRetired === true;
+    $('auction-include-legendary').checked = auction?.includeLegendary !== false;
     $('auction-start-button').hidden = !auction;
     $('auction-start-button').textContent = auction ? `Resume ${auction.session.teamCount}-team auction →` : 'Resume saved auction';
     $('auction-setup-note').textContent = auction ? 'Starting fresh replaces your saved local auction. Your practice lineup and careers stay saved.' : 'Your practice lineup stays saved. Retired Pokémon sit this one out.';
@@ -978,9 +994,12 @@
   }
 
   function startAuction() {
-    const mode = $('auction-pool').value, teamCount = Number($('auction-team-count').value);
+    const generations = setupGenerations(), includeRetired = $('auction-include-retired').checked, includeLegendary = $('auction-include-legendary').checked;
+    const mode = generations.length === 1 ? 'gen' + generations[0] : 'both', teamCount = Number($('auction-team-count').value);
+    const options = { generations, includeRetired, includeLegendary };
+    if (!generations.length) { $('auction-setup-error').textContent = 'Select at least one generation.'; $('auction-setup-error').hidden = false; return; }
     let session;
-    try { session = window.DraftAuction.create(pokemon.filter(p => allowed(p.id, mode) && !window.DraftCareers.isInducted(p.id)).map(p => p.id), { mode, teamCount }); }
+    try { session = window.DraftAuction.create(pokemon.filter(p => inAuctionPool(p.id, options, mode)).map(p => p.id), { mode, teamCount }); }
     catch (error) { $('auction-setup-error').textContent = error.message; $('auction-setup-error').hidden = false; return; }
     saveDraft();
     const previousTeams = teamPair();
@@ -989,7 +1008,7 @@
       return { name: cleanName($('auction-name-' + i).value), offense: board.offense, defense: board.defense, picks: {} };
     });
     if (!auctionActive) regularView = { mode: state.mode, team: state.team, shared };
-    auction = { draftId: crypto.randomUUID(), session, teams, team: 0 }; auctionActive = true;
+    auction = { ...options, draftId: crypto.randomUUID(), session, teams, team: 0 }; auctionActive = true;
     state.mode = mode; state.team = 0; applyBoard(teams[0]);
     $('auction-setup-dialog').close(); invalidateMatch(); saveDraft(); renderBoard(); renderCatalog(); openAuctionRound();
   }
@@ -1075,7 +1094,7 @@
 
   function renderAuctionSkip() {
     const unavailable = online() ? new Set([...(onlineSnapshot.lobby.auction?.awards || []).map(a => a.pokemonId), ...(onlineSnapshot.lobby.auction?.skipped || []), auctionCurrent()]) : null;
-    const canSkip = online() ? pokemon.filter(p => allowed(p.id) && !window.DraftCareers.isInducted(p.id) && !unavailable.has(p.id)).length > auctionTotal() - (onlineSnapshot.lobby.auction?.awards.length || 0) - 1 : auctionReplacementPool().length > 0;
+    const canSkip = online() ? pokemon.filter(p => inAuctionPool(p.id, onlineSnapshot.lobby, state.mode) && !unavailable.has(p.id)).length > auctionTotal() - (onlineSnapshot.lobby.auction?.awards.length || 0) - 1 : auctionReplacementPool().length > 0;
     $('auction-skip-button').disabled = !canSkip;
     if (canSkip) $('auction-skip-button').removeAttribute('aria-describedby');
     else $('auction-skip-button').setAttribute('aria-describedby', 'auction-skip-note');
@@ -1088,7 +1107,7 @@
     const current = auctionCurrent();
     if (!reconcileAuctionRetirees() || current !== auctionCurrent()) return;
     try {
-      const pool = pokemon.filter(p => allowed(p.id, auction.session.mode) && !window.DraftCareers.isInducted(p.id)).map(p => p.id);
+      const pool = pokemon.filter(p => inAuctionPool(p.id)).map(p => p.id);
       auction.session = window.DraftAuction.skip(auction.session, pool);
     } catch (error) {
       $('auction-bid-error').textContent = error.message; $('auction-bid-error').hidden = false; return;
@@ -1199,6 +1218,8 @@
   }
 
   $('auction-team-count').addEventListener('change', renderAuctionSetup);
+  $('auction-pool').addEventListener('change', () => { [1,2,3].forEach(i => { $('auction-gen-' + i).checked = $('auction-pool').value === 'both' || $('auction-pool').value === 'gen' + i; }); });
+  [1,2,3].forEach(i => $('auction-gen-' + i).addEventListener('change', () => { const selected = setupGenerations(); $('auction-pool').value = selected.length === 1 ? 'gen' + selected[0] : 'both'; }));
   [0, 1].forEach(side => $('matchup-team-' + side).addEventListener('change', updateMatchupOptions));
   $('matchup-play-button').addEventListener('click', () => {
     const indices = [Number($('matchup-team-0').value), Number($('matchup-team-1').value)];
@@ -1454,12 +1475,14 @@
       onHallAction: (id, kind) => window.DraftOnline.hallAction(id, kind)
     });
     Object.values(boards).forEach(removeRetirees); Object.values(opponents).forEach(removeRetirees);
-    sharedCopy?.teams.forEach(removeRetirees); removeRetirees(state);
+    sharedCopy?.teams.forEach(removeRetirees); if (!includesRetired()) removeRetirees(state);
     if (auction) reconcileAuctionRetirees();
     saveDraft(); renderBoard(); renderCatalog(); window.DraftHall.refresh();
   }
   function copyPlaySetup(from, to) {
     ['team-count', 'pool'].forEach(key => { $(to + '-' + key).value = $(from + '-' + key).value; });
+    [1,2,3].forEach(i => { $(to + '-gen-' + i).checked = $(from + '-gen-' + i).checked; });
+    ['include-retired','include-legendary'].forEach(key => { $(to + '-' + key).checked = $(from + '-' + key).checked; });
     [0, 1, 2, 3].forEach(i => { $(to + '-name-' + i).value = $(from + '-name-' + i).value; });
     $(to + '-team-count').dispatchEvent(new Event('change'));
   }
