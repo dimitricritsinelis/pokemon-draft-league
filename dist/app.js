@@ -73,13 +73,15 @@
     };
     const extras = { '10': ['wr1', 'wr2', 'wr3', 'wr4'], '11': ['wr1', 'wr2', 'wr3', 'te1'], '12': ['wr1', 'wr2', 'te1', 'te2'], '21': ['wr1', 'wr2', 'te1', 'rb2'], '22': ['wr1', 'te1', 'te2', 'rb2'] };
     offense.push(...extras[board.offense].map(key => eligible[key]));
-    const defense = [d('fs', 'FS', 35, 9), d('ss', 'SS', 65, 9), d('cb1', 'CB', mobile ? 12 : 9, 28), d('cb2', 'CB', mobile ? 88 : 91, 28)];
-    const fourLine = [d('de1', 'DE', 20, 43), d('dt1', 'DT', 40, 43), d('dt2', 'DT', 60, 43), d('de2', 'DE', 80, 43)];
+    // A compact defensive front with a wider second level and a two-high coverage shell.
+    const defense = [d('fs', 'FS', 32, 9), d('ss', 'SS', 68, 9), d('cb1', 'CB', mobile ? 12 : 9, 30), d('cb2', 'CB', mobile ? 88 : 91, 30)];
+    const frontX = mobile ? [28, 43, 57, 72] : [32, 44, 56, 68];
+    const fourLine = [d('de1', 'DE', frontX[0], 43), d('dt1', 'DT', frontX[1], 43), d('dt2', 'DT', frontX[2], 43), d('de2', 'DE', frontX[3], 43)];
     const fronts = {
-      '3-4': [d('de1', 'DE', 30, 43), d('dt1', 'NT', 50, 43), d('de2', 'DE', 70, 43), d('lb1', 'ILB', 40, 26), d('lb2', 'ILB', 60, 26), d('lb3', 'OLB', mobile ? 25 : 22, 26), d('lb4', 'OLB', mobile ? 75 : 78, 26)],
-      '4-3': [...fourLine, d('lb1', 'MLB', 50, 26), d('lb2', 'WLB', 30, 26), d('lb3', 'SLB', 70, 26)],
-      nickel: [...fourLine, d('lb1', 'LB', 35, 26), d('lb2', 'LB', 57, 26), d('nb', 'NB', mobile ? 75 : 79, 26)],
-      dime: [...fourLine, d('lb1', 'MLB', 50, 26), d('nb', 'NB', 28, 26), d('db6', 'DB', 72, 26)]
+      '3-4': [d('de1', 'DE', mobile ? 34 : 36, 43), d('dt1', 'NT', 50, 43), d('de2', 'DE', mobile ? 66 : 64, 43), d('lb1', 'ILB', 42, 26), d('lb2', 'ILB', 58, 26), d('lb3', 'OLB', 25, 26), d('lb4', 'OLB', 75, 26)],
+      '4-3': [...fourLine, d('lb1', 'MLB', 50, 26), d('lb2', 'WLB', 33, 26), d('lb3', 'SLB', 67, 26)],
+      nickel: [...fourLine, d('lb1', 'LB', 41, 26), d('lb2', 'LB', 59, 26), d('nb', 'NB', mobile ? 76 : 78, 26)],
+      dime: [...fourLine, d('lb1', 'MLB', 50, 26), d('nb', 'NB', 29, 26), d('db6', 'DB', 71, 26)]
     };
     defense.push(...fronts[board.defense]);
     const special = rosterSize() === 23 ? [slot('s_k', 'K', 85, 92, 'special')] : [];
