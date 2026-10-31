@@ -1,0 +1,5 @@
+.header-actions .music-toggle, .music-toggle { display:inline-flex; align-items:center; justify-content:center; flex:0 0 36px; width:36px; height:40px; min-height:40px; padding:0; border:1px solid #dbe3d5; border-radius:9px; background:#fff; color:#516d48; }
+.music-toggle svg { width:18px; height:18px; pointer-events:none; }
+.music-toggle[aria-pressed=false] { color:#87917f; }
+dialog .music-toggle { width:32px; height:36px; min-height:36px; flex-basis:32px; border:0; background:transparent; }
+@media(max-width:560px){.header-actions { gap:4px; }.header-actions .music-toggle { flex-basis:30px; width:30px; min-width:30px; } }
